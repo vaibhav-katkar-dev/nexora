@@ -77,16 +77,7 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-// Route Registrations
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/projects", projectRoutes);
-app.use("/api/v1/projects", publishRoutes);   // publish & deployments nested under projects
-app.use("/api/v1/ai", aiRoutes);
-app.use("/api/v1/media", mediaRoutes);
-app.use("/api/v1/templates", templateRoutes);
-app.use("/preview", previewRoutes);            // Public site preview (no auth)
-
-// Health Check Route
+// Health Check Route (registered before the DB middleware so it always responds fast)
 app.get("/health", (req: Request, res: Response) => {
   res.json({
     success: true,
@@ -95,6 +86,36 @@ app.get("/health", (req: Request, res: Response) => {
     db: mongooseConnectionState(),
   });
 });
+
+// Database readiness middleware — ensures the Mongoose connection is established
+// before API handlers run. Fixes "Cannot call users.findOne() before initial
+// connection is complete" on Vercel serverless cold starts (bufferCommands=false).
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await connectDB();
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          code: "DB_UNAVAILABLE",
+          message: "Database connection unavailable. Please try again shortly.",
+        },
+      });
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Route Registrations
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/projects", projectRoutes);
+app.use("/api/v1/projects", publishRoutes);   // publish & deployments nested under projects
+app.use("/api/v1/ai", aiRoutes);
+app.use("/api/v1/media", mediaRoutes);
+app.use("/api/v1/templates", templateRoutes);
+app.use("/preview", previewRoutes);            // Public site preview (no auth)
 
 function mongooseConnectionState(): string {
   const states = ["disconnected", "connected", "connecting", "disconnecting"];
