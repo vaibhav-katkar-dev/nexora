@@ -1,0 +1,149 @@
+{
+  "meta": {
+    "id": "portfolio-modern",
+    "slug": "portfolio-modern",
+    "title": "Modern Developer & Designer Portfolio",
+    "description": "Sleek, high-converting portfolio template designed for software engineers, designers, and creative professionals.",
+    "category": "portfolio",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Developer", "Designer", "Modern", "Dark Mode", "Interactive"],
+    "popularity": 98,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#6366F1",
+    "secondaryColor": "#A855F7",
+    "accentColor": "#EC4899",
+    "backgroundColor": "#0B0F19",
+    "textColor": "#F3F4F6",
+    "headingFont": "Outfit",
+    "bodyFont": "Inter",
+    "borderRadius": "16px",
+    "buttonVariant": "gradient",
+    "cardVariant": "glass",
+    "shadow": "lg",
+    "mode": "dark",
+    "spacingScale": "comfortable",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-1",
+      "type": "hero",
+      "variant": "split",
+      "title": "Crafting Exceptional Digital Experiences",
+      "subtitle": "Full-Stack Engineer & UI Architect specializing in high-performance web applications and AI interfaces.",
+      "badge": "✨ Available for Select Projects",
+      "content": {
+        "ctaText": "Explore Portfolio",
+        "ctaLink": "#portfolio",
+        "secondaryCtaText": "Get in Touch",
+        "secondaryCtaLink": "#contact",
+        "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+        "stats": [
+          { "label": "Years Experience", "value": "6+" },
+          { "label": "Projects Completed", "value": "40+" },
+          { "label": "Happy Clients", "value": "100%" }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "about-1",
+      "type": "about",
+      "variant": "grid",
+      "title": "About Me",
+      "subtitle": "Passionate about clean architecture, responsive design, and intuitive user experiences.",
+      "content": {
+        "bio": "I am a Senior Software Engineer with over 6 years of experience building scalable SaaS products, mobile applications, and design systems. I bridged the gap between front-end craft and backend reliability.",
+        "skills": ["TypeScript", "React", "Next.js", "Node.js", "GraphQL", "TailwindCSS", "Python", "Docker", "PostgreSQL"],
+        "highlights": [
+          "Led design systems used by over 500,000 active users.",
+          "Architected real-time collaboration engines using WebSockets.",
+          "Obsessed with Lighthouse performance optimization and micro-interactions."
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "portfolio-1",
+      "type": "portfolio_grid",
+      "variant": "cards",
+      "title": "Featured Work",
+      "subtitle": "Selected projects highlighting web engineering, UI systems, and product development.",
+      "content": {
+        "projects": [
+          {
+            "name": "Nexora AI Assistant Platform",
+            "desc": "Next-generation workspace with dynamic context management and instant code rendering.",
+            "tag": "Next.js & AI",
+            "url": "https://example.com",
+            "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "name": "Lumina Design System",
+            "desc": "Accessible, high-performance UI library with over 40+ accessible Web components.",
+            "tag": "Design Systems",
+            "url": "https://example.com",
+            "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "name": "Vortex Cloud Monitoring",
+            "desc": "Real-time analytics dashboard monitoring microservice performance and log metrics.",
+            "tag": "SaaS Platform",
+            "url": "https://example.com",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "timeline-1",
+      "type": "timeline",
+      "variant": "experience",
+      "title": "Experience & Career",
+      "subtitle": "A timeline of engineering roles and key responsibilities.",
+      "content": {
+        "items": [
+          {
+            "period": "2023 - Present",
+            "role": "Lead Frontend Architect",
+            "company": "TechPulse Labs",
+            "desc": "Directing frontend infrastructure, establishing CI/CD test standards, and leading a team of 8 engineers."
+          },
+          {
+            "period": "2021 - 2023",
+            "role": "Senior Full-Stack Engineer",
+            "company": "Elevate Systems",
+            "desc": "Built real-time messaging engines and integrated payment infrastructure processing over $2M annually."
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "contact-1",
+      "type": "contact",
+      "variant": "split",
+      "title": "Let's Build Something Together",
+      "subtitle": "Have a project in mind or want to collaborate? Send me a message or connect directly.",
+      "content": {
+        "email": "alex.dev@example.com",
+        "phone": "+1 (555) 234-5678",
+        "location": "San Francisco, CA (Remote)",
+        "github": "https://github.com",
+        "linkedin": "https://linkedin.com",
+        "twitter": "https://twitter.com"
+      },
+      "visible": true
+    }
+  ],
+  "seo": {
+    "metaTitle": "Alex Morgan — Senior Developer & UI Architect",
+    "metaDescription": "Portfolio of Alex Morgan featuring modern web applications, design systems, and software engineering showcase.",
+    "keywords": ["Developer Portfolio", "React Architect", "TypeScript", "Next.js"]
+  }
+}

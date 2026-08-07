@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "title": "Blank Canvas Digital Presence",
+    "description": "Clean starter canvas to build any web page structure from scratch.",
+    "category": "blank"
+  },
+  "theme": {
+    "primaryColor": "#6366F1",
+    "secondaryColor": "#38BDF8",
+    "backgroundColor": "#090D16",
+    "textColor": "#F8FAFC",
+    "fontFamily": "Inter",
+    "mode": "dark"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Welcome to Your Blank Canvas",
+      "subtitle": "Use the visual inspector on the left or switch to code mode to construct custom layout sections.",
+      "content": {
+        "badge": "🎨 STARTER TEMPLATE",
+        "ctaText": "Add New Section",
+        "ctaLink": "#"
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Contact & Info",
+      "content": {
+        "email": "hello@example.com"
+      }
+    }
+  ]
+}

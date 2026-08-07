@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "title": "Marcus Sterling — Managing Partner",
+    "description": "Digital Business Card of Marcus Sterling, VC Partner & Technology Board Advisor.",
+    "category": "digital_card"
+  },
+  "theme": {
+    "primaryColor": "#EAB308",
+    "secondaryColor": "#F97316",
+    "backgroundColor": "#0F172A",
+    "textColor": "#FFFFFF",
+    "fontFamily": "Inter",
+    "mode": "dark"
+  },
+  "sections": [
+    {
+      "id": "sec_card",
+      "type": "digital_card",
+      "variant": "centered",
+      "title": "Marcus Sterling",
+      "subtitle": "Managing Partner @ Sterling Ventures",
+      "content": {
+        "bio": "Investing in early-stage AI infrastructure, spatial computing, and next-gen developer tools. 15+ years in Silicon Valley leadership.",
+        "location": "San Francisco, CA & New York, NY",
+        "socials": {
+          "email": "marcus@sterlingvc.com",
+          "phone": "+1 (415) 800-9921",
+          "linkedin": "https://linkedin.com/in/marcus-sterling-vc",
+          "twitter": "https://twitter.com/sterling_cap",
+          "website": "https://sterlingvc.com"
+        }
+      }
+    }
+  ]
+}

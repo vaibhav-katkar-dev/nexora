@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "id": "event-premium",
+    "slug": "event-premium",
+    "title": "Global Tech Summit & Conference",
+    "description": "High-impact event registration and speaker showcase template designed for summits, keynotes, webinars, and expos.",
+    "category": "event",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Event", "Conference", "Summit", "Speakers", "Registration"],
+    "popularity": 92,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#8B5CF6",
+    "secondaryColor": "#C084FC",
+    "accentColor": "#F43F5E",
+    "backgroundColor": "#0F0B1E",
+    "textColor": "#F3E8FF",
+    "headingFont": "Outfit",
+    "bodyFont": "Inter",
+    "borderRadius": "16px",
+    "buttonVariant": "gradient",
+    "cardVariant": "glass",
+    "shadow": "lg",
+    "mode": "dark",
+    "spacingScale": "comfortable",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-evt",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Future AI & Tech Summit 2026",
+      "subtitle": "Join 2,500+ world leaders, developers, and visionaries shaping the next era of autonomous software.",
+      "badge": "📅 October 14-16, 2026 • San Francisco, CA",
+      "content": {
+        "ctaText": "Claim Your Pass",
+        "ctaLink": "#pricing",
+        "secondaryCtaText": "View Speakers",
+        "secondaryCtaLink": "#speakers"
+      },
+      "visible": true
+    },
+    {
+      "id": "speakers-evt",
+      "type": "team",
+      "variant": "cards",
+      "title": "Keynote Speakers",
+      "subtitle": "Industry pioneers sharing breakthrough insights and practical workshops.",
+      "content": {
+        "members": [
+          { "name": "Dr. Aris Thorne", "role": "Head of AI Research, NeuralLab", "bio": "Leading research in multimodal agentic reasoning models." },
+          { "name": "Maya Sterling", "role": "VP Engineering, QuantumScale", "bio": "Scaling distributed computing networks to 100M+ QPS." }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "pricing-evt",
+      "type": "pricing",
+      "variant": "cards",
+      "title": "Pass Options",
+      "subtitle": "Choose the experience that fits your schedule and networking needs.",
+      "content": {
+        "plans": [
+          {
+            "name": "Virtual Pass",
+            "price": "$199",
+            "desc": "Access all keynote livestreams, recorded sessions, and virtual Q&A sessions.",
+            "features": ["All Keynote Livestreams", "Session Recordings for 1 Year", "Digital Swag Bag"],
+            "badge": "Online"
+          },
+          {
+            "name": "All-Access Summit Pass",
+            "price": "$799",
+            "desc": "Full in-person access to 3-day conference, networking lounge, and VIP dinner.",
+            "features": ["In-Person Keynotes & Workshops", "VIP Speaker Networking Dinner", "Exhibitor Hall & Afterparty", "Breakfast & Lunch Included"],
+            "badge": "Most Popular",
+            "isPopular": true
+          }
+        ]
+      },
+      "visible": true
+    }
+  ]
+}

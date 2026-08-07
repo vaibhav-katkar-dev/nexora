@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "title": "Maya Lin — Writer, Photographer & Visual Storyteller",
+    "description": "Personal space of Maya Lin featuring travel journals, editorial essays, and analogue photography.",
+    "category": "personal"
+  },
+  "theme": {
+    "primaryColor": "#F43F5E",
+    "secondaryColor": "#A855F7",
+    "backgroundColor": "#110D18",
+    "textColor": "#FDF4FF",
+    "fontFamily": "Playfair Display",
+    "mode": "glassmorphism"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Documenting Life & Light Across Continents",
+      "subtitle": "Welcome to my digital sanctuary. I write about architecture, human stories, and the art of slow travel.",
+      "content": {
+        "badge": "✨ LATEST JOURNAL POST PUBLISHED",
+        "ctaText": "Read Essays",
+        "ctaLink": "#sec_journal"
+      }
+    },
+    {
+      "id": "sec_journal",
+      "type": "portfolio_grid",
+      "variant": "cards",
+      "title": "Featured Field Essays",
+      "content": {
+        "projects": [
+          {
+            "name": "Echoes of Kyoto",
+            "desc": "A photo essay exploring wooden machiya architecture and morning mist in Arashiyama.",
+            "tag": "Travel / Photography"
+          },
+          {
+            "name": "The Geometry of Silence",
+            "desc": "Reflections on minimalist brutalism and Scandinavian light during winter solstice.",
+            "tag": "Architecture & Design"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Stay Connected",
+      "content": {
+        "email": "maya@mayalin.me",
+        "twitter": "https://twitter.com/mayalin_photo"
+      }
+    }
+  ]
+}

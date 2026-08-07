@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "title": "TechSummit 2026 — Future of AI & Spatial Web",
+    "description": "Global developer conference bringing together 3,000+ AI researchers, founders, and architects in Austin, TX.",
+    "category": "event"
+  },
+  "theme": {
+    "primaryColor": "#D946EF",
+    "secondaryColor": "#8B5CF6",
+    "backgroundColor": "#140A1D",
+    "textColor": "#FAF5FF",
+    "fontFamily": "Outfit",
+    "mode": "dark"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "TechSummit 2026: Austin, TX",
+      "subtitle": "3 Days of Deep-Tech Keynotes, Hands-on LLM Labs, and VIP Founder Networking.",
+      "content": {
+        "badge": "🎟️ EARLY BIRD PASSES 40% OFF — ENDS SOON",
+        "ctaText": "Register Passes",
+        "ctaLink": "#sec_contact"
+      }
+    },
+    {
+      "id": "sec_tracks",
+      "type": "features",
+      "variant": "cards",
+      "title": "Conference Tracks & Keynotes",
+      "content": {
+        "items": [
+          {
+            "title": "Track 1: Frontier LLMs & Agentic Loops",
+            "desc": "Deep dive into multi-agent systems, autonomous code synthesis, and low-latency inference."
+          },
+          {
+            "title": "Track 2: Edge Infrastructure & WebAssembly",
+            "desc": "Building sub-10ms globally distributed apps using modern WASM runtimes."
+          },
+          {
+            "title": "Track 3: Spatial UX & Hardware",
+            "desc": "Designing spatial UI standards for next-gen headsets and AR glasses."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Venue & Inquiries",
+      "content": {
+        "email": "tickets@techsummit2026.io",
+        "address": "Austin Convention Center, 500 E Cesar Chavez St, Austin, TX 78701",
+        "hours": "October 14–16, 2026 • 9:00 AM – 7:00 PM CST"
+      }
+    }
+  ]
+}

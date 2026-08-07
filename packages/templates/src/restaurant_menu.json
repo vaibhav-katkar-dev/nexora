@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "title": "L'Osteria Bella — Italian Bistro & Wine Bar",
+    "description": "Authentic wood-fired Italian dining, handmade pasta, and curated vintage wines in downtown NYC.",
+    "category": "restaurant_menu"
+  },
+  "theme": {
+    "primaryColor": "#F43F5E",
+    "secondaryColor": "#FB923C",
+    "backgroundColor": "#120A0F",
+    "textColor": "#FFF1F2",
+    "fontFamily": "Playfair Display",
+    "mode": "dark"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "L'Osteria Bella",
+      "subtitle": "Artisanal Wood-Fired Dining & Tuscan Cellar Wines",
+      "content": {
+        "badge": "MICHELIN GUIDE SELECTED 2026",
+        "ctaText": "Reserve a Table",
+        "ctaLink": "#sec_contact"
+      }
+    },
+    {
+      "id": "sec_menu",
+      "type": "menu_list",
+      "variant": "centered",
+      "title": "Chef's Seasonal Menu",
+      "content": {
+        "categories": [
+          {
+            "name": "Antipasti & Small Plates",
+            "items": [
+              {
+                "name": "Burrata Pugliese",
+                "desc": "Heirloom tomatoes, 25-year aged balsamic, fresh basil oil, grilled sourdough.",
+                "price": "$22"
+              },
+              {
+                "name": "Truffle Carpaccio",
+                "desc": "Prime beef tenderloin, shaved black truffle, arugula, parmigiano reggiano.",
+                "price": "$26"
+              }
+            ]
+          },
+          {
+            "name": "Primi — Handcrafted Pasta",
+            "items": [
+              {
+                "name": "Tagliolini Al Tartufo",
+                "desc": "House-made egg pasta, Umbrian black truffle butter, aged parmesan.",
+                "price": "$38"
+              },
+              {
+                "name": "Pappardelle Cinghiale",
+                "desc": "Slow-braised wild boar ragù, rosemary, crushed juniper berries.",
+                "price": "$34"
+              }
+            ]
+          },
+          {
+            "name": "Dolci & Artisanal Drinks",
+            "items": [
+              {
+                "name": "Traditional Tiramisù Classico",
+                "desc": "Savoiardi, espresso, single-origin dark cocoa, mascarpone cream.",
+                "price": "$16"
+              },
+              {
+                "name": "Barolo Reserve 2018 (Glass)",
+                "desc": "Piedmont vintage, notes of dark cherry, leather, and dried violet.",
+                "price": "$28"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Hours & Reservations",
+      "content": {
+        "email": "reserve@losteriabella.com",
+        "phone": "+1 (212) 555-0199",
+        "address": "428 West Broadway, SoHo, New York, NY 10012",
+        "hours": "Tue – Sun: 5:00 PM – 11:00 PM (Closed Mondays)"
+      }
+    }
+  ]
+}

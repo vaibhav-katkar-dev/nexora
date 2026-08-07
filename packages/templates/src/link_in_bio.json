@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "title": "Kai Chen — Tech Creator & Developer",
+    "description": "Links to my latest YouTube reviews, coding tutorials, podcast, and gear recommendations.",
+    "category": "link_in_bio"
+  },
+  "theme": {
+    "primaryColor": "#06B6D4",
+    "secondaryColor": "#3B82F6",
+    "backgroundColor": "#0B1520",
+    "textColor": "#ECFEFF",
+    "fontFamily": "Inter",
+    "mode": "glassmorphism"
+  },
+  "sections": [
+    {
+      "id": "sec_card",
+      "type": "digital_card",
+      "variant": "centered",
+      "title": "Kai Chen",
+      "subtitle": "Tech Creator @ 500k Subscribers",
+      "content": {
+        "bio": "Building in public & reviewing cutting-edge tech gadgets, AI tools, and minimalist workspace setups.",
+        "socials": {
+          "email": "kai@kaichen.media",
+          "youtube": "https://youtube.com/@kaichen",
+          "twitter": "https://twitter.com/kaichen_tech",
+          "github": "https://github.com/kaichen-dev"
+        }
+      }
+    },
+    {
+      "id": "sec_links",
+      "type": "links",
+      "variant": "centered",
+      "title": "Featured Community Links",
+      "content": {
+        "links": [
+          {
+            "label": "📺 Watch Newest M4 Mac Studio Review",
+            "url": "https://youtube.com"
+          },
+          {
+            "label": "🎙️ Listen to The Dev Life Podcast",
+            "url": "https://spotify.com"
+          },
+          {
+            "label": "📦 My Desk Setup & Productivity Gear",
+            "url": "https://kit.co"
+          },
+          {
+            "label": "💬 Join the Discord Developer Club",
+            "url": "https://discord.gg"
+          }
+        ]
+      }
+    }
+  ]
+}

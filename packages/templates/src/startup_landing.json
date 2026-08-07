@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "title": "NovaCloud — Next-Gen Decentralized Edge Grid",
+    "description": "Sub-millisecond compute network powering spatial web, real-time AI inference, and edge gaming.",
+    "category": "startup_landing"
+  },
+  "theme": {
+    "primaryColor": "#10B981",
+    "secondaryColor": "#3B82F6",
+    "backgroundColor": "#05110E",
+    "textColor": "#F0FDF4",
+    "fontFamily": "Fira Code",
+    "mode": "dark"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Decentralized Compute at the Speed of Light",
+      "subtitle": "Deploy serverless WebAssembly functions globally in under 10ms with zero cold starts.",
+      "content": {
+        "badge": "⚡ SEED ROUND CLOSED — $12M RAISED",
+        "ctaText": "Request Early Beta Key",
+        "ctaLink": "#sec_contact"
+      }
+    },
+    {
+      "id": "sec_specs",
+      "type": "features",
+      "variant": "cards",
+      "title": "Architectural Superiority",
+      "content": {
+        "items": [
+          {
+            "title": "< 5ms Global Latency",
+            "desc": "200+ edge nodes routing requests over fiber backbones using anycast BGP routing."
+          },
+          {
+            "title": "Zero-Cold Start Wasm Sandbox",
+            "desc": "Executes compiled Rust, C++, and Go binaries instantly with strict hardware isolation."
+          },
+          {
+            "title": "Pay-Per-Execution Microbilling",
+            "desc": "Billed precisely per microsecond of CPU time with 0 idle server overhead."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Join the Edge Computing Revolution",
+      "subtitle": "Get priority access to our developer sandbox and CLI tools.",
+      "content": {
+        "email": "beta@novacloud.io",
+        "github": "https://github.com/novacloud-edge"
+      }
+    }
+  ]
+}

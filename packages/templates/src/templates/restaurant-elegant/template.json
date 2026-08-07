@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "id": "restaurant-elegant",
+    "slug": "restaurant-elegant",
+    "title": "Elegant Restaurant & Culinary Bistro",
+    "description": "Sophisticated, mouth-watering restaurant digital menu and reservation showcase with curated dietary tags and contact info.",
+    "category": "restaurant_menu",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Restaurant", "Food", "Menu", "Culinary", "Luxury"],
+    "popularity": 96,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#E11D48",
+    "secondaryColor": "#F43F5E",
+    "accentColor": "#F59E0B",
+    "backgroundColor": "#18090C",
+    "textColor": "#FFF1F2",
+    "headingFont": "Playfair Display",
+    "bodyFont": "Inter",
+    "borderRadius": "20px",
+    "buttonVariant": "solid",
+    "cardVariant": "glass",
+    "shadow": "xl",
+    "mode": "dark",
+    "spacingScale": "comfortable",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-rest",
+      "type": "hero",
+      "variant": "centered",
+      "title": "La Maison Artisan Bistro",
+      "subtitle": "Authentic French cuisine prepared with organic locally-sourced ingredients & passion.",
+      "badge": "🍷 Michelin Recommended 2026",
+      "content": {
+        "ctaText": "Explore Menu",
+        "ctaLink": "#menu",
+        "secondaryCtaText": "Reserve Table",
+        "secondaryCtaLink": "#contact"
+      },
+      "visible": true
+    },
+    {
+      "id": "menu-rest",
+      "type": "menu_list",
+      "variant": "categorized",
+      "title": "Chef's Tasting Menu",
+      "subtitle": "Discover our signature dishes curated daily by Executive Chef Jean-Luc.",
+      "content": {
+        "categories": [
+          {
+            "name": "Starters & Appetizers",
+            "items": [
+              { "name": "Truffle Mushroom Velouté", "desc": "Wild forest mushrooms, black truffle oil, garlic crostini", "price": "$22", "badge": "Chef Favorite" },
+              { "name": "Seared Scallops", "desc": "Pan-seared scallops, cauliflower purée, crispy prosciutto", "price": "$26", "badge": "Gluten-Free" }
+            ]
+          },
+          {
+            "name": "Main Courses",
+            "items": [
+              { "name": "Filet Mignon au Poivre", "desc": "Prime Angus beef tenderloin, green peppercorn reduction, potato gratin", "price": "$48", "badge": "Prime Cut" },
+              { "name": "Roasted Wild Salmon", "desc": "Herb-crusted Atlantic salmon, saffron risotto, asparagus asparagus", "price": "$38", "badge": "Fresh Catch" }
+            ]
+          },
+          {
+            "name": "Desserts",
+            "items": [
+              { "name": "Valrhona Chocolate Soufflé", "desc": "Warm dark chocolate soufflé served with Madagascar vanilla bean gelato", "price": "$16", "badge": "Signature" }
+            ]
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "contact-rest",
+      "type": "contact",
+      "variant": "split",
+      "title": "Location & Reservations",
+      "subtitle": "Join us for dinner, private events, or intimate tasting experiences.",
+      "content": {
+        "email": "reservations@lamaisonbistro.com",
+        "phone": "+1 (555) 432-8765",
+        "address": "450 Culinary Boulevard, San Francisco, CA",
+        "hours": "Tue - Sun: 5:00 PM - 10:30 PM (Closed Mondays)"
+      },
+      "visible": true
+    }
+  ]
+}

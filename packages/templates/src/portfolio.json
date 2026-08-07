@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "title": "Alex Rivera — Senior AI & Creative Developer",
+    "description": "Portfolio of Alex Rivera building high-performance AI engines, interactive 3D web apps, and design systems.",
+    "category": "portfolio"
+  },
+  "theme": {
+    "primaryColor": "#6366F1",
+    "secondaryColor": "#A855F7",
+    "backgroundColor": "#0B0F19",
+    "textColor": "#F8FAFC",
+    "fontFamily": "Inter",
+    "mode": "glassmorphism"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Crafting Next-Gen Intelligent Web Experiences",
+      "subtitle": "Hi, I'm Alex Rivera. Senior Full-Stack & AI Architect specializing in high-scale TypeScript, React, and LLM orchestration.",
+      "content": {
+        "badge": "AVAILABLE FOR SELECTIVE CONSULTING",
+        "ctaText": "Explore Works ↓",
+        "ctaLink": "#sec_portfolio"
+      }
+    },
+    {
+      "id": "sec_about",
+      "type": "about",
+      "variant": "centered",
+      "title": "Technical Competencies & Philosophy",
+      "subtitle": "Combining elegant UI/UX craftsmanship with rigorous system engineering.",
+      "content": {
+        "skills": [
+          "Next.js 15",
+          "TypeScript",
+          "Node.js & Express",
+          "Python AI / LangChain",
+          "MongoDB & PostgreSQL",
+          "Tailwind CSS",
+          "Three.js / WebGL",
+          "Docker & Kubernetes"
+        ]
+      }
+    },
+    {
+      "id": "sec_portfolio",
+      "type": "portfolio_grid",
+      "variant": "cards",
+      "title": "Featured Projects & Case Studies",
+      "subtitle": "Selected commercial products and open-source innovations.",
+      "content": {
+        "projects": [
+          {
+            "name": "NeuralStudio AI",
+            "desc": "Generative canvas editor for real-time vector graphics powered by local AI model weights.",
+            "tag": "AI / Next.js / WebGL"
+          },
+          {
+            "name": "HyperScale DB",
+            "desc": "Ultra low-latency distributed key-value store built in Rust with WebAssembly bindings.",
+            "tag": "Systems / Rust"
+          },
+          {
+            "name": "OmniPresence Platform",
+            "desc": "JSON-driven web engine generating sub-second digital cards and landing pages.",
+            "tag": "Full-Stack Architecture"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Let's Build Something Extraordinary",
+      "subtitle": "Open for strategic advisory roles, speaking engagements, and architectural contracts.",
+      "content": {
+        "email": "alex.rivera@dev.io",
+        "phone": "+1 (555) 234-8901",
+        "github": "https://github.com/alexrivera-dev",
+        "twitter": "https://twitter.com/alexrivera_ai"
+      }
+    }
+  ]
+}

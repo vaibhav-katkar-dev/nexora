@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "id": "link-bio-neon",
+    "slug": "link-bio-neon",
+    "title": "Neon Creator Link in Bio",
+    "description": "Vibrant, high-engagement link-in-bio hub tailored for content creators, influencers, musicians, and streamers.",
+    "category": "link_in_bio",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Link in Bio", "Creator", "Social", "Glow", "Media"],
+    "popularity": 91,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#0891B2",
+    "secondaryColor": "#06B6D4",
+    "accentColor": "#F43F5E",
+    "backgroundColor": "#04141A",
+    "textColor": "#CFFAFE",
+    "headingFont": "Outfit",
+    "bodyFont": "Inter",
+    "borderRadius": "16px",
+    "buttonVariant": "pill",
+    "cardVariant": "glass",
+    "shadow": "lg",
+    "mode": "dark",
+    "spacingScale": "compact",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "links-hub",
+      "type": "links",
+      "variant": "buttons",
+      "title": "@KaiVibes",
+      "subtitle": "Music Producer & Visual Artist 🎧 2M+ Streamers",
+      "content": {
+        "links": [
+          { "label": "🎵 Listen to New Single 'Eclipse'", "url": "https://spotify.com", "badge": "New Release" },
+          { "label": "📺 Watch Latest Studio Vlog on YouTube", "url": "https://youtube.com" },
+          { "label": "🎟️ World Tour Tickets & VIP Passes", "url": "https://example.com" },
+          { "label": "💬 Join Discord Community (40k Members)", "url": "https://discord.gg" },
+          { "label": "💼 Business & Sponsorship Inquiries", "url": "mailto:kai@example.com" }
+        ]
+      },
+      "visible": true
+    }
+  ]
+}

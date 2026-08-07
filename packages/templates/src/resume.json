@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "title": "Elena Rostova — Executive Product Designer",
+    "description": "Professional resume of Elena Rostova detailing 8+ years of UX leadership and design system engineering.",
+    "category": "resume"
+  },
+  "theme": {
+    "primaryColor": "#10B981",
+    "secondaryColor": "#06B6D4",
+    "backgroundColor": "#090D16",
+    "textColor": "#F1F5F9",
+    "fontFamily": "Roboto",
+    "mode": "dark"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Elena Rostova",
+      "subtitle": "Principal Product Designer & UX Design Strategist",
+      "content": {
+        "badge": "EXECUTIVE RESUME & CAREER PROFILE",
+        "ctaText": "Download PDF Version",
+        "ctaLink": "#"
+      }
+    },
+    {
+      "id": "sec_experience",
+      "type": "features",
+      "variant": "cards",
+      "title": "Work Experience & History",
+      "subtitle": "Track record of delivering enterprise SaaS products at scale.",
+      "content": {
+        "items": [
+          {
+            "title": "Lead Product Designer — Veloce Cloud (2022 – Present)",
+            "desc": "Architected end-to-end design system used across 14 cloud applications. Increased user task completion speed by 42%."
+          },
+          {
+            "title": "Senior UX Architect — FinTech Global (2019 – 2022)",
+            "desc": "Spearheaded user research and redesign for trading platform processing $2.5B daily transaction volume."
+          },
+          {
+            "title": "UX/UI Designer — Creative Agency Studio (2017 – 2019)",
+            "desc": "Delivered bespoke digital brand identities and mobile apps for Fortune 500 clients."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_about",
+      "type": "about",
+      "variant": "centered",
+      "title": "Core Specializations",
+      "subtitle": "Methodologies and design tech stack.",
+      "content": {
+        "skills": [
+          "Figma & Design Tokens",
+          "User Research & Usability Testing",
+          "Design System Architecture",
+          "Prototyping & Micro-animations",
+          "HTML5 / Tailwind CSS",
+          "Accessibility (WCAG AAA)",
+          "Design Team Management"
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Get In Touch",
+      "subtitle": "Available for executive UX leadership and advisory roles.",
+      "content": {
+        "email": "elena.rostova@design.co",
+        "phone": "+1 (555) 987-6543",
+        "address": "San Francisco, CA (Hybrid / Remote)"
+      }
+    }
+  ]
+}

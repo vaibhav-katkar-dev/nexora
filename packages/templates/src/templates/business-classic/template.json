@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "id": "business-classic",
+    "slug": "business-classic",
+    "title": "Corporate & Advisory Firm",
+    "description": "Trustworthy, enterprise-grade business website template with service offerings, client testimonials, and consult request flows.",
+    "category": "business",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Business", "Corporate", "Consulting", "Enterprise", "Services"],
+    "popularity": 94,
+    "isNew": false,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#2563EB",
+    "secondaryColor": "#1D4ED8",
+    "accentColor": "#60A5FA",
+    "backgroundColor": "#0A1224",
+    "textColor": "#F1F5F9",
+    "headingFont": "Inter",
+    "bodyFont": "Inter",
+    "borderRadius": "12px",
+    "buttonVariant": "solid",
+    "cardVariant": "bordered",
+    "shadow": "md",
+    "mode": "dark",
+    "spacingScale": "comfortable",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-bus",
+      "type": "hero",
+      "variant": "split",
+      "title": "Strategic Guidance for Modern Enterprises",
+      "subtitle": "We help forward-thinking organizations navigate digital transformation, financial planning, and operational excellence.",
+      "badge": "🏢 Trusted Corporate Partners",
+      "content": {
+        "ctaText": "Book Consultation",
+        "ctaLink": "#contact",
+        "secondaryCtaText": "Our Services",
+        "secondaryCtaLink": "#services"
+      },
+      "visible": true
+    },
+    {
+      "id": "services-bus",
+      "type": "services",
+      "variant": "grid",
+      "title": "Core Services",
+      "subtitle": "Comprehensive consulting solutions tailored to elevate your business performance.",
+      "content": {
+        "items": [
+          { "title": "Digital Transformation", "desc": "Modernize legacy systems, migrate to cloud infrastructure, and automate core workflows.", "icon": "Rocket" },
+          { "title": "Financial Advisory", "desc": "Optimize capital allocation, risk management, and M&A integration strategies.", "icon": "Briefcase" },
+          { "title": "Operational Scalability", "desc": "Streamline supply chains, reduce operational overhead, and expand market presence.", "icon": "Zap" }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "testimonials-bus",
+      "type": "testimonials",
+      "variant": "cards",
+      "title": "Client Endorsements",
+      "subtitle": "Hear from executives who transformed their growth trajectory with our team.",
+      "content": {
+        "items": [
+          {
+            "quote": "Apex Advisory restructured our global operations, cutting annual costs by 24% while accelerating time-to-market.",
+            "name": "Marcus Vance",
+            "role": "CEO, Horizon Global Logistics",
+            "rating": 5
+          },
+          {
+            "quote": "The most thorough, strategic, and result-oriented advisory team we have partnered with in the past decade.",
+            "name": "Elena Rostova",
+            "role": "Managing Director, Vantage Capital",
+            "rating": 5
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "contact-bus",
+      "type": "contact",
+      "variant": "form",
+      "title": "Request a Strategic Advisory Session",
+      "subtitle": "Fill out the form below and one of our Senior Partners will contact you within 24 hours.",
+      "content": {
+        "email": "contact@apexadvisory.com",
+        "phone": "+1 (800) 555-0199",
+        "address": "100 Financial Plaza, Suite 300, Chicago, IL"
+      },
+      "visible": true
+    }
+  ]
+}

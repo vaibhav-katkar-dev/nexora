@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "id": "resume-minimal",
+    "slug": "resume-minimal",
+    "title": "Minimalist Professional Resume",
+    "description": "Ultra-clean, typographic, executive-level interactive resume template optimized for recruiters and hiring managers.",
+    "category": "resume",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Resume", "Minimalist", "Clean", "Typography", "Executive"],
+    "popularity": 95,
+    "isNew": false,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#10B981",
+    "secondaryColor": "#059669",
+    "accentColor": "#34D399",
+    "backgroundColor": "#041512",
+    "textColor": "#F0FDF4",
+    "headingFont": "Outfit",
+    "bodyFont": "Inter",
+    "borderRadius": "12px",
+    "buttonVariant": "solid",
+    "cardVariant": "bordered",
+    "shadow": "sm",
+    "mode": "dark",
+    "spacingScale": "compact",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-res",
+      "type": "hero",
+      "variant": "minimal",
+      "title": "Sarah Jenkins",
+      "subtitle": "Principal Product Manager & Strategy Specialist",
+      "badge": "📄 Curriculum Vitae",
+      "content": {
+        "ctaText": "Download Resume PDF",
+        "ctaLink": "#contact",
+        "secondaryCtaText": "View LinkedIn",
+        "secondaryCtaLink": "https://linkedin.com"
+      },
+      "visible": true
+    },
+    {
+      "id": "about-res",
+      "type": "about",
+      "variant": "bio",
+      "title": "Executive Summary",
+      "content": {
+        "bio": "Product leader with 8+ years scaling B2B SaaS solutions from pre-revenue to $15M ARR. Expert in user research, product-led growth strategies, cross-functional engineering leadership, and enterprise customer expansion.",
+        "skills": ["Product Strategy", "User Research", "Agile & Scrum", "A/B Testing", "Mixpanel & Amplitude", "Roadmapping", "SQL", "Stakeholder Management"]
+      },
+      "visible": true
+    },
+    {
+      "id": "timeline-exp",
+      "type": "timeline",
+      "variant": "experience",
+      "title": "Professional Experience",
+      "content": {
+        "items": [
+          {
+            "period": "2022 - Present",
+            "role": "Principal Product Manager",
+            "company": "CloudScale Software",
+            "desc": "Led enterprise core platform team driving 35% YoY expansion revenue. Launched self-serve onboarding flow increasing user conversion by 28%."
+          },
+          {
+            "period": "2019 - 2022",
+            "role": "Senior Product Manager",
+            "company": "DataHub Analytics",
+            "desc": "Owned end-to-end product lifecycle for real-time visualization suites, growing active daily accounts from 12k to 85k."
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "timeline-edu",
+      "type": "timeline",
+      "variant": "education",
+      "title": "Education & Leadership",
+      "content": {
+        "items": [
+          {
+            "period": "2015 - 2019",
+            "role": "B.S. in Business Information Systems",
+            "company": "Stanford University",
+            "desc": "Graduated Magna Cum Laude. President of Entrepreneurship Association."
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "contact-res",
+      "type": "contact",
+      "variant": "simple",
+      "title": "Contact Information",
+      "content": {
+        "email": "sarah.jenkins@example.com",
+        "phone": "+1 (555) 987-6543",
+        "location": "New York, NY",
+        "linkedin": "https://linkedin.com/in/sarahjenkins"
+      },
+      "visible": true
+    }
+  ]
+}

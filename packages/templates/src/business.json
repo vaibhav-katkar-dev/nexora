@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "title": "Apex Strategy Group — Corporate Advisory & AI Transformation",
+    "description": "Empowering Fortune 500 enterprises with cutting-edge AI architecture, cloud modernization, and strategic consulting.",
+    "category": "business"
+  },
+  "theme": {
+    "primaryColor": "#2563EB",
+    "secondaryColor": "#38BDF8",
+    "backgroundColor": "#0B132B",
+    "textColor": "#F8FAFC",
+    "fontFamily": "Inter",
+    "mode": "dark"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Accelerating Enterprise AI & Digital Scale",
+      "subtitle": "Apex Strategy Group delivers elite engineering and strategic transformation for market leaders across fintech, healthcare, and global logistics.",
+      "content": {
+        "badge": "💼 GLOBAL ENTERPRISE CONSULTING",
+        "ctaText": "Schedule Advisory Call",
+        "ctaLink": "#sec_contact"
+      }
+    },
+    {
+      "id": "sec_services",
+      "type": "features",
+      "variant": "cards",
+      "title": "Core Practice Areas",
+      "subtitle": "Tailored high-impact solutions for complex organizations.",
+      "content": {
+        "items": [
+          {
+            "title": "Enterprise AI Architecture",
+            "desc": "Custom LLM fine-tuning, retrieval-augmented generation (RAG), and zero-trust private AI deployments."
+          },
+          {
+            "title": "Cloud Modernization & DevOps",
+            "desc": "Migrating monolithic infrastructure to elastic Kubernetes clusters with sub-second failover protocols."
+          },
+          {
+            "title": "Data Governance & Compliance",
+            "desc": "SOC2 Type II, ISO 27001, and HIPAA compliant data pipeline design for high-security environments."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Initiate Partnership",
+      "subtitle": "Speak directly with our senior managing directors.",
+      "content": {
+        "email": "contact@apexstrategy.com",
+        "phone": "+1 (800) 555-APEX",
+        "address": "100 Park Avenue, 28th Floor, New York, NY 10017"
+      }
+    }
+  ]
+}

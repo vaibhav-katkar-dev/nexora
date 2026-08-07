@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "id": "personal-creative",
+    "slug": "personal-creative",
+    "title": "Creative Personal Brand Hub",
+    "description": "Expressive personal site for writers, podcasts hosts, researchers, and thought leaders.",
+    "category": "personal",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Personal", "Brand", "Writer", "Podcast", "Creative"],
+    "popularity": 89,
+    "isNew": false,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#DB2777",
+    "secondaryColor": "#EC4899",
+    "accentColor": "#F59E0B",
+    "backgroundColor": "#1A0812",
+    "textColor": "#FCE7F3",
+    "headingFont": "Playfair Display",
+    "bodyFont": "Inter",
+    "borderRadius": "16px",
+    "buttonVariant": "rounded",
+    "cardVariant": "glass",
+    "shadow": "md",
+    "mode": "dark",
+    "spacingScale": "comfortable",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-pers",
+      "type": "hero",
+      "variant": "split",
+      "title": "Elena Vance",
+      "subtitle": "Author, Speaker & Host of the 'Future of Thought' Podcast.",
+      "badge": "🎙️ New Episode Out Now",
+      "content": {
+        "ctaText": "Listen to Podcast",
+        "ctaLink": "#links",
+        "secondaryCtaText": "Read Essays",
+        "secondaryCtaLink": "#about"
+      },
+      "visible": true
+    },
+    {
+      "id": "about-pers",
+      "type": "about",
+      "variant": "bio",
+      "title": "My Journey",
+      "content": {
+        "bio": "I write about the intersection of technology, philosophy, and human creativity. My essays have been published in Wired, Atlantic, and MIT Tech Review.",
+        "skills": ["Keynotes", "Essay Writing", "Podcast Production", "Media Interviews"]
+      },
+      "visible": true
+    }
+  ]
+}

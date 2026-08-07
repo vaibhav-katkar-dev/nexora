@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "title": "PulseFlow AI — Autonomous Engineering Workflows",
+    "description": "Streamline dev pipelines, code reviews, and cloud deployments with autonomous AI agents.",
+    "category": "product_landing"
+  },
+  "theme": {
+    "primaryColor": "#8B5CF6",
+    "secondaryColor": "#EC4899",
+    "backgroundColor": "#0D0A1A",
+    "textColor": "#FAFAFA",
+    "fontFamily": "Outfit",
+    "mode": "glassmorphism"
+  },
+  "sections": [
+    {
+      "id": "sec_hero",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Ship Software 10x Faster with Autonomous AI",
+      "subtitle": "PulseFlow connects to your GitHub, Jira, and AWS environments to automate root-cause debugging, PR reviews, and instant staging builds.",
+      "content": {
+        "badge": "PULSEFLOW V2.0 IS LIVE",
+        "ctaText": "Start Free 14-Day Trial",
+        "ctaLink": "#sec_contact"
+      }
+    },
+    {
+      "id": "sec_features",
+      "type": "features",
+      "variant": "cards",
+      "title": "Built for High-Velocity Engineering Teams",
+      "content": {
+        "items": [
+          {
+            "title": "Self-Healing CI/CD Pipelines",
+            "desc": "Detect build breaks instantly. PulseFlow generates targeted patch PRs before your team gets paged."
+          },
+          {
+            "title": "Context-Aware PR Reviewer",
+            "desc": "Scans ASTs, security vulnerabilities, and memory leaks with line-by-line fix suggestions."
+          },
+          {
+            "title": "1-Click Preview Environments",
+            "desc": "Spin up ephemeral isolated staging stacks automatically on every pull request."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec_contact",
+      "type": "contact",
+      "variant": "centered",
+      "title": "Ready to Automate Your Stack?",
+      "subtitle": "Join 500+ engineering teams cutting delivery cycles in half.",
+      "content": {
+        "email": "hello@pulseflow.ai",
+        "twitter": "https://twitter.com/pulseflow_ai"
+      }
+    }
+  ]
+}

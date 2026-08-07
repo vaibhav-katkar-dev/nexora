@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "id": "startup-launch",
+    "slug": "startup-launch",
+    "title": "AI Startup Launch & Waitlist",
+    "description": "High-conversion product landing page for tech startups, SaaS apps, early access waitlists, and feature showcases.",
+    "category": "startup_landing",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Startup", "SaaS", "Launch", "Waitlist", "AI"],
+    "popularity": 97,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#0D9488",
+    "secondaryColor": "#14B8A6",
+    "accentColor": "#F59E0B",
+    "backgroundColor": "#041716",
+    "textColor": "#CCFBF1",
+    "headingFont": "Outfit",
+    "bodyFont": "Inter",
+    "borderRadius": "16px",
+    "buttonVariant": "gradient",
+    "cardVariant": "glass",
+    "shadow": "lg",
+    "mode": "dark",
+    "spacingScale": "comfortable",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-start",
+      "type": "hero",
+      "variant": "centered",
+      "title": "Automate Your Workflows with Autonomous AI Agents",
+      "subtitle": "Deploy intelligent agents that handle code reviews, data processing, and customer support in minutes.",
+      "badge": "🚀 Y Combinator W26 Backed",
+      "content": {
+        "ctaText": "Join Private Beta",
+        "ctaLink": "#contact",
+        "secondaryCtaText": "Watch 2-Min Demo",
+        "secondaryCtaLink": "#features"
+      },
+      "visible": true
+    },
+    {
+      "id": "features-start",
+      "type": "features",
+      "variant": "grid",
+      "title": "Built for Velocity",
+      "subtitle": "Everything you need to scale intelligent automation across your organization.",
+      "content": {
+        "items": [
+          { "title": "Zero-Config Setup", "desc": "Connect your GitHub, Slack, and PostgreSQL databases in 3 simple clicks.", "icon": "Zap" },
+          { "title": "Enterprise Security", "desc": "SOC2 Type II certified with end-to-end data encryption and private VPC hosting.", "icon": "Shield" },
+          { "title": "Self-Healing Workflows", "desc": "Agents automatically diagnose script errors and retry failed operations with fallback logic.", "icon": "CheckCircle2" }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "faq-start",
+      "type": "faq",
+      "variant": "accordion",
+      "title": "Frequently Asked Questions",
+      "content": {
+        "items": [
+          { "question": "How long does onboarding take?", "answer": "You can deploy your first agent in less than 5 minutes using our pre-built recipe templates." },
+          { "question": "Is my data stored securely?", "answer": "Yes, we prioritize customer privacy. Your database credentials and code remain strictly within your isolated VPC sandbox." }
+        ]
+      },
+      "visible": true
+    }
+  ]
+}

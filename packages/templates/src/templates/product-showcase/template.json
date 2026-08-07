@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "id": "product-showcase",
+    "slug": "product-showcase",
+    "title": "Hardware & Product Landing",
+    "description": "Vibrant product landing page with feature deep-dives, specs comparison, and direct checkout callouts.",
+    "category": "product_landing",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Product", "Hardware", "Landing", "E-commerce", "Showcase"],
+    "popularity": 93,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#7C3AED",
+    "secondaryColor": "#A855F7",
+    "accentColor": "#F59E0B",
+    "backgroundColor": "#100926",
+    "textColor": "#F3E8FF",
+    "headingFont": "Outfit",
+    "bodyFont": "Inter",
+    "borderRadius": "16px",
+    "buttonVariant": "solid",
+    "cardVariant": "glass",
+    "shadow": "lg",
+    "mode": "dark",
+    "spacingScale": "comfortable",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "hero-prod",
+      "type": "hero",
+      "variant": "split",
+      "title": "Aura Sound Pro Wireless",
+      "subtitle": "Immersive spatial audio, active noise cancellation, and 40-hour battery life engineered for perfection.",
+      "badge": "🎧 Next-Gen Audio Experience",
+      "content": {
+        "ctaText": "Order Now - $299",
+        "ctaLink": "#pricing",
+        "secondaryCtaText": "View Tech Specs",
+        "secondaryCtaLink": "#features"
+      },
+      "visible": true
+    },
+    {
+      "id": "features-prod",
+      "type": "features",
+      "variant": "cards",
+      "title": "Unmatched Sound Engineering",
+      "content": {
+        "items": [
+          { "title": "50mm Beryllium Drivers", "desc": "Crystal clear highs and deep resonant bass calibrated by acoustic engineers.", "icon": "Sparkles" },
+          { "title": "Adaptive Noise Cancellation", "desc": "Cancels up to 98% of ambient noise with dual-chip AI audio processing.", "icon": "Zap" },
+          { "title": "Ultra-Fast USB-C Charging", "desc": "10 minutes of charging gives you 5 hours of continuous playback.", "icon": "CheckCircle2" }
+        ]
+      },
+      "visible": true
+    }
+  ]
+}

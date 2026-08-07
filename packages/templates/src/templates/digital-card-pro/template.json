@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "id": "digital-card-pro",
+    "slug": "digital-card-pro",
+    "title": "Digital Business Card Pro",
+    "description": "Interactive, mobile-first NFC and digital business card profile with quick contacts, location, and social links.",
+    "category": "digital_card",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": ["Digital Card", "Contact", "NFC", "Networking", "Mobile"],
+    "popularity": 99,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#EA580C",
+    "secondaryColor": "#F97316",
+    "accentColor": "#F59E0B",
+    "backgroundColor": "#1C0D06",
+    "textColor": "#FFEDD5",
+    "headingFont": "Outfit",
+    "bodyFont": "Inter",
+    "borderRadius": "24px",
+    "buttonVariant": "pill",
+    "cardVariant": "glass",
+    "shadow": "xl",
+    "mode": "dark",
+    "spacingScale": "compact",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "card-main",
+      "type": "digital_card",
+      "variant": "vcard",
+      "title": "Marcus Sterling",
+      "subtitle": "Managing Director & Angel Investor",
+      "badge": "💳 Digital Contact Card",
+      "content": {
+        "bio": "Investing in early-stage AI infrastructure, fintech, and developer tooling startups. Partner at Sterling Ventures.",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+        "location": "San Francisco, CA & London",
+        "socials": {
+          "email": "marcus@sterlingvc.com",
+          "phone": "+1 (415) 890-1234",
+          "linkedin": "https://linkedin.com/in/marcussterling",
+          "twitter": "https://twitter.com/marcussterling",
+          "github": "https://github.com/marcussterling",
+          "website": "https://sterlingvc.com"
+        }
+      },
+      "visible": true
+    }
+  ]
+}
