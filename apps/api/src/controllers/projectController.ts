@@ -3,7 +3,12 @@ import { AuthenticatedRequest } from "../middleware/auth.js";
 import { Project } from "../models/Project.js";
 import { SiteConfigSchema } from "@ai-platform/shared";
 import { z } from "zod";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
+
+// Helper function to generate short ID
+const generateShortId = (): string => {
+  return randomUUID().replace(/-/g, '').substring(0, 6);
+};
 
 const CreateProjectSchema = z.object({
   name: z.string().min(1).max(100),
@@ -99,9 +104,9 @@ export const createProject = async (req: AuthenticatedRequest, res: Response) =>
   try {
     const { name, category, config } = CreateProjectSchema.parse(req.body);
 
-    // Generate unique slug: name-nanoid
+    // Generate unique slug: name-randomID
     const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    const slug = `${baseSlug}-${nanoid(6)}`;
+    const slug = `${baseSlug}-${generateShortId()}`;
 
     const project = await Project.create({
       userId: req.user!.userId,
@@ -169,7 +174,7 @@ export const duplicateProject = async (req: AuthenticatedRequest, res: Response)
 
     const newName = `${source.name} (Copy)`;
     const baseSlug = newName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    const slug = `${baseSlug}-${nanoid(6)}`;
+    const slug = `${baseSlug}-${generateShortId()}`;
 
     const { _id, createdAt, updatedAt, publishedAt, ...rest } = source as any;
 
