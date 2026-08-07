@@ -1,16 +1,20 @@
 {
   "version": 2,
   "installCommand": "npm install",
-  "buildCommand": "npm run build:api",
-  "functions": {
-    "apps/api/src/index.ts": {
-      "maxDuration": 30
-    }
-  },
-  "rewrites": [
+  "buildCommand": "npm run build --prefix ../../packages/shared && npm run build --prefix ../../packages/templates && npm run build",
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "apps/api/src/index.ts"
+      "src": "apps/api/src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "15mb"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/api/src/index.ts"
     }
   ]
 }
