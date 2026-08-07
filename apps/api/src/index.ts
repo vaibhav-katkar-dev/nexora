@@ -35,6 +35,7 @@ app.use(helmet());
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  "https://nexorav.vercel.app",
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
@@ -48,7 +49,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
