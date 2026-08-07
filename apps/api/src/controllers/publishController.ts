@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from "../middleware/auth.js";
 import { Project } from "../models/Project.js";
 import { Deployment } from "../models/Deployment.js";
 import { buildStaticSite } from "../services/siteCompiler.js";
+import { buildPublishedSiteUrl } from "../utils/siteUrl.js";
 
 // POST /api/v1/projects/:id/publish
 export const publishProject = async (req: AuthenticatedRequest, res: Response) => {
@@ -41,7 +42,7 @@ export const publishProject = async (req: AuthenticatedRequest, res: Response) =
       success: true,
       message: "Project published successfully",
       data: {
-        staticUrl: `${process.env.CLIENT_URL || "http://localhost:3000"}/${project.slug}`,
+        staticUrl,
         version,
         deploymentId: deployment._id,
         publishedAt: project.publishedAt,
