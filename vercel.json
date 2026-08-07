@@ -2,19 +2,15 @@
   "version": 2,
   "installCommand": "npm install",
   "buildCommand": "npm run build",
-  "builds": [
-    {
-      "src": "apps/api/src/index.ts",
-      "use": "@vercel/node"
+  "functions": {
+    "apps/api/src/index.ts": {
+      "maxDuration": 30
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "apps/api/src/index.ts"
+      "source": "/(.*)",
+      "destination": "apps/api/src/index.ts"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
