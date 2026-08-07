@@ -5,6 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "build:api": "npm run build --prefix packages/shared && npm run build --prefix packages/templates && npm run build --prefix apps/api",
+    "build:vercel": "npm run build --prefix packages/shared && npm run build --prefix packages/templates && npm run build --prefix apps/api",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
