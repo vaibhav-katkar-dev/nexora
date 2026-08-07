@@ -181,9 +181,119 @@ export const SiteConfigSchema = z.object({
       js: z.string().optional(),
     })
     .optional(),
+  customCss: z.string().optional(),
 });
 
 export type SiteConfigJSON = z.infer<typeof SiteConfigSchema>;
+
+// ==========================================
+// Template customCss sanitizer & scoper
+// ==========================================
+
+const CSS_BLOCK_AT_RULES = new Set([
+  "@media",
+  "@supports",
+  "@container",
+  "@layer",
+  "@document",
+  "@scope",
+  "@keyframes",
+  "@-webkit-keyframes",
+  "@-moz-keyframes",
+  "@-o-keyframes",
+]);
+
+// Indicators of injected JavaScript / unsafe external loads / HTML
+const DANGEROUS_CSS_PATTERNS = [
+  /@import\b/i,
+  /@charset\b/i,
+  /expression\s*\(/i,
+  /javascript\s*:/i,
+  /vbscript\s*:/i,
+  /behavior\s*:/i,
+  /</,
+];
+
+function scopeCss(css: string, container: string): string {
+  let result = "";
+  let i = 0;
+  const n = css.length;
+  while (i < n) {
+    const open = css.indexOf("{", i);
+    const close = css.indexOf("}", i);
+    if (open === -1) {
+      result += css.slice(i);
+      break;
+    }
+    // Stray closing brace
+    if (close !== -1 && close < open) {
+      result += css.slice(i, close + 1);
+      i = close + 1;
+      continue;
+    }
+    const prelude = css.slice(i, open);
+    let depth = 1;
+    let j = open + 1;
+    while (j < n && depth > 0) {
+      const ch = css[j];
+      if (ch === "{") depth++;
+      else if (ch === "}") depth--;
+      j++;
+    }
+    const body = css.slice(open + 1, j - 1);
+    const trimmed = (prelude || "").trim();
+    const atName = (trimmed.split(/\s+/)[0] || "").toLowerCase();
+
+    if (trimmed.startsWith("@") && CSS_BLOCK_AT_RULES.has(atName)) {
+      if (atName.includes("keyframes")) {
+        // Keyframe selectors (from/to/percentages) must not be prefixed
+        result += trimmed + "{" + body + "}";
+      } else {
+        result += trimmed + "{\n" + scopeCss(body, container) + "\n}";
+      }
+    } else if (trimmed.startsWith("@")) {
+      // Leaf at-rule (e.g. @font-face) — keep as-is
+      result += trimmed + "{" + body + "}";
+    } else if (trimmed.length > 0) {
+      const scopedSelectors = trimmed
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((sel) => {
+          if (sel === ":root" || sel === "html" || sel === "body") return container;
+          if (sel.startsWith(container)) return sel;
+          if (sel.includes(container)) return sel;
+          return container + " " + sel;
+        })
+        .join(", ");
+      result += scopedSelectors + "{\n" + body + "\n}";
+    }
+    i = j;
+  }
+  return result;
+}
+
+/**
+ * Sanitizes and scopes a template's customCss string.
+ * - Rejects dangerous JS / external-load / HTML patterns.
+ * - Scopes every selector to the template container.
+ * - Returns "" when the input is unsafe or empty.
+ */
+export function sanitizeTemplateCss(css: string | undefined | null, containerSelector: string): string {
+  if (!css || !css.trim()) return "";
+  if (DANGEROUS_CSS_PATTERNS.some((re) => re.test(css))) return "";
+  const safeContainer = containerSelector.replace(/[^:.a-zA-Z0-9_-]/g, "").trim();
+  const container = safeContainer || ".nexora-template";
+  return scopeCss(css, container).trim();
+}
+
+/** Builds a stable template container class from config meta. */
+export function resolveTemplateContainerClass(
+  config: { meta?: { slug?: string; id?: string } } | null | undefined
+): string {
+  const id = config?.meta?.slug || config?.meta?.id || "site";
+  return `nexora-tpl-${id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
 
 // ==========================================
 // API Standard Envelope Types

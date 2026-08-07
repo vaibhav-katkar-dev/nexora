@@ -1,6 +1,11 @@
 "use client";
 
-import { SiteConfigJSON, Section } from "@ai-platform/shared";
+import {
+  SiteConfigJSON,
+  Section,
+  sanitizeTemplateCss,
+  resolveTemplateContainerClass,
+} from "@ai-platform/shared";
 import { CSSProperties, useState, useEffect } from "react";
 import {
   Sparkles,
@@ -1003,7 +1008,7 @@ export function SiteRenderer({
     const timer = setTimeout(() => {
       try {
         const prev = document.querySelector("script[data-nexora-custom]");
-        if (prev) prev.remove();
+if (prev) prev.remove();
         const script = document.createElement("script");
         script.setAttribute("data-nexora-custom", "true");
         script.textContent = `(function(){\ntry{\n${combinedJs}\n}catch(e){console.warn("[Nexora Custom JS]:", e.message);}\n})();`;
@@ -1017,9 +1022,14 @@ export function SiteRenderer({
 
   if (!config) return null;
 
+  const containerClass = resolveTemplateContainerClass(config);
+  const containerSelector = `.${containerClass}`;
+  const scopedTemplateCss = sanitizeTemplateCss(config.customCss, containerSelector);
+
   return (
-    <div style={buildCssVariables(config.theme)}>
+    <div className={containerClass} style={buildCssVariables(config.theme)}>
       {customCode?.css && <style dangerouslySetInnerHTML={{ __html: customCode.css }} />}
+      {scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
 
       {config.sections.map((section) => {
         if (section.visible === false) return null;

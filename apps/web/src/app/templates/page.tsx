@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { projectsApi, authApi } from "@/lib/api";
+import { projectsApi, authApi, templatesApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { SiteConfigJSON } from "@ai-platform/shared";
 import { getAllTemplates, validateTemplateJSON } from "@ai-platform/templates";
 import { Navbar } from "@/components/navigation/Navbar";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
+import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import {
   Globe,
   Sparkles,
@@ -22,16 +23,13 @@ import {
   CalendarDays,
   Link2,
   File,
-  Eye,
-  Star,
+Eye,
   Check,
   AlertTriangle,
   X,
-  Loader2,
+Loader2,
   Shield,
   Search,
-  LayoutGrid,
-  Wand2,
 } from "lucide-react";
 
 
@@ -74,6 +72,21 @@ export default function TemplateGalleryPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
 
+  // Templates drawn from the backend DB; falls back to bundled presets.
+  const [templates, setTemplates] = useState<Array<{
+    id: string;
+    name: string;
+    category: string;
+    slug: string;
+    description: string;
+    tags: string[];
+    popularity: number;
+    isNew: boolean;
+    config: SiteConfigJSON;
+  }>>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(true);
+  const [templatesSource, setTemplatesSource] = useState<"db" | "preset" | "fallback">("db");
+
   // Modals
   const [previewTemplate, setPreviewTemplate] = useState<any | null>(null);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
@@ -82,13 +95,79 @@ export default function TemplateGalleryPage() {
   const [newTemplateJSON, setNewTemplateJSON] = useState<string>("");
   const [jsonValidationResult, setJsonValidationResult] = useState<{ valid?: boolean; errors?: string[] } | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
     authApi.me().then((res) => {
       if (res.data) setUser(res.data.user || res.data);
     }).catch(() => {});
   }, []);
 
-  const allTemplates = getAllTemplates();
+  // ── Fetch templates from the backend DB (single source of truth) ────────
+  // Falls back to bundled presets only when the DB is empty or the API is
+  // unreachable, so admin-created templates always appear in the gallery.
+  useEffect(() => {
+    let cancelled = false;
+
+    const mapBackendTemplate = (t: any): {
+      id: string;
+      name: string;
+      category: string;
+      slug: string;
+      description: string;
+      tags: string[];
+      popularity: number;
+      isNew: boolean;
+      config: SiteConfigJSON;
+    } => ({
+      id: t._id || t.slug || t.name,
+      slug: t.slug || (t.defaultConfig?.meta?.slug as string) || "",
+      name: t.name || t.defaultConfig?.meta?.title || "Untitled Template",
+      category: t.category || t.defaultConfig?.meta?.category || "portfolio",
+      description: t.description || t.defaultConfig?.meta?.description || "",
+      tags: t.tags || t.defaultConfig?.meta?.tags || [],
+      popularity: t.defaultConfig?.meta?.popularity || 90,
+      isNew: t.defaultConfig?.meta?.isNew || false,
+      config: t.defaultConfig as SiteConfigJSON,
+    });
+
+    const loadFromBackend = async () => {
+      try {
+        const res = await templatesApi.list();
+        const data = res.data || [];
+        if (cancelled) return;
+
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data
+            .filter((t: any) => t && t.defaultConfig)
+            .map(mapBackendTemplate);
+          if (mapped.length > 0) {
+            setTemplates(mapped);
+            setTemplatesSource("db");
+            setTemplatesLoading(false);
+            return;
+          }
+        }
+        // DB empty → fall back to bundled presets.
+        if (!cancelled) {
+          setTemplates(getAllTemplates());
+          setTemplatesSource("preset");
+          setTemplatesLoading(false);
+        }
+      } catch (err: any) {
+        // API unavailable → fall back to bundled presets.
+        if (cancelled) return;
+        setTemplates(getAllTemplates());
+        setTemplatesSource("fallback");
+        setTemplatesLoading(false);
+      }
+    };
+
+    loadFromBackend();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const allTemplates = templates;
 
   const filteredTemplates = allTemplates.filter((t) => {
     const matchesCategory = selectedCategory === "all" || t.category === selectedCategory;
@@ -141,20 +220,14 @@ export default function TemplateGalleryPage() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* ── Gallery Header Banner ────────────────────────────────────────── */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-md">
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-400 via-transparent to-transparent" />
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              <LayoutGrid size={13} /> Handcrafted Designs
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-              Template Gallery
-            </h1>
-            <p className="text-xs sm:text-sm text-indigo-200/80 leading-relaxed">
-              Choose from {allTemplates.length} JSON-driven, responsive templates for portfolios, restaurants, digital cards, products, and link-in-bio sites.
-            </p>
-          </div>
+        {/* ── Gallery Header (understated — templates are the focus) ──────── */}
+        <div className="flex flex-col gap-3 pb-2">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
+            Templates
+          </h1>
+          <p className="text-sm text-slate-500 leading-relaxed max-w-2xl">
+            Choose from {allTemplates.length} handcrafted, responsive templates — portfolios, restaurants, digital cards, products, and link-in-bio sites.
+          </p>
         </div>
 
         {/* ── Category Filter Pills & Search ───────────────────────────────── */}
@@ -190,13 +263,17 @@ export default function TemplateGalleryPage() {
           </div>
         </div>
 
-        {/* ── Template Cards Grid ─────────────────────────────────────────── */}
-        {filteredTemplates.length === 0 ? (
+{/* ── Template Cards Grid ─────────────────────────────────────────── */}
+        {templatesLoading ? (
+          <div className="py-20 bg-white border border-dashed border-slate-200 rounded-2xl text-center text-slate-400 text-sm flex items-center justify-center gap-2">
+            <Loader2 size={16} className="animate-spin text-indigo-500" /> Loading templates…
+          </div>
+        ) : filteredTemplates.length === 0 ? (
           <div className="py-20 bg-white border border-dashed border-slate-200 rounded-2xl text-center text-slate-400 text-sm">
             No templates match your filter. Try another category or keyword.
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTemplates.map((template) => {
               const IconComp = CATEGORY_ICON_COMPONENTS[template.category] || Globe;
               const primaryColor = template.config.theme.primaryColor || "#4F46E5";
@@ -204,80 +281,52 @@ export default function TemplateGalleryPage() {
               return (
                 <div
                   key={template.id}
-                  className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden flex flex-col shadow-xs hover:shadow-lg hover:border-indigo-300 transition-all duration-200 group cursor-pointer"
+                  className="group bg-white rounded-[18px] border border-slate-200/80 overflow-hidden flex flex-col shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_24px_-16px_rgba(16,24,40,0.12)] transition-all duration-300 ease-out cursor-pointer will-change-transform hover:-translate-y-1.5 hover:shadow-[0_28px_52px_-18px_rgba(16,24,40,0.22)] p-3"
                   onClick={() => setPreviewTemplate(template)}
                 >
-                  {/* Visual Skeleton Sketch */}
-                  <div
-                    className="h-44 w-full relative p-5 flex flex-col justify-between overflow-hidden border-b border-slate-100"
-                    style={{ background: `linear-gradient(135deg, ${primaryColor}15, #F8FAFC 80%)` }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/90 border border-slate-200 text-slate-700 flex items-center gap-1.5 shadow-xs">
-                        <IconComp size={11} style={{ color: primaryColor }} />
-                        {template.category.replace("_", " ")}
-                      </span>
-                      {template.isNew && (
-                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 border border-amber-200">
-                          NEW
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="h-4 w-3/4 rounded-md bg-slate-900/10" />
-                      <div className="h-2.5 w-1/2 rounded-md bg-slate-900/6" />
-                      <div className="flex gap-2 pt-1">
-                        <div className="h-7 w-20 rounded-lg" style={{ background: primaryColor, opacity: 0.85 }} />
-                        <div className="h-7 w-14 rounded-lg bg-slate-200" />
-                      </div>
+                  {/* ── Live Preview Area (the hero) ─────────────────────── */}
+                  <div className="relative shrink-0 rounded-[13px] overflow-hidden">
+                    {/* Live render fills ~72% of the card; subtle scale on hover */}
+                    <div className="origin-top transform-gpu transition-transform duration-500 ease-out group-hover:scale-[1.02]">
+                      <TemplateThumbnail config={template.config} name={template.name} category={template.category} height={300} />
                     </div>
                   </div>
 
-                  {/* Template Info */}
-                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors">
-                          {template.name}
-                        </h3>
-                        <div className="flex items-center gap-0.5 text-xs font-bold text-amber-500">
-                          <Star size={12} className="fill-amber-400 text-amber-400" />
-                          {(template.popularity / 20).toFixed(1)}
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed mb-3 line-clamp-2">
+                  {/* ── Template Info ─────────────────────────────────────── */}
+                  <div className="px-1 pt-4 pb-1 flex-1 flex flex-col gap-3">
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400 flex items-center gap-1.5">
+                        <IconComp size={11} style={{ color: primaryColor }} />
+                        {template.category.replace("_", " ")}
+                      </p>
+                      <h3 className="text-[15px] font-semibold text-slate-900 leading-snug line-clamp-1">
+                        {template.name}
+                      </h3>
+                      <p className="text-[12px] text-slate-500 leading-relaxed line-clamp-2">
                         {template.description}
                       </p>
-                      <div className="flex flex-wrap gap-1">
-                        {template.tags.slice(0, 4).map((tag) => (
-                          <span key={tag} className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-500">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewTemplate(template);
-                        }}
-                        className="py-2 px-3 rounded-xl text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors flex items-center gap-1"
-                      >
-                        <Eye size={13} /> Preview
-                      </button>
+                    {/* ── Actions ────────────────────────────────────────── */}
+                    <div className="flex items-center gap-2 pt-1 mt-auto">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCreateFromTemplate(template.config);
                         }}
                         disabled={isCreating}
-                        className="flex-1 py-2 px-4 rounded-xl text-xs font-extrabold text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
+                        className="flex-1 h-[42px] rounded-[10px] text-[13px] font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors duration-250 disabled:opacity-50 flex items-center justify-center gap-1.5"
                       >
-                        <Sparkles size={13} /> Use Template
+                        <Sparkles size={14} /> Use Template
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewTemplate(template);
+                        }}
+                        className="px-4 h-[42px] rounded-[10px] text-[13px] font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-colors duration-250 flex items-center justify-center gap-1.5"
+                      >
+                        <Eye size={14} className="text-slate-400" /> Preview
                       </button>
                     </div>
                   </div>

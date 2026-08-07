@@ -238,6 +238,76 @@ export const templatesApi = {
     apiFetch<{ data: any[] }>("/templates/seed", {
       method: "POST",
     }),
+
+  // ── Admin Template Management System (Phase 1) ─────────────────────────
+  // Builds a clean query string, omitting any undefined/null/empty values so
+  // we never send literal "undefined" strings that fail backend validation.
+  adminList: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    category?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    featured?: string;
+    premium?: string;
+  }) => {
+    const clean: Record<string, string> = {};
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          clean[key] = String(value);
+        }
+      });
+    }
+    const qs = new URLSearchParams(clean).toString();
+    return apiFetch<{ data: any[]; meta: any }>(
+      `/templates/admin/list${qs ? `?${qs}` : ""}`
+    );
+  },
+
+  adminTrash: () =>
+    apiFetch<{ data: any[]; meta: any }>("/templates/admin/trash"),
+
+  create: (body: any) =>
+    apiFetch<{ data: any }>("/templates", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  update: (id: string, body: any) =>
+    apiFetch<{ data: any }>(`/templates/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  updateStatus: (id: string, status: string) =>
+    apiFetch<{ data: any }>(`/templates/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+
+  remove: (id: string) =>
+    apiFetch<{ data: any }>(`/templates/${id}`, { method: "DELETE" }),
+
+  restore: (id: string) =>
+    apiFetch<{ data: any }>(`/templates/${id}/restore`, { method: "POST" }),
+
+  permanentDelete: (id: string) =>
+    apiFetch<{ data: any }>(`/templates/${id}/permanent`, { method: "DELETE" }),
+
+  bulkImport: (templates: any[]) =>
+    apiFetch<{
+      data: { imported: any[]; failed: any[]; duplicates: any[] };
+      meta: { importedCount: number; failedCount: number; duplicateCount: number };
+    }>("/templates/bulk-import", {
+      method: "POST",
+      body: JSON.stringify({ templates }),
+    }),
+
+  preview: (id: string) =>
+    apiFetch<{ data: any }>(`/templates/${id}/preview`),
 };
 
 // ─── Media / Cloudinary Upload ──────────────────────────────────────────────

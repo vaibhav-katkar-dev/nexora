@@ -63,10 +63,15 @@ app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cookieParser());
 
-// Global Rate Limiter (100 requests per 15 minutes)
+// Global Rate Limiter — configurable via env, generous by default to avoid
+// false "too many requests" on active pages (e.g. the admin template manager,
+// which issues many search/filter/pagination API calls).
+const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10); // 15 min
+const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || "2000", 10);              // 2000 req / window
+
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX,
   message: {
     success: false,
     error: {
@@ -75,7 +80,9 @@ const globalLimiter = rateLimit({
     },
   },
 });
-app.use(globalLimiter);
+
+// Apply the limiter only to /api/v1 routes (skip /health and /preview which are lightweight).
+app.use("/api/v1", globalLimiter);
 
 // Health Check Route (registered before the DB middleware so it always responds fast)
 app.get("/health", (req: Request, res: Response) => {

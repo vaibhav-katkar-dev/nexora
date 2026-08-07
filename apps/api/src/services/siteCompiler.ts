@@ -1,5 +1,10 @@
 import { IProjectDocument } from "../models/Project.js";
-import { SiteConfigJSON, Section } from "@ai-platform/shared";
+import {
+  SiteConfigJSON,
+  Section,
+  sanitizeTemplateCss,
+  resolveTemplateContainerClass,
+} from "@ai-platform/shared";
 import { getPublishedBaseUrl } from "../utils/siteUrl.js";
 
 // ────────────────────────────────────────────────────────
@@ -335,15 +340,22 @@ export async function buildStaticSite(project: IProjectDocument): Promise<{ stat
   const themeCss = buildThemeCss(config.theme);
   const sectionsHtml = config.sections.map((s) => renderSection(s, config.theme)).join("\n");
 
+
+  // Scoped template customCss escape hatch (sanitized + scoped to the container)
+  const containerClass = resolveTemplateContainerClass(config);
+  const containerSelector = `.${containerClass}`;
+  const scopedTemplateCss = sanitizeTemplateCss(config.customCss, containerSelector);
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   ${seoHead}
   <style>${themeCss}</style>
   ${customCode?.css ? `<style>${customCode.css}</style>` : ""}
+  ${scopedTemplateCss ? `<style>${scopedTemplateCss}</style>` : ""}
 </head>
 <body>
-  <main>
+  <main class="${containerClass}">
     ${sectionsHtml}
     ${customCode?.html || ""}
   </main>

@@ -4,21 +4,65 @@ import {
   getTemplate,
   addBulkTemplates,
   seedPresetTemplates,
+  adminListTemplates,
+  createTemplate,
+  updateTemplate,
+  updateTemplateStatus,
+  deleteTemplate,
+  restoreTemplate,
+  permanentDeleteTemplate,
+  bulkImportTemplates,
+  listDeletedTemplates,
+  previewTemplate,
 } from "../controllers/templateController.js";
 import { authenticateJwt, requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
-// GET /api/v1/templates — List all templates (or filter by ?category=)
+// ─── PUBLIC ROUTES (read-only, no auth) ─────────────────────────────────────
+// GET /api/v1/templates — List public published templates (or filter by ?category=)
 router.get("/", listTemplates);
 
-// GET /api/v1/templates/:id — Get specific template
+// GET /api/v1/templates/:id — Get specific template (by id or slug)
 router.get("/:id", getTemplate);
 
-// POST /api/v1/templates/bulk — Upload / Insert bulk templates array (ADMIN ONLY)
-router.post("/bulk", authenticateJwt, requireAdmin, addBulkTemplates);
+// ─── ADMIN-ONLY ROUTES (protected by auth + role) ──────────────────────────
+router.use(authenticateJwt, requireAdmin);
 
-// POST /api/v1/templates/seed — Seed 11 preset templates (ADMIN ONLY)
-router.post("/seed", authenticateJwt, requireAdmin, seedPresetTemplates);
+// GET /api/v1/templates/admin — Admin dashboard list (paginated, search, filter, sort, lightweight)
+router.get("/admin/list", adminListTemplates);
+
+// GET /api/v1/templates/admin/trash — soft-deleted templates
+router.get("/admin/trash", listDeletedTemplates);
+
+// POST /api/v1/templates — Create template
+router.post("/", createTemplate);
+
+// POST /api/v1/templates/bulk — Upload / Insert bulk templates array (backward compat)
+router.post("/bulk", addBulkTemplates);
+
+// POST /api/v1/templates/bulk-import — Import one/many templates with validation report
+router.post("/bulk-import", bulkImportTemplates);
+
+// POST /api/v1/templates/seed — Seed preset templates
+router.post("/seed", seedPresetTemplates);
+
+// GET /api/v1/templates/:id/preview — get defaultConfig for live preview (read-only)
+router.get("/:id/preview", previewTemplate);
+
+// PUT /api/v1/templates/:id — Update template
+router.put("/:id", updateTemplate);
+
+// PATCH /api/v1/templates/:id/status — publish/unpublish/archive
+router.patch("/:id/status", updateTemplateStatus);
+
+// POST /api/v1/templates/:id/restore — restore soft-deleted template
+router.post("/:id/restore", restoreTemplate);
+
+// DELETE /api/v1/templates/:id — soft delete
+router.delete("/:id", deleteTemplate);
+
+// DELETE /api/v1/templates/:id/permanent — permanent delete
+router.delete("/:id/permanent", permanentDeleteTemplate);
 
 export default router;
