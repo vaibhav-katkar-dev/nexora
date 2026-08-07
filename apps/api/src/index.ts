@@ -27,6 +27,10 @@ dotenv.config(envPath ? { path: envPath } : undefined);
 const app: Express = express();
 const PORT = process.env.PORT || 4000;
 
+// Vercel/proxied deployments inject X-Forwarded-For; trust the first hop so
+// express-rate-limit can resolve the real client IP (fixes ERR_ERL_UNEXPECTED_X_FORWARDED_FOR).
+app.set("trust proxy", 1);
+
 // Connect Database (cached — safe for Vercel serverless)
 connectDB();
 
