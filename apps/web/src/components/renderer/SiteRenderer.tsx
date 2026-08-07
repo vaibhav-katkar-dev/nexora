@@ -61,6 +61,14 @@ const ICON_MAP: Record<string, any> = {
   Twitter,
 };
 
+// Element selection helper: returns data-* attributes for a given element key
+function elementSel(key: string, selectedElementKey?: string | null) {
+  return {
+    "data-element-key": key,
+    "data-selected": selectedElementKey === key ? "true" : "false",
+  };
+}
+
 // ─── Theme Style Builder ───────────────────────────────────────────────────
 function buildCssVariables(theme: SiteConfigJSON["theme"]): CSSProperties {
   const isDark = theme.mode === "dark" || theme.mode === "glassmorphism";
@@ -83,7 +91,14 @@ function buildCssVariables(theme: SiteConfigJSON["theme"]): CSSProperties {
 
 // ─── Section Renderers ───────────────────────────────────────────────────────
 
-function NavbarSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+interface SectionRendererProps {
+  section: Section;
+  theme: SiteConfigJSON["theme"];
+  selectedElementKey?: string | null;
+  interactive?: boolean;
+}
+
+function NavbarSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const content = section.content || {};
   const links: any[] = content.links || [];
 
@@ -95,20 +110,26 @@ function NavbarSection({ section, theme }: { section: Section; theme: SiteConfig
         borderColor: "rgba(255, 255, 255, 0.08)",
       }}
     >
-      <div className="flex items-center gap-3">
-        <span className="font-extrabold text-xl tracking-tight text-white" style={{ fontFamily: "var(--font-heading)" }}>
+<div className="flex items-center gap-3">
+        <span {...elementSel("title", selectedElementKey)} className="font-extrabold text-xl tracking-tight text-white" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title || "Brand"}
         </span>
       </div>
       <div className="hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
         {links.map((l: any, i: number) => (
-          <a key={i} href={l.url || "#"} className="hover:opacity-100 hover:text-indigo-400 transition-colors">
+          <a
+            key={i}
+            {...elementSel(`content.links.${i}.label`, selectedElementKey)}
+            href={l.url || "#"}
+            className="hover:opacity-100 hover:text-indigo-400 transition-colors"
+          >
             {l.label}
           </a>
         ))}
       </div>
       {content.ctaText && (
         <a
+          {...elementSel("content.ctaText", selectedElementKey)}
           href={content.ctaLink || "#"}
           className="px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
           style={{ background: theme.primaryColor }}
@@ -120,7 +141,7 @@ function NavbarSection({ section, theme }: { section: Section; theme: SiteConfig
   );
 }
 
-function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function HeroSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const content = section.content || {};
   const stats: any[] = content.stats || [];
 
@@ -139,6 +160,7 @@ function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJS
 
       {section.badge && (
         <div
+          {...elementSel("badge", selectedElementKey)}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-6 border shadow-sm"
           style={{
             borderColor: `${theme.primaryColor}40`,
@@ -151,6 +173,7 @@ function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJS
       )}
 
       <h1
+        {...elementSel("title", selectedElementKey)}
         className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl leading-none mb-6"
         style={{ fontFamily: "var(--font-heading)" }}
       >
@@ -158,7 +181,7 @@ function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJS
       </h1>
 
       {section.subtitle && (
-        <p className="text-lg sm:text-xl opacity-85 max-w-2xl font-normal leading-relaxed mb-10">
+        <p {...elementSel("subtitle", selectedElementKey)} className="text-lg sm:text-xl opacity-85 max-w-2xl font-normal leading-relaxed mb-10">
           {section.subtitle}
         </p>
       )}
@@ -166,6 +189,7 @@ function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJS
       <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
         {content.ctaText && (
           <a
+            {...elementSel("content.ctaText", selectedElementKey)}
             href={content.ctaLink || "#"}
             className="px-8 py-3.5 rounded-xl font-bold text-white shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0"
             style={{
@@ -178,6 +202,7 @@ function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJS
         )}
         {content.secondaryCtaText && (
           <a
+            {...elementSel("content.secondaryCtaText", selectedElementKey)}
             href={content.secondaryCtaLink || "#"}
             className="px-8 py-3.5 rounded-xl font-semibold border backdrop-blur-sm transition-all hover:bg-white/5"
             style={{
@@ -193,7 +218,7 @@ function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJS
       {stats.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 pt-8 border-t border-white/10 w-full max-w-3xl">
           {stats.map((st: any, i: number) => (
-            <div key={i} className="text-center">
+            <div key={i} {...elementSel(`content.stats.${i}.value`, selectedElementKey)} className="text-center">
               <div className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
                 {st.value}
               </div>
@@ -206,7 +231,7 @@ function HeroSection({ section, theme }: { section: Section; theme: SiteConfigJS
   );
 }
 
-function AboutSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function AboutSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const content = section.content || {};
   const skills: string[] = content.skills || [];
   const highlights: string[] = content.highlights || [];
@@ -214,19 +239,19 @@ function AboutSection({ section, theme }: { section: Section; theme: SiteConfigJ
   return (
     <section id={section.id} className="py-20 px-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row gap-12 items-start">
-        <div className="flex-1 space-y-6">
+<div className="flex-1 space-y-6">
           <div className="inline-block text-xs font-bold uppercase tracking-wider" style={{ color: theme.primaryColor }}>
             About
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
             {section.title}
           </h2>
-          {content.bio && <p className="text-base opacity-80 leading-relaxed">{content.bio}</p>}
+          {content.bio && <p {...elementSel("content.bio", selectedElementKey)} className="text-base opacity-80 leading-relaxed">{content.bio}</p>}
 
           {highlights.length > 0 && (
             <div className="space-y-3 pt-2">
               {highlights.map((h: string, i: number) => (
-                <div key={i} className="flex items-start gap-3 text-sm opacity-90">
+                <div key={i} {...elementSel(`content.highlights.${i}`, selectedElementKey)} className="flex items-start gap-3 text-sm opacity-90">
                   <CheckCircle2 size={18} style={{ color: theme.primaryColor }} className="mt-0.5 flex-shrink-0" />
                   <span>{h}</span>
                 </div>
@@ -237,6 +262,7 @@ function AboutSection({ section, theme }: { section: Section; theme: SiteConfigJ
 
         {skills.length > 0 && (
           <div
+            {...elementSel("content.skills", selectedElementKey)}
             className="w-full md:w-80 p-6 rounded-2xl border backdrop-blur-sm"
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.03)",
@@ -267,16 +293,16 @@ function AboutSection({ section, theme }: { section: Section; theme: SiteConfigJ
   );
 }
 
-function FeaturesSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function FeaturesSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
 
   return (
     <section id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <h2 className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -285,6 +311,7 @@ function FeaturesSection({ section, theme }: { section: Section; theme: SiteConf
           return (
             <div
               key={i}
+              {...elementSel(`content.items.${i}`, selectedElementKey)}
               className="p-8 rounded-2xl border backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.03)",
@@ -310,22 +337,23 @@ function FeaturesSection({ section, theme }: { section: Section; theme: SiteConf
   );
 }
 
-function PortfolioSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function PortfolioSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const projects: any[] = section.content?.projects || [];
 
   return (
-    <section id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
+<section id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
       <div className="mb-14 space-y-2">
-        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p className="opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="opacity-75">{section.subtitle}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {projects.map((p: any, i: number) => (
           <div
             key={i}
+            {...elementSel(`content.projects.${i}`, selectedElementKey)}
             className="group overflow-hidden rounded-2xl border backdrop-blur-sm flex flex-col justify-between transition-all duration-300 hover:border-indigo-500/50 hover:shadow-2xl"
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.03)",
@@ -336,6 +364,7 @@ function PortfolioSection({ section, theme }: { section: Section; theme: SiteCon
             {p.image && (
               <div className="h-48 overflow-hidden relative">
                 <img
+                  {...elementSel(`content.projects.${i}.image`, selectedElementKey)}
                   src={p.image}
                   alt={p.name}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -352,7 +381,7 @@ function PortfolioSection({ section, theme }: { section: Section; theme: SiteCon
                     {p.tag}
                   </span>
                 )}
-                <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-400 transition-colors">
+                <h3 {...elementSel(`content.projects.${i}.name`, selectedElementKey)} className="text-xl font-bold mb-2 group-hover:text-indigo-400 transition-colors">
                   {p.name}
                 </h3>
                 <p className="opacity-70 text-sm leading-relaxed mb-6">{p.desc}</p>
@@ -376,22 +405,23 @@ function PortfolioSection({ section, theme }: { section: Section; theme: SiteCon
   );
 }
 
-function MenuSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function MenuSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const categories: any[] = section.content?.categories || [];
 
   return (
     <section id={section.id} className="py-20 px-6 max-w-4xl mx-auto">
       <div className="text-center mb-16">
-        <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-5xl font-bold tracking-tight mb-3" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p className="opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="opacity-75">{section.subtitle}</p>}
       </div>
 
       <div className="space-y-12">
         {categories.map((cat: any, ci: number) => (
           <div key={ci}>
             <h3
+              {...elementSel(`content.categories.${ci}.name`, selectedElementKey)}
               className="text-2xl font-bold mb-6 pb-3 border-b border-white/10"
               style={{ color: theme.primaryColor, fontFamily: "var(--font-heading)" }}
             >
@@ -399,7 +429,7 @@ function MenuSection({ section, theme }: { section: Section; theme: SiteConfigJS
             </h3>
             <div className="space-y-6">
               {(cat.items || []).map((item: any, ii: number) => (
-                <div key={ii} className="flex justify-between items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                <div key={ii} {...elementSel(`content.categories.${ci}.items.${ii}`, selectedElementKey)} className="flex justify-between items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div>
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-lg">{item.name}</span>
@@ -424,21 +454,21 @@ function MenuSection({ section, theme }: { section: Section; theme: SiteConfigJS
   );
 }
 
-function TimelineSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function TimelineSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
 
   return (
     <section id={section.id} className="py-20 px-6 max-w-4xl mx-auto">
       <div className="mb-14 text-center">
-        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p className="opacity-75 mt-2">{section.subtitle}</p>}
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="opacity-75 mt-2">{section.subtitle}</p>}
       </div>
 
       <div className="relative border-l-2 border-white/10 ml-4 pl-8 space-y-12">
         {items.map((item: any, i: number) => (
-          <div key={i} className="relative group">
+          <div key={i} {...elementSel(`content.items.${i}`, selectedElementKey)} className="relative group">
             <div
               className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full border-2 border-slate-900 shadow-md transition-all group-hover:scale-125"
               style={{ background: theme.primaryColor }}
@@ -458,22 +488,23 @@ function TimelineSection({ section, theme }: { section: Section; theme: SiteConf
   );
 }
 
-function PricingSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function PricingSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const plans: any[] = section.content?.plans || [];
 
   return (
-    <section id={section.id} className="py-20 px-6 max-w-6xl mx-auto">
+<section id={section.id} className="py-20 px-6 max-w-6xl mx-auto">
       <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-        <h2 className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p className="opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="opacity-75">{section.subtitle}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {plans.map((p: any, i: number) => (
           <div
             key={i}
+            {...elementSel(`content.plans.${i}`, selectedElementKey)}
             className={`p-8 rounded-3xl border relative flex flex-col justify-between transition-all ${
               p.isPopular ? "border-2 shadow-2xl scale-105" : "backdrop-blur-sm"
             }`}
@@ -492,10 +523,10 @@ function PricingSection({ section, theme }: { section: Section; theme: SiteConfi
               </span>
             )}
             <div>
-              <h3 className="text-2xl font-bold mb-2">{p.name}</h3>
+              <h3 {...elementSel(`content.plans.${i}.name`, selectedElementKey)} className="text-2xl font-bold mb-2">{p.name}</h3>
               <p className="text-xs opacity-65 mb-6">{p.desc}</p>
               <div className="flex items-baseline gap-1 mb-8">
-                <span className="text-4xl font-extrabold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+                <span {...elementSel(`content.plans.${i}.price`, selectedElementKey)} className="text-4xl font-extrabold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
                   {p.price}
                 </span>
                 <span className="text-xs opacity-60">/ month</span>
@@ -522,14 +553,14 @@ function PricingSection({ section, theme }: { section: Section; theme: SiteConfi
   );
 }
 
-function FAQSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function FAQSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
     <section id={section.id} className="py-20 px-6 max-w-3xl mx-auto">
       <div className="text-center mb-14">
-        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
       </div>
@@ -540,6 +571,7 @@ function FAQSection({ section, theme }: { section: Section; theme: SiteConfigJSO
           return (
             <div
               key={i}
+              {...elementSel(`content.items.${i}`, selectedElementKey)}
               className="border rounded-2xl overflow-hidden backdrop-blur-sm transition-all"
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.03)",
@@ -562,7 +594,7 @@ function FAQSection({ section, theme }: { section: Section; theme: SiteConfigJSO
   );
 }
 
-function DigitalCardSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function DigitalCardSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const socials = section.content?.socials || {};
   const customLinks = section.content?.customLinks || [];
   const avatar = section.content?.avatar || "";
@@ -586,6 +618,7 @@ function DigitalCardSection({ section, theme }: { section: Section; theme: SiteC
       >
         {avatar ? (
           <img
+            {...elementSel("content.avatar", selectedElementKey)}
             src={avatar}
             alt={section.title || "Avatar"}
             className="w-28 h-28 rounded-full border-4 object-cover mx-auto mb-6 shadow-xl"
@@ -600,14 +633,14 @@ function DigitalCardSection({ section, theme }: { section: Section; theme: SiteC
           </div>
         )}
 
-        <h1 className="text-2xl font-extrabold mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+        <h1 {...elementSel("title", selectedElementKey)} className="text-2xl font-extrabold mb-1" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h1>
-        {section.subtitle && <p className="text-sm font-semibold mb-4" style={{ color: theme.primaryColor }}>{section.subtitle}</p>}
-        {section.content?.bio && <p className="text-sm opacity-80 leading-relaxed mb-6">{section.content.bio}</p>}
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="text-sm font-semibold mb-4" style={{ color: theme.primaryColor }}>{section.subtitle}</p>}
+        {section.content?.bio && <p {...elementSel("content.bio", selectedElementKey)} className="text-sm opacity-80 leading-relaxed mb-6">{section.content.bio}</p>}
 
         {section.content?.location && (
-          <div className="inline-flex items-center gap-1.5 text-xs opacity-60 mb-6 font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+          <div {...elementSel("content.location", selectedElementKey)} className="inline-flex items-center gap-1.5 text-xs opacity-60 mb-6 font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
             <MapPin size={12} /> {section.content.location}
           </div>
         )}
@@ -616,6 +649,7 @@ function DigitalCardSection({ section, theme }: { section: Section; theme: SiteC
         {section.content?.ctaText && (
           <div className="mb-8">
             <a
+              {...elementSel("content.ctaText", selectedElementKey)}
               href={section.content?.ctaLink || "#"}
               className="inline-block w-full py-3.5 rounded-xl font-bold text-white shadow-xl transition-all transform hover:-translate-y-0.5"
               style={{
@@ -630,22 +664,22 @@ function DigitalCardSection({ section, theme }: { section: Section; theme: SiteC
 
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {socials.email && (
-            <a href={`mailto:${socials.email}`} className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a {...elementSel("content.socials.email", selectedElementKey)} href={`mailto:${socials.email}`} className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
               <Mail size={14} /> Email
             </a>
           )}
           {socials.phone && (
-            <a href={`tel:${socials.phone}`} className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a {...elementSel("content.socials.phone", selectedElementKey)} href={`tel:${socials.phone}`} className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
               <Phone size={14} /> Call
             </a>
           )}
           {socials.linkedin && (
-            <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a {...elementSel("content.socials.linkedin", selectedElementKey)} href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
               <Linkedin size={14} /> LinkedIn
             </a>
           )}
           {socials.twitter && (
-            <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a {...elementSel("content.socials.twitter", selectedElementKey)} href={socials.twitter} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
               <Twitter size={14} /> Twitter
             </a>
           )}
@@ -660,6 +694,7 @@ function DigitalCardSection({ section, theme }: { section: Section; theme: SiteC
               return (
                 <a
                   key={i}
+                  {...elementSel(`content.customLinks.${i}`, selectedElementKey)}
                   href={link.url || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -694,7 +729,7 @@ function DigitalCardSection({ section, theme }: { section: Section; theme: SiteC
   );
 }
 
-function LinksSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function LinksSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const links: any[] = section.content?.links || [];
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
 
@@ -707,11 +742,11 @@ function LinksSection({ section, theme }: { section: Section; theme: SiteConfigJ
   return (
     <section id={section.id} className="py-20 px-6 max-w-lg mx-auto text-center">
       {section.title && (
-        <h2 className="text-3xl font-extrabold mb-3" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl font-extrabold mb-3" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
       )}
-      {section.subtitle && <p className="text-sm opacity-80 mb-10">{section.subtitle}</p>}
+      {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="text-sm opacity-80 mb-10">{section.subtitle}</p>}
 
       <div className="space-y-4">
         {links.map((link: any, i: number) => {
@@ -720,6 +755,7 @@ function LinksSection({ section, theme }: { section: Section; theme: SiteConfigJ
           return (
             <a
               key={i}
+              {...elementSel(`content.links.${i}`, selectedElementKey)}
               href={link.url || "#"}
               target="_blank"
               rel="noopener noreferrer"
@@ -755,22 +791,22 @@ function LinksSection({ section, theme }: { section: Section; theme: SiteConfigJ
   );
 }
 
-function ContactSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function ContactSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const c = section.content || {};
 
   return (
     <section id={section.id} className="py-20 px-6 max-w-4xl mx-auto">
       <div className="text-center mb-14 space-y-2">
-        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p className="opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="opacity-75">{section.subtitle}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
         <div className="space-y-6">
           {c.email && (
-            <div className="flex items-center gap-4">
+            <div {...elementSel("content.email", selectedElementKey)} className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
                 <Mail size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -783,7 +819,7 @@ function ContactSection({ section, theme }: { section: Section; theme: SiteConfi
             </div>
           )}
           {c.phone && (
-            <div className="flex items-center gap-4">
+            <div {...elementSel("content.phone", selectedElementKey)} className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
                 <Phone size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -794,7 +830,7 @@ function ContactSection({ section, theme }: { section: Section; theme: SiteConfi
             </div>
           )}
           {c.address && (
-            <div className="flex items-center gap-4">
+            <div {...elementSel("content.address", selectedElementKey)} className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
                 <MapPin size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -835,7 +871,7 @@ function ContactSection({ section, theme }: { section: Section; theme: SiteConfi
   );
 }
 
-function FooterSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+function FooterSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   return (
     <footer className="py-12 px-6 border-t border-white/10 text-center text-xs opacity-60">
       <p>© {new Date().getFullYear()} {section.title || "Nexora AI"}. All rights reserved.</p>
@@ -844,34 +880,48 @@ function FooterSection({ section, theme }: { section: Section; theme: SiteConfig
 }
 
 // ─── Section Dispatcher ────────────────────────────────────────────────────
-function RenderSection({ section, theme }: { section: Section; theme: SiteConfigJSON["theme"] }) {
+interface RenderSectionProps {
+  section: Section;
+  theme: SiteConfigJSON["theme"];
+  selectedElementKey?: string | null;
+  interactive?: boolean;
+}
+
+function RenderSection({ section, theme, selectedElementKey, interactive }: RenderSectionProps) {
   if (section.visible === false) return null;
+
+  const rendererProps = {
+    section,
+    theme,
+    selectedElementKey,
+    interactive: !!interactive,
+  };
 
   switch (section.type) {
     case "navbar":
-      return <NavbarSection section={section} theme={theme} />;
+      return <NavbarSection {...rendererProps} />;
     case "hero":
-      return <HeroSection section={section} theme={theme} />;
+      return <HeroSection {...rendererProps} />;
     case "about":
-      return <AboutSection section={section} theme={theme} />;
+      return <AboutSection {...rendererProps} />;
     case "features":
-      return <FeaturesSection section={section} theme={theme} />;
+      return <FeaturesSection {...rendererProps} />;
     case "portfolio_grid":
-      return <PortfolioSection section={section} theme={theme} />;
+      return <PortfolioSection {...rendererProps} />;
     case "menu_list":
-      return <MenuSection section={section} theme={theme} />;
+      return <MenuSection {...rendererProps} />;
     case "timeline":
-      return <TimelineSection section={section} theme={theme} />;
+      return <TimelineSection {...rendererProps} />;
     case "pricing":
-      return <PricingSection section={section} theme={theme} />;
+      return <PricingSection {...rendererProps} />;
     case "faq":
-      return <FAQSection section={section} theme={theme} />;
+      return <FAQSection {...rendererProps} />;
     case "links":
-      return <LinksSection section={section} theme={theme} />;
+      return <LinksSection {...rendererProps} />;
     case "digital_card":
-      return <DigitalCardSection section={section} theme={theme} />;
+      return <DigitalCardSection {...rendererProps} />;
     case "contact":
-      return <ContactSection section={section} theme={theme} />;
+      return <ContactSection {...rendererProps} />;
     case "custom_html":
       return (
         <section id={section.id} className="custom-html-section py-8 px-6">
@@ -885,7 +935,7 @@ function RenderSection({ section, theme }: { section: Section; theme: SiteConfig
         </section>
       );
     case "footer":
-      return <FooterSection section={section} theme={theme} />;
+      return <FooterSection {...rendererProps} />;
     default:
       return (
         <section id={section.id} className="py-16 px-6 max-w-4xl mx-auto">
@@ -902,6 +952,8 @@ interface SiteRendererProps {
   customCode?: { html?: string; css?: string; js?: string };
   selectedSectionId?: string | null;
   onSelectSection?: (sectionId: string) => void;
+  selectedElementKey?: string | null;
+  onSelectElement?: (elementKey: string, sectionId: string) => void;
   interactive?: boolean;
 }
 
@@ -910,6 +962,8 @@ export function SiteRenderer({
   customCode,
   selectedSectionId,
   onSelectSection,
+  selectedElementKey,
+  onSelectElement,
   interactive = false,
 }: SiteRendererProps) {
   useEffect(() => {
@@ -977,10 +1031,23 @@ export function SiteRenderer({
             id={section.id}
             data-section-id={section.id}
             onClick={(e) => {
-              if (interactive && onSelectSection) {
-                e.stopPropagation();
-                onSelectSection(section.id);
+              if (!interactive) return;
+              e.stopPropagation();
+
+              // 1) Element-level selection: if the click landed on a tagged element
+              if (onSelectElement) {
+                const target = (e.target as HTMLElement)?.closest?.("[data-element-key]");
+                if (target) {
+                  const elKey = target.getAttribute("data-element-key");
+                  if (elKey) {
+                    onSelectElement(elKey, section.id);
+                    return;
+                  }
+                }
               }
+
+              // 2) Fallback: section-level selection
+              if (onSelectSection) onSelectSection(section.id);
             }}
             className={`relative transition-all duration-150 ${
               interactive ? "cursor-pointer group" : ""
@@ -998,7 +1065,12 @@ export function SiteRenderer({
                 <span>Editing: {section.type.replace("_", " ")}</span>
               </div>
             )}
-            <RenderSection section={section} theme={config.theme} />
+            <RenderSection
+              section={section}
+              theme={config.theme}
+              selectedElementKey={selectedElementKey}
+              interactive={interactive}
+            />
           </div>
         );
       })}

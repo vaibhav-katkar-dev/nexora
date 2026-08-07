@@ -8,11 +8,15 @@ import { Layers } from "lucide-react";
 interface CanvasPreviewProps {
   selectedSectionId: string | null;
   onSelectSection: (id: string) => void;
+  selectedElementKey?: string | null;
+  onSelectElement?: (elementKey: string, sectionId: string) => void;
 }
 
 export function CanvasPreview({
   selectedSectionId,
   onSelectSection,
+  selectedElementKey,
+  onSelectElement,
 }: CanvasPreviewProps) {
   const { config, customCode, viewport } = useEditorStore();
 
@@ -44,6 +48,20 @@ export function CanvasPreview({
     return () => clearTimeout(timer);
   }, [selectedSectionId]);
 
+  // Brief pulse animation on the exact clicked element for visual feedback
+  useEffect(() => {
+    if (!selectedElementKey || !scrollContainerRef.current) return;
+    const el = scrollContainerRef.current.querySelector(
+      `[data-element-key="${selectedElementKey}"]`
+    ) as HTMLElement | null;
+    if (!el) return;
+    el.classList.add("nexora-el-pulse");
+    const timer = setTimeout(() => {
+      el.classList.remove("nexora-el-pulse");
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [selectedElementKey]);
+
   const viewportWidths = {
     desktop: "w-full max-w-full",
     tablet: "w-[768px] border-x border-slate-700 shadow-2xl rounded-t-2xl my-4",
@@ -63,6 +81,8 @@ export function CanvasPreview({
             customCode={customCode}
             selectedSectionId={selectedSectionId}
             onSelectSection={onSelectSection}
+            selectedElementKey={selectedElementKey}
+            onSelectElement={onSelectElement}
             interactive={true}
           />
         ) : (

@@ -1,14 +1,15 @@
-# Publish Flow & Dynamic Slug Fixes
+# Element-Level Click-to-Inspect in Visual Editor
+
+## Goal
+When clicking any element (image, text, block/card) inside a section on the visual canvas, auto-open the Inspector, highlight the exact clicked element, and focus/scroll to its matching inspector field — safely, with no data/API/feature changes.
 
 ## Steps
-- [x] 1. Plan confirmed
-- [x] 2. API: Add slug validation + persistence in `projectController.ts`
-- [x] 3. API: Fix hardcoded domains in `siteCompiler.ts`
-- [x] 4. Web: Fix hardcoded `nexora.site` in `PublishModal.tsx`
-- [x] 5. Web: Fix toast + store update in `editor/[id]/page.tsx`
-- [x] 6. Web: Fix hardcoded domains in `publish/[id]/page.tsx`
-- [x] 7. Web: Fix hardcoded URL in `SeoInspectorPanel.tsx`
-- [x] 8. Env: Add `PUBLISHED_BASE_URL` to API env files
-- [x] 9. Env: Add `NEXT_PUBLIC_PUBLISHED_BASE_URL` to web env
-- [x] 10. Build & verify
-- [ ] 11. Commit & push
+- [x] 1. globals.css — Add element highlight/pulse/flash CSS classes
+- [x] 2. lib/elementKeys.ts — Add `humanizeElementKey()` helper
+- [x] 3. SiteRenderer.tsx — Add element-key tagging + element click props
+- [x] 4. CanvasPreview.tsx — Element highlight effect + prop wiring
+- [x] 5. SectionInspectorPanel.tsx — Field path tagging, auto-scroll/flash, editing banner
+- [x] 6. editor/[id]/page.tsx — selectedElementKey state + prop wiring
+- [ ] 7. Build & verify (web typecheck)
+- [ ] 8. Commit & push
+

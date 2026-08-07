@@ -1,7 +1,8 @@
 "use client";
 
 import { useEditorStore } from "@/store/editorStore";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { humanizeElementKey } from "@/lib/elementKeys";
 import {
   Sparkles,
   SlidersHorizontal,
@@ -17,6 +18,8 @@ import {
 interface SectionInspectorPanelProps {
   sectionId: string | null;
   onOpenImagePicker?: (currentUrl: string, onSelect: (url: string) => void) => void;
+  selectedElementKey?: string | null;
+  onClearElement?: () => void;
 }
 
 /** Helper to generate smart item blueprints matching existing item schemas */
@@ -87,6 +90,8 @@ function getSmartItemBlueprint(sectionType: string, keyName: string, existingIte
 export function SectionInspectorPanel({
   sectionId,
   onOpenImagePicker,
+  selectedElementKey,
+  onClearElement,
 }: SectionInspectorPanelProps) {
   const { config, updateSection, removeSection } = useEditorStore();
   const section = config?.sections.find((s) => s.id === sectionId);
@@ -94,6 +99,35 @@ export function SectionInspectorPanel({
   const inputClass =
     "w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors shadow-sm";
   const labelClass = "block text-xs font-semibold text-slate-300 mb-1 capitalize";
+
+  // ── Element-key → field-path auto-scroll & flash ─────────────────────────
+  const panelScrollRef = useRef<HTMLDivElement>(null);
+  const [flashedKey, setFlashedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedElementKey) return;
+    // Normalize: strip "content." prefix for matching data-field-path
+    const fieldPath = selectedElementKey.startsWith("content.")
+      ? selectedElementKey.slice("content.".length)
+      : selectedElementKey;
+
+    const timer = setTimeout(() => {
+      const el = panelScrollRef.current?.querySelector(
+        `[data-field-path="${fieldPath}"]`
+      ) as HTMLElement | null;
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("nexora-field-flash");
+        setFlashedKey(fieldPath);
+        const clearTimer = setTimeout(() => {
+          el.classList.remove("nexora-field-flash");
+          setFlashedKey(null);
+        }, 1400);
+        return () => clearTimeout(clearTimer);
+      }
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [selectedElementKey, sectionId]);
 
   if (!section) {
     return (
@@ -157,6 +191,11 @@ export function SectionInspectorPanel({
     handleFieldChange(key, nextList);
   };
 
+// Humanized label for the selected element banner
+  const humanElementLabel = selectedElementKey
+    ? humanizeElementKey(selectedElementKey)
+    : null;
+
   return (
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-800 w-full flex-shrink-0 select-none overflow-hidden">
       {/* Inspector Header */}
@@ -178,14 +217,35 @@ export function SectionInspectorPanel({
         </button>
       </div>
 
+      {/* Element editing banner */}
+      {selectedElementKey && (
+        <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse flex-shrink-0" />
+            <p className="text-[11px] font-semibold text-indigo-200 truncate">
+              Editing: {humanElementLabel || selectedElementKey}
+            </p>
+          </div>
+          {onClearElement && (
+            <button
+              onClick={onClearElement}
+              className="text-[10px] font-bold text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex-shrink-0"
+              title="Deselect element"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Form Controls */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div ref={panelScrollRef} className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Core Properties */}
         <div className="space-y-4">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
             Header Text
           </h3>
-          <div>
+          <div data-field-path="badge">
             <label className={labelClass}>Badge / Kicker</label>
             <input
               type="text"
@@ -196,7 +256,7 @@ export function SectionInspectorPanel({
             />
           </div>
 
-          <div>
+          <div data-field-path="title">
             <label className={labelClass}>Title</label>
             <input
               type="text"
@@ -207,7 +267,7 @@ export function SectionInspectorPanel({
             />
           </div>
 
-          <div>
+          <div data-field-path="subtitle">
             <label className={labelClass}>Subtitle / Description</label>
             <textarea
               rows={3}
@@ -227,7 +287,7 @@ export function SectionInspectorPanel({
             </h3>
 
             {/* Bio */}
-            <div>
+            <div data-field-path="bio">
               <label className={labelClass}>Bio / About</label>
               <textarea
                 rows={3}
@@ -239,13 +299,13 @@ export function SectionInspectorPanel({
             </div>
 
             {/* Location */}
-            <div>
+            <div data-field-path="location">
               <label className={labelClass}>Location</label>
               <input type="text" value={content.location || ""} onChange={(e) => handleFieldChange("location", e.target.value)} placeholder="e.g. New York, USA" className={inputClass} />
             </div>
 
             {/* Avatar */}
-            <div>
+            <div data-field-path="avatar">
               <label className={labelClass}>Avatar / Profile Photo URL</label>
               <div className="flex gap-1.5">
                 <input type="text" value={content.avatar || ""} onChange={(e) => handleFieldChange("avatar", e.target.value)} placeholder="https://..." className={inputClass} />
@@ -258,7 +318,7 @@ export function SectionInspectorPanel({
             </div>
 
             {/* CTA Button */}
-            <div className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-800/30 space-y-2">
+            <div data-field-path="ctaText" className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-800/30 space-y-2">
               <label className="block text-[11px] font-extrabold uppercase tracking-wider text-indigo-400">Primary CTA Button</label>
               <input type="text" value={content.ctaText || ""} onChange={(e) => handleFieldChange("ctaText", e.target.value)} placeholder="Button text (e.g. Hire Me)" className={inputClass} />
               <input type="text" value={content.ctaLink || ""} onChange={(e) => handleFieldChange("ctaLink", e.target.value)} placeholder="Button URL (e.g. mailto:...)" className={inputClass} />
@@ -268,7 +328,7 @@ export function SectionInspectorPanel({
             <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
               <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Quick Socials (Pill Buttons)</label>
               {["email","phone","linkedin","twitter","github","instagram"].map((s) => (
-                <div key={s}>
+                <div key={s} data-field-path={`socials.${s}`}>
                   <span className="text-[10px] text-slate-500 capitalize block mb-0.5">{s}</span>
                   <input type="text" value={(content.socials || {})[s] || ""} onChange={(e) => handleFieldChange("socials", { ...(content.socials || {}), [s]: e.target.value })} placeholder={s === "email" ? "you@email.com" : s === "phone" ? "+1 234 567 890" : `https://${s}.com/...`} className={inputClass} />
                 </div>
@@ -291,7 +351,7 @@ export function SectionInspectorPanel({
               </div>
               <div className="space-y-2 pl-2 border-l-2 border-slate-800">
                 {(content.customLinks || []).map((link: any, i: number) => (
-                  <div key={i} className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 relative">
+                  <div key={i} data-field-path={`customLinks.${i}`} className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 relative">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-bold text-indigo-300">Link #{i + 1}</span>
                       <div className="flex items-center gap-1">
@@ -344,7 +404,7 @@ export function SectionInspectorPanel({
               </div>
               <div className="space-y-2 pl-2 border-l-2 border-slate-800">
                 {(content.links || []).map((link: any, i: number) => (
-                  <div key={i} className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5">
+                  <div key={i} data-field-path={`links.${i}`} className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-bold text-indigo-300">Link #{i + 1}</span>
                       <div className="flex items-center gap-1">
@@ -389,8 +449,8 @@ export function SectionInspectorPanel({
             if (typeof val === "string" || val === null || val === undefined) {
               const isImage = key.toLowerCase().includes("image") || key.toLowerCase().includes("avatar") || key.toLowerCase().includes("logo") || key.toLowerCase().includes("photo");
 
-              return (
-                <div key={key}>
+return (
+                <div key={key} data-field-path={key}>
                   <label className={labelClass}>{key.replace(/([A-Z])/g, " $1")}</label>
                   <div className="flex gap-1.5">
                     <input
@@ -434,7 +494,7 @@ export function SectionInspectorPanel({
                     {val.map((item: any, i: number) => {
                       if (typeof item === "string") {
                         return (
-                          <div key={i} className="flex items-center gap-1.5">
+                          <div key={i} data-field-path={`${key}.${i}`} className="flex items-center gap-1.5">
                             <input
                               type="text"
                               value={item}
@@ -467,7 +527,7 @@ export function SectionInspectorPanel({
                         const itemTitle = item.name || item.title || item.role || item.question || item.value || `Item ${i + 1}`;
 
                         return (
-                          <div key={i} className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-3 relative group shadow-sm">
+                          <div key={i} data-field-path={`${key}.${i}`} className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-3 relative group shadow-sm">
                             {/* Item Action Bar */}
                             <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-1">
                               <span className="text-[11px] font-bold text-indigo-300 truncate max-w-[130px]">
@@ -604,7 +664,7 @@ export function SectionInspectorPanel({
                               }
 
                               return (
-                                <div key={subKey}>
+                                <div key={subKey} data-field-path={`${key}.${i}.${subKey}`}>
                                   <span className="text-[10px] text-slate-400 capitalize block mb-0.5">{subKey.replace(/([A-Z])/g, " $1")}</span>
                                   <div className="flex gap-1">
                                     <input
@@ -657,7 +717,7 @@ export function SectionInspectorPanel({
                       const isSubImage = subKey.toLowerCase().includes("image") || subKey.toLowerCase().includes("avatar") || subKey.toLowerCase().includes("logo") || subKey.toLowerCase().includes("photo");
 
                       return (
-                        <div key={subKey}>
+                        <div key={subKey} data-field-path={`${key}.${subKey}`}>
                           <span className="text-[10px] text-slate-400 capitalize block mb-1">
                             {subKey.replace(/([A-Z])/g, " $1")}
                           </span>

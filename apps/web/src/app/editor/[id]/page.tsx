@@ -38,6 +38,7 @@ export default function EditorPage() {
 
   const [activeTab, setActiveTab] = useState<SidebarTab>("sections");
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [selectedElementKey, setSelectedElementKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [developerMode, setDeveloperMode] = useState(false);
   const [showSlugModal, setShowSlugModal] = useState(false);
@@ -86,9 +87,17 @@ export default function EditorPage() {
   // Sync active section when sections change or section is selected
   const handleSelectSection = (sectionId: string) => {
     setActiveSectionId(sectionId);
+    setSelectedElementKey(null);
     if (activeTab !== "inspector" && activeTab !== "sections") {
       setActiveTab("inspector");
     }
+  };
+
+  // Element-level click-to-inspect: auto-open inspector, select section + element
+  const handleSelectElement = (elementKey: string, sectionId: string) => {
+    setActiveSectionId(sectionId);
+    setSelectedElementKey(elementKey);
+    setActiveTab("inspector");
   };
 
   // Auto-sync activeSectionId: if current activeSectionId does not exist in config.sections, fallback to first section or null
@@ -186,12 +195,14 @@ export default function EditorPage() {
                 />
               )}
 
-              {activeTab === "inspector" && (
+{activeTab === "inspector" && (
                 <SectionInspectorPanel
                   sectionId={activeSectionId}
                   onOpenImagePicker={(url, onSelect) =>
                     setImagePickerState({ isOpen: true, currentUrl: url, onSelect })
                   }
+                  selectedElementKey={selectedElementKey}
+                  onClearElement={() => setSelectedElementKey(null)}
                 />
               )}
 
@@ -230,10 +241,12 @@ export default function EditorPage() {
               {config && <SiteRenderer config={config} />}
             </div>
           ) : (
-            /* Visual Canvas View with Click-to-Select Sync */
+/* Visual Canvas View with Click-to-Select Sync */
             <CanvasPreview
               selectedSectionId={activeSectionId}
               onSelectSection={handleSelectSection}
+              selectedElementKey={selectedElementKey}
+              onSelectElement={handleSelectElement}
             />
           )}
         </div>
