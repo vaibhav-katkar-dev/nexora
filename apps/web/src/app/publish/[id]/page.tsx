@@ -6,6 +6,7 @@ import Link from "next/link";
 import { projectsApi } from "@/lib/api";
 import { Navbar } from "@/components/navigation/Navbar";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
+import { getPublishedBaseLabel, buildPublishedSiteUrl } from "@/lib/siteUrl";
 import {
   Globe,
   CheckCircle2,
@@ -138,7 +139,7 @@ export default function PublishWizardPage() {
       if (pubRes?.data?.staticUrl) {
         setPublishedUrl(pubRes.data.staticUrl);
       } else {
-        setPublishedUrl(`https://nexora.site/${slug}`);
+        setPublishedUrl(buildPublishedSiteUrl(slug));
       }
     } catch (err: any) {
       alert(err.message || "Failed to publish website. Please try again.");
@@ -156,7 +157,7 @@ export default function PublishWizardPage() {
     );
   }
 
-  const livePreviewUrl = `https://nexora.site/${slug || "your-slug"}`;
+  const livePreviewUrl = buildPublishedSiteUrl(slug);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
@@ -244,7 +245,7 @@ export default function PublishWizardPage() {
                 </div>
                 <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 overflow-hidden focus-within:border-indigo-500 focus-within:bg-white transition-all">
                   <span className="px-2 sm:px-3 text-[10px] sm:text-xs text-slate-400 font-mono bg-slate-100 py-3 border-r border-slate-200 select-none whitespace-nowrap">
-                    nexora.site/
+                    {getPublishedBaseLabel()}/
                   </span>
                   <input
                     type="text"

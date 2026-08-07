@@ -1,5 +1,6 @@
 import { IProjectDocument } from "../models/Project.js";
 import { SiteConfigJSON, Section } from "@ai-platform/shared";
+import { getPublishedBaseUrl } from "../utils/siteUrl.js";
 
 // ────────────────────────────────────────────────────────
 // SEO HEAD GENERATOR
@@ -7,7 +8,7 @@ import { SiteConfigJSON, Section } from "@ai-platform/shared";
 // ────────────────────────────────────────────────────────
 function buildSeoHead(project: IProjectDocument): string {
   const { seo, config, slug } = project;
-  const baseUrl = process.env.PUBLISHED_BASE_URL || "http://localhost:3000/preview";
+  const baseUrl = getPublishedBaseUrl();
   const siteUrl = `${baseUrl}/${slug}`;
   const ogImage = seo.ogImage || `${baseUrl}/og-default.png`;
 
@@ -304,7 +305,7 @@ function buildThemeCss(theme: SiteConfigJSON["theme"]): string {
 // SITEMAP & ROBOTS GENERATORS
 // ────────────────────────────────────────────────────────
 export function buildSitemap(slug: string): string {
-  const baseUrl = process.env.PUBLISHED_BASE_URL || "https://sites.presence.ai";
+  const baseUrl = getPublishedBaseUrl();
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -317,8 +318,10 @@ export function buildSitemap(slug: string): string {
 }
 
 export function buildRobotsTxt(slug: string): string {
-  const baseUrl = process.env.PUBLISHED_BASE_URL || "https://sites.presence.ai";
-  return `User-agent: *\nAllow: /\nSitemap: ${baseUrl}/${slug}/sitemap.xml`;
+  const baseUrl = getPublishedBaseUrl();
+  return `User-agent: *
+Allow: /
+Sitemap: ${baseUrl}/${slug}/sitemap.xml`;
 }
 
 // ────────────────────────────────────────────────────────
@@ -350,7 +353,7 @@ export async function buildStaticSite(project: IProjectDocument): Promise<{ stat
 
   // In production: upload HTML to object storage (Cloudinary raw / Vercel Blob / R2)
   // For now: save path represents where the file would be deployed
-  const baseUrl = process.env.PUBLISHED_BASE_URL || "http://localhost:3000/preview";
+  const baseUrl = getPublishedBaseUrl();
   const staticUrl = `${baseUrl}/${slug}`;
 
   return { staticUrl, html };

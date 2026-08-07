@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { projectsApi } from "@/lib/api";
 import { useEditorStore } from "@/store/editorStore";
 import { useToast } from "@/components/ui/Toast";
+import { buildPublishedSiteUrl } from "@/lib/siteUrl";
 
 import { EditorHeader } from "@/components/editor/EditorHeader";
 import { EditorSidebar, SidebarTab } from "@/components/editor/EditorSidebar";
@@ -32,6 +33,7 @@ export default function EditorPage() {
     viewMode,
     setViewMode,
     publish,
+    setProjectSlug,
   } = useEditorStore();
 
   const [activeTab, setActiveTab] = useState<SidebarTab>("sections");
@@ -107,9 +109,10 @@ export default function EditorPage() {
       if (projectId) {
         await projectsApi.updateSlug(projectId, slug);
         setCurrentSlug(slug);
+        setProjectSlug(slug);
       }
       const url = await publish();
-      toast.success("Site Published Globally!", `Your site is live at ${url || `https://nexora.site/${slug}`}`);
+      toast.success("Site Published Globally!", `Your site is live at ${url || buildPublishedSiteUrl(slug)}`);
     } catch (err: any) {
       toast.error("Publish failed", err.message || "Please check your network and try again.");
     }

@@ -2,6 +2,7 @@
 
 import { useEditorStore } from "@/store/editorStore";
 import { Globe, Image as ImageIcon, Sparkles, CheckCircle2 } from "lucide-react";
+import { buildPublishedSiteUrl } from "@/lib/siteUrl";
 
 export function SeoInspectorPanel() {
   const { seo, setSeo } = useEditorStore();
@@ -78,7 +79,7 @@ export function SeoInspectorPanel() {
           </span>
           <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
             <span className="text-[11px] text-indigo-400 font-mono block truncate">
-              https://nexora.site/site-preview
+              {buildPublishedSiteUrl("site-preview")}
             </span>
             <h4 className="text-xs font-bold text-blue-400 truncate">
               {seo.metaTitle || "My Digital Presence"}

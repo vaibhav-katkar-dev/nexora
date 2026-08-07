@@ -10,14 +10,31 @@ const generateShortId = (): string => {
   return randomUUID().replace(/-/g, '').substring(0, 6);
 };
 
+// Reserved paths that must never be used as a project slug
+const RESERVED_SLUGS = new Set([
+  "dashboard", "login", "register", "editor", "admin", "api", "publish",
+  "preview", "templates", "auth", "media", "projects", "favicon.ico",
+  "health", "assets", "_next", "public",
+]);
+
 const CreateProjectSchema = z.object({
   name: z.string().min(1).max(100),
   category: z.string(),
   config: SiteConfigSchema,
 });
 
+// Custom slug schema — lowercase letters, numbers, hyphens only
+const SlugSchema = z
+  .string()
+  .min(3, "Slug must be at least 3 characters")
+  .max(60, "Slug must be at most 60 characters")
+  .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers and hyphens")
+  .refine((s) => !RESERVED_SLUGS.has(s), { message: "This slug is a reserved path name" })
+  .transform((s) => s.toLowerCase());
+
 const UpdateProjectSchema = z.object({
   name: z.string().min(1).max(100).optional(),
+  slug: SlugSchema.optional(),
   config: SiteConfigSchema.optional(),
   customCode: z
     .object({
@@ -140,6 +157,21 @@ export const createProject = async (req: AuthenticatedRequest, res: Response) =>
 export const updateProject = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const updates = UpdateProjectSchema.parse(req.body);
+
+    // If the user is changing the slug, ensure it's not already taken by another project
+    if (updates.slug) {
+      const existing = await Project.findOne({
+        slug: updates.slug,
+        _id: { $ne: req.params.id },
+      }).select("_id");
+      if (existing) {
+        return res.status(409).json({
+          success: false,
+          error: { code: "SLUG_TAKEN", message: `The slug "${updates.slug}" is already in use. Please choose another.` },
+        });
+      }
+    }
+
     const project = await Project.findOneAndUpdate(
       { _id: req.params.id, userId: req.user!.userId },
       { $set: updates },
@@ -158,6 +190,13 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response) =>
       return res.status(400).json({
         success: false,
         error: { code: "INVALID_INPUT", message: `Validation failed: ${details}`, details: error.errors },
+      });
+    }
+    // Duplicate-key error (race between check and write) — surface a clean 409
+    if (error?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        error: { code: "SLUG_TAKEN", message: "That slug is already in use. Please choose another." },
       });
     }
     res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });

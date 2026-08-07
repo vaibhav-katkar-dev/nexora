@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Globe, Check, AlertCircle, ExternalLink, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import { getPublishedBaseLabel, buildPublishedSiteUrl } from "@/lib/siteUrl";
 
 interface PublishModalProps {
   initialSlug: string;
@@ -72,7 +73,7 @@ export function PublishModal({ initialSlug, onConfirm, onClose }: PublishModalPr
           <label className="block text-xs font-semibold text-slate-300">Public Web Address</label>
           <div className="flex items-center rounded-xl border border-slate-800 bg-slate-950 overflow-hidden focus-within:border-indigo-500 transition-colors">
             <span className="px-3 text-xs text-slate-500 font-mono bg-slate-900/80 py-3 border-r border-slate-800 select-none whitespace-nowrap">
-              nexora.site/
+              {getPublishedBaseLabel()}/
             </span>
             <input
               type="text"
@@ -91,8 +92,8 @@ export function PublishModal({ initialSlug, onConfirm, onClose }: PublishModalPr
               <AlertCircle size={12} /> {error}
             </p>
           ) : (
-            <p className="text-xs text-emerald-400 font-semibold flex items-center gap-1 mt-1">
-              <Check size={12} /> Live URL: nexora.site/{slug || "…"}
+            <p className="text-xs text-emerald-400 font-semibold flex items-center gap-1 mt-1 break-all">
+              <Check size={12} /> Live URL: {buildPublishedSiteUrl(slug)}
             </p>
           )}
         </div>

@@ -1,13 +1,14 @@
-# Vercel Deployment Fixes — Task Tracker
-
-## Goal
-Fix the Vercel serverless crash (`ERR_REQUIRE_ESM` with nanoid) with deployment/build fixes only — no feature or logic changes.
+# Publish Flow & Dynamic Slug Fixes
 
 ## Steps
-- [x] Analyze Vercel logs and repo state (root cause: nanoid@6 ESM-only dep + invalid root package.json)
-- [x] Fix root `package.json` invalid JSON (missing comma between `scripts` and `workspaces`)
-- [x] Remove `nanoid@^6.0.1` dependency from `apps/api/package.json`
-- [x] Regenerate `package-lock.json` (no nanoid@6 installed into apps/api)
-- [x] Rebuild via `npm run build:vercel` and verify the CommonJS bundle boots without nanoid
-- [x] Commit & push to redeploy on Vercel
-
+- [x] 1. Plan confirmed
+- [x] 2. API: Add slug validation + persistence in `projectController.ts`
+- [x] 3. API: Fix hardcoded domains in `siteCompiler.ts`
+- [x] 4. Web: Fix hardcoded `nexora.site` in `PublishModal.tsx`
+- [x] 5. Web: Fix toast + store update in `editor/[id]/page.tsx`
+- [x] 6. Web: Fix hardcoded domains in `publish/[id]/page.tsx`
+- [x] 7. Web: Fix hardcoded URL in `SeoInspectorPanel.tsx`
+- [x] 8. Env: Add `PUBLISHED_BASE_URL` to API env files
+- [x] 9. Env: Add `NEXT_PUBLIC_PUBLISHED_BASE_URL` to web env
+- [x] 10. Build & verify
+- [ ] 11. Commit & push
