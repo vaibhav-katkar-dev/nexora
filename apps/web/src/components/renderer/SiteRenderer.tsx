@@ -75,6 +75,27 @@ function elementSel(key: string, selectedElementKey?: string | null) {
 }
 
 /**
+ * Builds section-scoped CSS that applies per-element custom text colors.
+ * Each rule targets the exact section (via data-section-id) and the exact
+ * element (via data-element-key), so the color applies in both the visual
+ * editor and the published site without affecting any other styling.
+ */
+function buildElementColorCss(sections: Section[]): string {
+  let css = "";
+  for (const section of sections) {
+    const colors = section.elementColors;
+    if (!colors || Object.keys(colors).length === 0) continue;
+    for (const [key, color] of Object.entries(colors)) {
+      if (!color) continue;
+      const safeSection = String(section.id).replace(/[^a-zA-Z0-9_-]/g, "\\:");
+      const safeKey = String(key).replace(/[^a-zA-Z0-9_.-]/g, "\\:");
+      css += `[data-section-id="${safeSection}"] [data-element-key="${safeKey}"] { color: ${color} !important; }\n`;
+    }
+  }
+  return css;
+}
+
+/**
  * Determines whether a custom_html section's markup already declares its own
  * semantic root element (section / nav / footer / header / main / article /
  * aside / div with an id or class). When it does, the raw HTML should be
@@ -1411,8 +1432,11 @@ const containerClass = resolveTemplateContainerClass(config);
   // their "body.tpl-<slug>" selectors are rewritten to the container class.
   const scopedTemplateCss = sanitizeTemplateCss(
 [config.customCss, config.customCode?.css, customCode?.css].filter(Boolean).join("\n"),
-    containerSelector
+containerSelector
   );
+
+  // Per-element custom text colors (from the visual editor "Custom Color" tool).
+  const elementColorCss = buildElementColorCss(config.sections || []);
 
 return (
 <div
@@ -1440,7 +1464,10 @@ return (
         e.preventDefault();
       }}
     >
-      {scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
+{scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
+
+      {/* Per-element custom text colors (visual editor "Custom Color" tool) */}
+      {elementColorCss && <style dangerouslySetInnerHTML={{ __html: elementColorCss }} />}
 
 {/* Editor-only: force a normal cursor so template custom-cursor CSS
           (cursor: url(...) / cursor: none) never interferes with editing.

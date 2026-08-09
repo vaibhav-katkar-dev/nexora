@@ -1,13 +1,12 @@
-# TODO: Accurate Device Viewport Frames in Visual Editor
+# TODO: Per-Element Custom Color in Visual Editor
 
 ## Goal
-Make the visual editor's PC / tablet / mobile viewport modes accurately mimic real devices — internal screen scrolling (not full-page scroll) and an authentic Android phone frame for mobile.
+In the visual editor, when any text/element is selected via click-to-inspect, show a "Custom Color" option. Clicking it opens a color popup (swatches + native picker + hex input + reset). The chosen color is applied to that exact element in both the editor and the published site. All existing editor functionality stays intact.
 
 ## Steps
-- [x] 1. Analyze editor rendering (CanvasPreview, SiteRenderer, store, header, globals)
+- [x] 1. Analyze editor rendering (SiteRenderer, SectionInspectorPanel, editorStore, shared schema, globals, editor page)
 - [x] 2. Create plan and get approval
-- [x] 3. Create `DeviceFrame.tsx` device-shell renderer (desktop browser / tablet / Android phone frames with internal scrolling)
-- [x] 4. Edit `CanvasPreview.tsx` to use `<DeviceFrame>` and internal screen scrolling
-- [x] 5. Edit `SiteRenderer.tsx` to use `minHeight: 100%` in editor/interactive mode (keep `100vh` for published site)
-- [x] 5b. Add editor-only vh-layout reset so sections resolve against the device screen (fixes Android misalignment & oversized vh sections)
+- [x] 3. Add `elementColors` field to `SectionSchema` in `packages/shared/src/index.ts`
+- [x] 4. Add per-element "Custom Color" popup block to `SectionInspectorPanel.tsx`
+- [x] 5. Generate section-scoped element-color CSS in `SiteRenderer.tsx` (editor + published)
 - [x] 6. Type-check / build the web app and verify visually

@@ -117,6 +117,11 @@ export const SectionSchema = z.object({
   subtitle: z.string().optional(),
   badge: z.string().optional(),
   content: z.record(z.any()).optional().default({}),
+  // Per-element custom text colors, keyed by the element key (e.g.
+  // "title", "subtitle", "content.links.0.label"). Applied with a
+  // section-scoped CSS rule so it works in both the editor and the
+  // published site while leaving all other styling untouched.
+  elementColors: z.record(z.string(), z.string()).optional(),
   styling: z
     .object({
       paddingTop: z.string().optional(),

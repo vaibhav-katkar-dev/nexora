@@ -13,7 +13,19 @@ import {
   Copy,
   ChevronUp,
   ChevronDown,
+  Palette,
+  RotateCcw,
 } from "lucide-react";
+
+// ─── Per-Element Custom Color -------------------------------------------------
+// Preset swatches shown in the color popup. A nice spread of editable colors.
+const COLOR_PRESETS = [
+  "#F8FAFC", "#E2E8F0", "#94A3B8", "#475569", "#0F172A",
+  "#F43F5E", "#EC4899", "#A855F7", "#8B5CF6", "#6366F1",
+  "#3B82F6", "#0EA5E9", "#06B6D4", "#14B8A6", "#10B981",
+  "#22C55E", "#84CC16", "#FACC15", "#F59E0B", "#F97316",
+  "#EF4444", "#92400E", "#7C2D12", "#1E293B",
+];
 
 interface SectionInspectorPanelProps {
   sectionId: string | null;
@@ -96,13 +108,16 @@ export function SectionInspectorPanel({
   const { config, updateSection, removeSection } = useEditorStore();
   const section = config?.sections.find((s) => s.id === sectionId);
 
-  const inputClass =
+const inputClass =
     "w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors shadow-sm";
   const labelClass = "block text-xs font-semibold text-slate-300 mb-1 capitalize";
 
   // ── Element-key → field-path auto-scroll & flash ─────────────────────────
   const panelScrollRef = useRef<HTMLDivElement>(null);
   const [flashedKey, setFlashedKey] = useState<string | null>(null);
+  // Tracks whether the per-element color popup is open (Rules-of-Hooks:
+  // must be declared here, before any early return).
+  const [colorOpen, setColorOpen] = useState(false);
 
   useEffect(() => {
     if (!selectedElementKey) return;
@@ -185,10 +200,32 @@ export function SectionInspectorPanel({
     handleFieldChange(key, currentList);
   };
 
-  const removeArrayItem = (key: string, index: number) => {
+const removeArrayItem = (key: string, index: number) => {
     const currentList: any[] = content[key] || [];
     const nextList = currentList.filter((_, i) => i !== index);
     handleFieldChange(key, nextList);
+  };
+
+// ── Per-Element Custom Color ─────────────────────────────────────────────
+  const elementColors: Record<string, string> = section.elementColors || {};
+  // Normalize the selected element key to a stable store key (strip leading "content.")
+  const storeColorKey = selectedElementKey
+    ? selectedElementKey.replace(/^content\./, "")
+    : null;
+  const currentColor = storeColorKey ? elementColors[storeColorKey] : undefined;
+
+  const setElementColor = (color: string) => {
+    if (!storeColorKey) return;
+    updateSection(section.id, {
+      elementColors: { ...elementColors, [storeColorKey]: color },
+    });
+  };
+
+  const clearElementColor = () => {
+    if (!storeColorKey) return;
+    const next = { ...elementColors };
+    delete next[storeColorKey];
+    updateSection(section.id, { elementColors: next });
   };
 
 // Humanized label for the selected element banner
@@ -217,7 +254,7 @@ export function SectionInspectorPanel({
         </button>
       </div>
 
-      {/* Element editing banner */}
+{/* Element editing banner */}
       {selectedElementKey && (
         <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -234,6 +271,99 @@ export function SectionInspectorPanel({
             >
               ✕
             </button>
+          )}
+        </div>
+      )}
+
+      {/* ── Per-Element Custom Color Option ─────────────────────────────── */}
+      {selectedElementKey && (
+        <div className="mx-4 mt-3 rounded-xl border border-slate-700/80 bg-slate-950 overflow-hidden">
+          {/* Toggle button */}
+          <button
+            onClick={() => setColorOpen((o) => !o)}
+            className="w-full px-3 py-2.5 flex items-center justify-between gap-2 hover:bg-slate-900 transition-colors"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className="w-5 h-5 rounded-md border border-slate-600 flex-shrink-0 shadow-sm"
+                style={{
+                  background: currentColor || "linear-gradient(135deg, #eee, #ccc)",
+                  boxShadow: currentColor ? `0 0 0 2px ${currentColor}33` : undefined,
+                }}
+              />
+              <span className="text-[11px] font-bold text-slate-200 flex items-center gap-1.5">
+                <Palette size={13} className="text-indigo-400" />
+                Custom Color
+              </span>
+              {currentColor && (
+                <span className="text-[10px] font-mono text-slate-400 truncate">{currentColor}</span>
+              )}
+            </div>
+            <span className={`text-slate-400 transition-transform duration-200 ${colorOpen ? "rotate-180" : ""}`}>
+              <ChevronDown size={14} />
+            </span>
+          </button>
+
+          {/* Popup */}
+          {colorOpen && (
+            <div className="px-3 pb-3 pt-1 border-t border-slate-800 space-y-3 animate-fade-in">
+              {/* Preset swatches */}
+              <div>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
+                  Quick Colors
+                </span>
+                <div className="grid grid-cols-8 gap-1.5">
+                  {COLOR_PRESETS.map((c) => {
+                    const active = currentColor?.toLowerCase() === c.toLowerCase();
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setElementColor(c)}
+                        title={c}
+                        className="w-6 h-6 rounded-md border border-slate-600 hover:scale-110 transition-transform flex-shrink-0"
+                        style={{
+                          background: c,
+                          outline: active ? "2px solid #fff" : "none",
+                          outlineOffset: 1,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Native picker + hex input */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={currentColor || "#6366F1"}
+                  onChange={(e) => setElementColor(e.target.value)}
+                  className="w-9 h-9 rounded-lg border border-slate-700 bg-transparent cursor-pointer flex-shrink-0"
+                  title="Pick custom color"
+                />
+                <input
+                  type="text"
+                  value={currentColor || ""}
+                  onChange={(e) => setElementColor(e.target.value)}
+                  placeholder="#000000"
+                  maxLength={9}
+                  className="flex-1 min-w-0 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+                />
+                {currentColor && (
+                  <button
+                    onClick={clearElementColor}
+                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 transition-colors flex items-center gap-1 flex-shrink-0"
+                    title="Reset to default color"
+                  >
+                    <RotateCcw size={11} /> Reset
+                  </button>
+                )}
+              </div>
+
+              <p className="text-[9px] text-slate-600 leading-snug">
+                Applies to this element only. Leave empty to use the theme color.
+              </p>
+            </div>
           )}
         </div>
       )}
