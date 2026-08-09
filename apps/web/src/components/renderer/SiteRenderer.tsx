@@ -113,7 +113,10 @@ function customHtmlHasRootElement(html: string): boolean {
 }
 
 // ─── Theme Style Builder ───────────────────────────────────────────────────
-function buildCssVariables(theme: SiteConfigJSON["theme"]): CSSProperties {
+function buildCssVariables(
+  theme: SiteConfigJSON["theme"],
+  interactive?: boolean
+): CSSProperties {
   const isDark = theme.mode === "dark" || theme.mode === "glassmorphism";
 
   return {
@@ -128,7 +131,11 @@ function buildCssVariables(theme: SiteConfigJSON["theme"]): CSSProperties {
     backgroundColor: "var(--bg)",
     color: "var(--text)",
     fontFamily: "var(--font-body)",
-    minHeight: "100vh",
+    // In the interactive visual editor the site is mounted INSIDE a device
+    // screen, so it should fill the screen (minHeight: 100%) and scroll
+    // within it — NOT force the whole device to be 100vh tall. On the
+    // published site / preview it keeps its natural full-height behavior.
+    minHeight: interactive ? "100%" : "100vh",
   } as CSSProperties;
 }
 
@@ -746,10 +753,13 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
   const socials = section.content?.socials || {};
   const customLinks = section.content?.customLinks || [];
   const avatar = section.content?.avatar || "";
-  const [clickedIdx, setClickedIdx] = useState<number | null>(null);
+const [clickedIdx, setClickedIdx] = useState<number | null>(null);
 
   const handleLinkClick = (i: number, url: string, e: React.MouseEvent) => {
     if (!url || url === "#") { e.preventDefault(); return; }
+    // In the visual editor the container already prevents navigation (links are
+    // for selection/editing, not opening). Don't flash a misleading "Opened ✓".
+    if (interactive) { e.preventDefault(); return; }
     setClickedIdx(i);
     setTimeout(() => setClickedIdx(null), 1500);
   };
@@ -879,10 +889,13 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
 
 function LinksSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const links: any[] = section.content?.links || [];
-  const [clickedIdx, setClickedIdx] = useState<number | null>(null);
+const [clickedIdx, setClickedIdx] = useState<number | null>(null);
 
   const handleClick = (i: number, url: string, e: React.MouseEvent) => {
     if (!url || url === "#") { e.preventDefault(); return; }
+    // In the visual editor the container already prevents navigation (links are
+    // for selection/editing, not opening). Don't flash a misleading "Opened ✓".
+    if (interactive) { e.preventDefault(); return; }
     setClickedIdx(i);
     setTimeout(() => setClickedIdx(null), 1500);
   };
@@ -1401,9 +1414,71 @@ const containerClass = resolveTemplateContainerClass(config);
     containerSelector
   );
 
-  return (
-    <div className={containerClass} style={buildCssVariables(config.theme)}>
+return (
+<div
+      className={containerClass}
+      style={buildCssVariables(config.theme, interactive)}
+      // ── Editor-only safety net ─────────────────────────────────────────
+      // In interactive (visual editor) mode we prevent two things that would
+      // otherwise yank the user out of the editor:
+      //   1) Link navigation — any click inside an <a href> (React-rendered OR
+      //      raw HTML via dangerouslySetInnerHTML) is prevented so the element
+      //      can be selected/edited instead of opening the page.
+      //   2) Form submission — custom-HTML forms won't navigate during editing.
+      // We use the *capture* phase so this runs before the section onClick
+      // selection logic, and preventDefault() does NOT stop event bubbling, so
+      // element/section selection still works. The published site & preview
+      // render without `interactive`, so their links/forms behave normally.
+      onClickCapture={(e) => {
+        if (!interactive) return;
+        if ((e.target as HTMLElement)?.closest?.("a[href], button[type='submit']")) {
+          e.preventDefault();
+        }
+      }}
+      onSubmitCapture={(e) => {
+        if (!interactive) return;
+        e.preventDefault();
+      }}
+    >
       {scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
+
+{/* Editor-only: force a normal cursor so template custom-cursor CSS
+          (cursor: url(...) / cursor: none) never interferes with editing.
+          Scoped to the template container so the published site keeps the
+          template's real cursors. */}
+      {interactive && (
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `.${containerClass}, .${containerClass} *, .${containerClass} a, .${containerClass} button { cursor: auto !important; }`,
+          }}
+        />
+      )}
+
+      {/* ── Editor-only: device-accurate layout reset ─────────────────────
+          In the visual editor the site is mounted INSIDE a small device
+          screen (e.g. a 360×800 Android phone), but section classes like
+          min-h-[75vh] / min-h-screen resolve against the FULL browser window
+          — not the device screen. This makes sections disproportionately tall
+          and misaligned on mobile. These overrides (active only during
+          editing) make vh-based sizing resolve against the device container
+          so sections align cleanly exactly like desktop devtools. */}
+{interactive && (
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              .${containerClass} { height: 100% !important; min-height: 100% !important; }
+              .${containerClass} > * > [class*="min-h-screen"],
+              .${containerClass} > * > [class*="min-h-[75vh]"],
+              .${containerClass} > * > [class*="min-h-[100vh]"],
+              .${containerClass} [class*="min-h-screen"],
+              .${containerClass} [class*="min-h-[75vh]"],
+              .${containerClass} [class*="min-h-[100vh]"] {
+                min-height: 100% !important;
+              }
+            `,
+          }}
+        />
+      )}
 
       {config.sections.map((section) => {
         if (section.visible === false) return null;

@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useEditorStore } from "@/store/editorStore";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
+import { DeviceFrame } from "@/components/editor/DeviceFrame";
 import { Layers } from "lucide-react";
 
 interface CanvasPreviewProps {
@@ -62,19 +63,10 @@ export function CanvasPreview({
     return () => clearTimeout(timer);
   }, [selectedElementKey]);
 
-  const viewportWidths = {
-    desktop: "w-full max-w-full",
-    tablet: "w-[768px] border-x border-slate-700 shadow-2xl rounded-t-2xl my-4",
-    mobile: "w-[375px] border-x border-slate-700 shadow-2xl rounded-t-3xl my-6",
-  };
-
-  return (
-    <div
-      ref={scrollContainerRef}
-      className="flex-1 h-full bg-slate-950 overflow-y-auto flex flex-col items-center relative"
-    >
-      {/* Device Frame Wrapper */}
-      <div className={`transition-all duration-300 min-h-full ${viewportWidths[viewport]}`}>
+return (
+    <div className="flex-1 h-full bg-slate-950 overflow-hidden flex items-center justify-center relative">
+      {/* Device Frame — content scrolls INSIDE the device screen, not the canvas */}
+      <DeviceFrame viewport={viewport} scrollRef={scrollContainerRef}>
         {config ? (
           <SiteRenderer
             config={config}
@@ -91,7 +83,7 @@ export function CanvasPreview({
             <p className="text-sm font-medium">No site configuration loaded.</p>
           </div>
         )}
-      </div>
+      </DeviceFrame>
     </div>
   );
 }

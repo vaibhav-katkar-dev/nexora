@@ -188,8 +188,19 @@ useEffect(() => {
         category: templateConfig.meta.category || "portfolio",
         config: templateConfig,
       });
-      if (res.data?._id) {
+if (res.data?._id) {
         toast.success("Project created from template!");
+        // ★ Pre-cache the freshly created project (which carries the full
+        // template config) so the editor can render it instantly without a
+        // second network fetch right after navigating.
+        try {
+          sessionStorage.setItem(
+            `nexora-pending-project:${res.data._id}`,
+            JSON.stringify(res.data)
+          );
+        } catch {
+          /* ignore quota / privacy-mode failures — editor falls back to fetch */
+        }
         router.push(`/editor/${res.data._id}`);
       }
     } catch (err: any) {

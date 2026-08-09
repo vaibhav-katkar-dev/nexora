@@ -58,13 +58,38 @@ export default function EditorPage() {
   const toastRef = useRef(toast);
   useEffect(() => { toastRef.current = toast; });
 
-  // Load project data on mount — only re-run when the project ID changes.
+// Load project data on mount — only re-run when the project ID changes.
   // IMPORTANT: toast must NOT be in the dep array; it's not stable and would
   // cause loadProject to re-fire after every add/update, wiping local state.
   useEffect(() => {
     async function fetchProject() {
+      const id = params.id as string;
+
+      // ★ Instant path: when the user just created a project from a template on
+      // the gallery page, the freshly created project (with its full template
+      // config) is cached in sessionStorage. Render it immediately and skip the
+      // redundant network fetch — making "Use Template → editor" feel instant.
       try {
-        const id = params.id as string;
+        const cachedRaw = sessionStorage.getItem(`nexora-pending-project:${id}`);
+        if (cachedRaw) {
+          const cached = JSON.parse(cachedRaw);
+          sessionStorage.removeItem(`nexora-pending-project:${id}`);
+          if (cached && cached.config) {
+            loadProject(cached);
+            setCurrentSlug(cached.slug || "");
+            if (cached.config?.sections?.length > 0) {
+              setActiveSectionId(cached.config.sections[0].id);
+            }
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // Corrupt / unreadable cache — fall through to the network fetch.
+        sessionStorage.removeItem(`nexora-pending-project:${id}`);
+      }
+
+      try {
         const res = await projectsApi.getOne(id);
         if (res.data) {
           loadProject(res.data);
