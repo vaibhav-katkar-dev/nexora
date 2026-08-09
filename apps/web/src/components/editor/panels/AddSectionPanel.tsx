@@ -15,6 +15,9 @@ import {
   Link2,
   Code2,
   Plus,
+  Navigation,
+  MapPin,
+  MessageCircle,
 } from "lucide-react";
 
 interface AddSectionPanelProps {
@@ -23,6 +26,7 @@ interface AddSectionPanelProps {
 
 const SECTION_TEMPLATES = [
   { type: "hero", label: "Hero Banner", desc: "Main title, call-to-action & key metrics", icon: Sparkles },
+  { type: "navbar", label: "Navigation Bar", desc: "Sticky header with links & call-to-action", icon: Navigation },
   { type: "about", label: "About Me / Bio", desc: "Personal bio, skills grid & highlights", icon: User },
   { type: "features", label: "Features Grid", desc: "3-column grid highlighting key capabilities", icon: Zap },
   { type: "portfolio_grid", label: "Projects / Portfolio", desc: "Visual showcase cards for work samples", icon: Palette },
@@ -31,6 +35,8 @@ const SECTION_TEMPLATES = [
   { type: "pricing", label: "Pricing Tiers", desc: "Structured subscription or plan options", icon: CreditCard },
   { type: "faq", label: "FAQ Accordion", desc: "Frequently asked questions & answers", icon: AlignLeft },
   { type: "contact", label: "Contact Form & Details", desc: "Email, social handles & contact form", icon: Mail },
+  { type: "maps", label: "Google Map", desc: "Embed a map via address or lat/long", icon: MapPin },
+  { type: "whatsapp", label: "WhatsApp Button", desc: "Floating chat button with prefilled message", icon: MessageCircle },
   { type: "links", label: "Link in Bio", desc: "Button list for social media links", iconComp: Link2 },
   { type: "digital_card", label: "Digital VCard", desc: "Digital business card layout", iconComp: CreditCard },
   { type: "custom_html", label: "Custom HTML Code Block", desc: "Insert custom HTML/CSS embed block", iconComp: Code2 },
@@ -141,6 +147,35 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
             { question: "How does Nexora build sites?", answer: "Nexora combines AI prompts with modular templates to generate production-ready websites instantly." },
             { question: "Can I connect my custom domain?", answer: "Yes! You can publish your site directly with custom URL slugs or your custom domain name." },
           ],
+        };
+
+case "navbar":
+        return {
+          links: [
+            { label: "Home", url: "#home" },
+            { label: "About", url: "#about" },
+            { label: "Services", url: "#services" },
+            { label: "Contact", url: "#contact" },
+          ],
+          ctaText: "Get Started",
+          ctaLink: "#contact",
+        };
+
+      case "maps":
+        return {
+          address: "1600 Amphitheatre Pkwy, Mountain View, CA 94043",
+          lat: "",
+          lng: "",
+          zoom: 15,
+          height: 380,
+        };
+
+      case "whatsapp":
+        return {
+          phone: "15551234567",
+          buttonText: "Chat on WhatsApp",
+          defaultText: "Hi! I'd like to know more about your services.",
+          availability: "Typically replies within an hour",
         };
 
       case "links":

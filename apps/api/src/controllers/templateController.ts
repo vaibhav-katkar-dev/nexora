@@ -425,6 +425,49 @@ export const permanentDeleteTemplate = async (req: Request, res: Response) => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────
+// POST /api/v1/templates/admin/bulk-delete — Soft-delete MANY templates (admin, safe)
+// Accepts an array of ids; soft-deletes (sets deletedAt) each non-deleted one.
+// Never destroys data — everything stays restorable in Trash. Ignores ids that
+// are already deleted or don't exist, so a partial selection never errors.
+// ──────────────────────────────────────────────────────────────────────────
+export const bulkDeleteTemplates = async (req: Request, res: Response) => {
+  try {
+    const body = z
+      .object({
+        ids: z.array(z.string()).min(1, "At least one id is required").max(500, "Too many ids"),
+      })
+      .parse(req.body);
+
+    const validIds = body.ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+    if (validIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: { code: "INVALID_INPUT", message: "No valid template ids provided" },
+      });
+    }
+
+    const result = await Template.updateMany(
+      { _id: { $in: validIds }, deletedAt: null },
+      { $set: { deletedAt: new Date() } }
+    );
+
+    res.json({
+      success: true,
+      message: `Soft-deleted ${result.modifiedCount} template(s)`,
+      data: { deleted: result.modifiedCount, matched: result.matchedCount },
+    });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: { code: "INVALID_INPUT", message: "Invalid request body", details: error.errors },
+      });
+    }
+    res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });
+  }
+};
+
+// ──────────────────────────────────────────────────────────────────────────
 // POST /api/v1/templates/bulk-import — Import one or many templates (admin)
 // Validates each item; skips duplicates safely; continues on partial failure.
 // Ever imported item is wrapped so a failure does not corrupt the DB.
@@ -635,6 +678,25 @@ export const listDeletedTemplates = async (_req: Request, res: Response) => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────
+// DELETE /api/v1/templates/admin/trash — PERMANENTLY delete ALL soft-deleted
+// templates at once (admin, confirm-only). This CANNOT be undone.
+// Returns the number of permanently removed documents.
+// ──────────────────────────────────────────────────────────────────────────
+export const emptyTrash = async (_req: Request, res: Response) => {
+  try {
+    const result = await Template.deleteMany({ deletedAt: { $ne: null } });
+
+    res.json({
+      success: true,
+      message: `Permanently deleted ${result.deletedCount} template(s) from trash`,
+      data: { deleted: result.deletedCount },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });
+  }
+};
+
+// ──────────────────────────────────────────────────────────────────────────
 // GET /api/v1/templates/:id/preview — Get template defaultConfig for live preview (admin)
 // Safe: read-only, no DB modification. Preview is rendered client-side with temp state.
 // ──────────────────────────────────────────────────────────────────────────
@@ -664,6 +726,52 @@ export const previewTemplate = async (req: Request, res: Response) => {
         status: template.status,
         defaultConfig: template.defaultConfig,
       },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });
+  }
+};
+
+// ──────────────────────────────────────────────────────────────────────────
+// GET /api/v1/templates/admin/export — Export ALL templates (admin, read-only)
+// Returns the full template documents (including defaultConfig) as a JSON array
+// so admins can download a complete backup / shareable .json file.
+// ──────────────────────────────────────────────────────────────────────────
+export const exportAllTemplates = async (_req: Request, res: Response) => {
+  try {
+    const templates = await Template.find({})
+      .sort({ featuredOrder: 1, createdAt: -1 })
+      .lean();
+
+    const payload = templates.map((t) => ({
+      _id: t._id,
+      name: t.name,
+      slug: t.slug,
+      category: t.category,
+      description: t.description || "",
+      thumbnailUrl: t.thumbnailUrl,
+      imageUrl: t.imageUrl,
+      previewUrl: t.previewUrl,
+      tags: t.tags || [],
+      defaultConfig: t.defaultConfig,
+      version: t.version || "1.0.0",
+      author: t.author || "Nexora AI",
+      isPublic: t.isPublic,
+      isFeatured: t.isFeatured || false,
+      isPremium: t.isPremium || false,
+      status: t.status,
+      featuredOrder: t.featuredOrder || 0,
+      useCount: t.useCount || 0,
+      deletedAt: t.deletedAt || null,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+    }));
+
+    res.json({
+      success: true,
+      message: `Exported ${payload.length} templates`,
+      data: payload,
+      meta: { total: payload.length },
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });

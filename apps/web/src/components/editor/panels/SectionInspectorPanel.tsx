@@ -437,8 +437,83 @@ export function SectionInspectorPanel({
           </div>
         )}
 
+{/* ── MAPS SECTION SPECIAL PANEL ─────────────────────────────── */}
+        {section.type === "maps" && (
+          <div className="pt-3 border-t border-slate-800 space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-indigo-400">◈</span> Map Settings
+            </h3>
+
+            <div data-field-path="address">
+              <label className={labelClass}>Address (recommended)</label>
+              <input type="text" value={content.address || ""} onChange={(e) => handleFieldChange("address", e.target.value)} placeholder="e.g. 1600 Amphitheatre Pkwy, Mountain View" className={inputClass} />
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">— or use Latitude / Longitude —</label>
+              <div className="grid grid-cols-2 gap-2">
+                <div data-field-path="lat">
+                  <span className="text-[10px] text-slate-500 capitalize block mb-0.5">Latitude</span>
+                  <input type="text" value={content.lat || ""} onChange={(e) => handleFieldChange("lat", e.target.value)} placeholder="37.4221" className={inputClass} />
+                </div>
+                <div data-field-path="lng">
+                  <span className="text-[10px] text-slate-500 capitalize block mb-0.5">Longitude</span>
+                  <input type="text" value={content.lng || ""} onChange={(e) => handleFieldChange("lng", e.target.value)} placeholder="-122.0841" className={inputClass} />
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-2">Coordinates take priority over the address. Enter decimal degrees (e.g. 37.4221).</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div data-field-path="zoom">
+                <label className={labelClass}>Zoom Level</label>
+                <input type="number" value={content.zoom ?? 15} onChange={(e) => handleFieldChange("zoom", Number(e.target.value) || 15)} placeholder="15" className={inputClass} />
+              </div>
+              <div data-field-path="height">
+                <label className={labelClass}>Height (px)</label>
+                <input type="number" value={content.height ?? 380} onChange={(e) => handleFieldChange("height", Number(e.target.value) || 380)} placeholder="380" className={inputClass} />
+              </div>
+            </div>
+
+            <div data-field-path="embedUrl">
+              <label className={labelClass}>Or paste a full embed URL (optional)</label>
+              <input type="text" value={content.embedUrl || ""} onChange={(e) => handleFieldChange("embedUrl", e.target.value)} placeholder="https://maps.google.com/maps?q=..." className={inputClass} />
+            </div>
+          </div>
+        )}
+
+        {/* ── WHATSAPP SECTION SPECIAL PANEL ─────────────────────────── */}
+        {section.type === "whatsapp" && (
+          <div className="pt-3 border-t border-slate-800 space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-emerald-400">◈</span> WhatsApp Button
+            </h3>
+
+            <div data-field-path="phone">
+              <label className={labelClass}>WhatsApp Number (with country code)</label>
+              <input type="text" value={content.phone || ""} onChange={(e) => handleFieldChange("phone", e.target.value)} placeholder="e.g. 15551234567" className={inputClass} />
+              <p className="text-[10px] text-slate-500 mt-1">Digits only, include country code (e.g. 1 for US, 91 for India).</p>
+            </div>
+
+            <div data-field-path="buttonText">
+              <label className={labelClass}>Button Text</label>
+              <input type="text" value={content.buttonText || ""} onChange={(e) => handleFieldChange("buttonText", e.target.value)} placeholder="Chat on WhatsApp" className={inputClass} />
+            </div>
+
+            <div data-field-path="defaultText">
+              <label className={labelClass}>Prefilled Message</label>
+              <textarea rows={3} value={content.defaultText || ""} onChange={(e) => handleFieldChange("defaultText", e.target.value)} placeholder="Hi! I'd like to know more about your services." className={`${inputClass} resize-none`} />
+            </div>
+
+            <div data-field-path="availability">
+              <label className={labelClass}>Availability Note (optional)</label>
+              <input type="text" value={content.availability || ""} onChange={(e) => handleFieldChange("availability", e.target.value)} placeholder="Typically replies within an hour" className={inputClass} />
+            </div>
+          </div>
+        )}
+
         {/* Dynamic Content Fields (for all other section types) */}
-        {section.type !== "digital_card" && section.type !== "links" && (
+        {section.type !== "digital_card" && section.type !== "links" && section.type !== "maps" && section.type !== "whatsapp" && (
         <div className="pt-3 border-t border-slate-800 space-y-4">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
             Content Details

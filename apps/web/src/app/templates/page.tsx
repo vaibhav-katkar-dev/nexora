@@ -286,9 +286,9 @@ useEffect(() => {
                 >
                   {/* ── Live Preview Area (the hero) ─────────────────────── */}
                   <div className="relative shrink-0 rounded-[13px] overflow-hidden">
-                    {/* Live render fills ~72% of the card; subtle scale on hover */}
+{/* Live desktop render fills the wide 16:9 preview; subtle scale on hover */}
                     <div className="origin-top transform-gpu transition-transform duration-500 ease-out group-hover:scale-[1.02]">
-                      <TemplateThumbnail config={template.config} name={template.name} category={template.category} height={300} />
+                      <TemplateThumbnail config={template.config} name={template.name} category={template.category} />
                     </div>
                   </div>
 
@@ -322,7 +322,22 @@ useEffect(() => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPreviewTemplate(template);
+                          // Store the full config so the new-tab preview renders
+                          // instantly (sessionStorage is shared across tabs in
+                          // this browser session).
+                          try {
+                            sessionStorage.setItem(
+                              `nexora-tpl-preview:${template.slug}`,
+                              JSON.stringify({ config: template.config })
+                            );
+                          } catch {
+                            /* ignore quota / privacy-mode failures */
+                          }
+                          window.open(
+                            `/templates/preview/${template.slug}`,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
                         }}
                         className="px-4 h-[42px] rounded-[10px] text-[13px] font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-colors duration-250 flex items-center justify-center gap-1.5"
                       >

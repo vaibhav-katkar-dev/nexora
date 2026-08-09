@@ -270,6 +270,11 @@ export const templatesApi = {
   adminTrash: () =>
     apiFetch<{ data: any[]; meta: any }>("/templates/admin/trash"),
 
+  emptyTrash: () =>
+    apiFetch<{ data: { deleted: number } }>("/templates/admin/trash", {
+      method: "DELETE",
+    }),
+
   create: (body: any) =>
     apiFetch<{ data: any }>("/templates", {
       method: "POST",
@@ -294,8 +299,14 @@ export const templatesApi = {
   restore: (id: string) =>
     apiFetch<{ data: any }>(`/templates/${id}/restore`, { method: "POST" }),
 
-  permanentDelete: (id: string) =>
+permanentDelete: (id: string) =>
     apiFetch<{ data: any }>(`/templates/${id}/permanent`, { method: "DELETE" }),
+
+  bulkDelete: (ids: string[]) =>
+    apiFetch<{ data: { deleted: number; matched: number } }>("/templates/admin/bulk-delete", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
 
   bulkImport: (templates: any[]) =>
     apiFetch<{
@@ -306,8 +317,11 @@ export const templatesApi = {
       body: JSON.stringify({ templates }),
     }),
 
-  preview: (id: string) =>
+preview: (id: string) =>
     apiFetch<{ data: any }>(`/templates/${id}/preview`),
+
+  exportAll: () =>
+    apiFetch<{ data: any[]; meta: any }>(`/templates/admin/export`),
 };
 
 // ─── Media / Cloudinary Upload ──────────────────────────────────────────────

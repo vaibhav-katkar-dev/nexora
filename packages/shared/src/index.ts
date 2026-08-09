@@ -37,6 +37,8 @@ export const SectionTypeEnum = z.enum([
   "digital_card",
   "contact",
   "links",
+  "maps",
+  "whatsapp",
   "blog",
   "footer",
   "custom_html",
@@ -208,9 +210,12 @@ const DANGEROUS_CSS_PATTERNS = [
   /@import\b/i,
   /@charset\b/i,
   /expression\s*\(/i,
-  /javascript\s*:/i,
+/javascript\s*:/i,
   /vbscript\s*:/i,
-  /behavior\s*:/i,
+  // IE-specific "behavior" property (e.g. "behavior: url(x.htc)"). Must NOT be
+  // preceded by a word char / hyphen, so CSS like "scroll-behavior: smooth"
+  // and "scroll-behavior: auto" (legitimate modern CSS) is never rejected.
+  /(?:^|[^-\w])behavior\s*:/i,
   /</,
 ];
 
@@ -254,12 +259,28 @@ function scopeCss(css: string, container: string): string {
     } else if (trimmed.startsWith("@")) {
       // Leaf at-rule (e.g. @font-face) — keep as-is
       result += trimmed + "{" + body + "}";
-    } else if (trimmed.length > 0) {
+} else if (trimmed.length > 0) {
       const scopedSelectors = trimmed
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean)
         .map((sel) => {
+// Rewrite a leading "body.tpl-<id>" / "html.tpl-<id>" element+class
+          // prefix (used by uploaded templates) into the scoped container class.
+          const leadingTpl = sel.match(/^(?:body|html)\.([A-Za-z0-9_-]+)([\s>+~:.*\[]*.*)$/);
+          if (leadingTpl) {
+            return container + leadingTpl[2];
+          }
+          // Rewrite a leading "body"/"html" element (followed by a combinator,
+          // child, adjacent, general-sibling, or pseudo) into the scoped
+          // container class. This keeps global template CSS such as
+          // "body nav", "body #hero", "body section h2", "body::before",
+          // "body footer" scoped to the container instead of producing an
+          // unreachable ".container body nav" (there is no nested <body>).
+          const bodyPrefix = sel.match(/^(?:body|html)([\s>+~:])(.*)$/);
+          if (bodyPrefix) {
+            return container + bodyPrefix[1] + bodyPrefix[2];
+          }
           if (sel === ":root" || sel === "html" || sel === "body") return container;
           if (sel.startsWith(container)) return sel;
           if (sel.includes(container)) return sel;

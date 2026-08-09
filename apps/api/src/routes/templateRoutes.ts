@@ -11,9 +11,12 @@ import {
   deleteTemplate,
   restoreTemplate,
   permanentDeleteTemplate,
-  bulkImportTemplates,
-  listDeletedTemplates,
+bulkImportTemplates,
+listDeletedTemplates,
   previewTemplate,
+exportAllTemplates,
+  bulkDeleteTemplates,
+  emptyTrash,
 } from "../controllers/templateController.js";
 import { authenticateJwt, requireAdmin } from "../middleware/auth.js";
 
@@ -34,6 +37,15 @@ router.get("/admin/list", adminListTemplates);
 
 // GET /api/v1/templates/admin/trash — soft-deleted templates
 router.get("/admin/trash", listDeletedTemplates);
+
+// DELETE /api/v1/templates/admin/trash — permanently delete ALL soft-deleted templates (admin, confirm-only)
+router.delete("/admin/trash", emptyTrash);
+
+// GET /api/v1/templates/admin/export — export ALL templates as JSON (admin)
+router.get("/admin/export", exportAllTemplates);
+
+// POST /api/v1/templates/admin/bulk-delete — soft-delete MANY templates (admin, safe)
+router.post("/admin/bulk-delete", bulkDeleteTemplates);
 
 // POST /api/v1/templates — Create template
 router.post("/", createTemplate);

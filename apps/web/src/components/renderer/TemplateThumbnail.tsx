@@ -41,39 +41,39 @@ export interface TemplateThumbnailProps {
   config?: SiteConfigJSON;
   name?: string;
   category?: string;
-  /** Preview container height in px (defaults to 280 on desktop). */
+  /** Optional fallback height (px). When omitted the preview uses a wide 16:9 ratio. */
   height?: number;
 }
 
-// The miniature is rendered at a fixed poster size (a "virtual viewport"), then
-// uniformly scaled down so the WHOLE page fits inside the card — Carrd/Framer
-// style. A taller poster height captures more of the page so nothing important
-// is cropped, and the preview is centered inside the card.
-const RENDER_WIDTH = 560;
-const RENDER_HEIGHT = 1200; // tall enough to show the full page before scaling
+// The miniature is rendered at a real desktop resolution (1440×900) and then
+// uniformly scaled DOWN to fit the card WIDTH. This reproduces the actual
+// desktop first viewport — from the top navigation through the main hero —
+// exactly as it would appear on a real monitor. Nothing is re-layed-out into a
+// card or mobile composition; the finished website is simply scaled to fit.
+const RENDER_WIDTH = 1440;
+const RENDER_HEIGHT = 900; // ≈ desktop first viewport
 const PAGE_BG = "#ffffff";
 
 const FALLBACK_BG = "bg-gradient-to-br from-slate-800 to-slate-950";
 
 /**
- * Renders a live, scaled-down, non-interactive miniature of a template config —
- * Carrd / Framer / Webflow style.
+ * Renders an authentic, scaled-down desktop screenshot of a template config —
+ * the way the finished website actually looks on a desktop monitor.
  *
- * The entire website is rendered at a fixed poster size and then uniformly
- * scaled to FIT within the card's width AND height (proportional, aspect-ratio
- * preserved, never stretched or distorted) and CENTERED inside the card. This
- * gives users an accurate, full overview of the template with no zoom or
- * cropping.
+ * The site is rendered at 1440×900 and uniformly scaled to fill the card WIDTH
+ * (proportional, aspect-ratio preserved, never stretched), anchored to the top
+ * so the desktop navigation and hero are always visible — reproducing the real
+ * first viewport rather than a narrow portrait crop.
  *
  * Performance:
  *  - Intersection Observer lazy-mounts the render only when inside the viewport.
  *  - React.memo prevents re-renders on unrelated state changes.
  *  - pointer-events:none + aria-hidden keep the preview inert & cheap.
- *  - ResizeObserver keeps the preview in sync with the card size.
+ *  - ResizeObserver keeps the preview in sync with the card width.
  *  - transforms + will-change:transform use the GPU (60fps safe).
  *  - Error boundary + graceful fallback: a broken config never crashes the grid.
  */
-function TemplateThumbnailBase({ config, name, category, height = 280 }: TemplateThumbnailProps) {
+function TemplateThumbnailBase({ config, name, category, height }: TemplateThumbnailProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [box, setBox] = useState({ width: 0, height: 0 });
@@ -134,24 +134,30 @@ function TemplateThumbnailBase({ config, name, category, height = 280 }: Templat
     </div>
   );
 
-const showPreview = inView && config && box.width > 0;
+const showPreview = inView && config && box.width > 0 && box.height > 0;
 
-  // Uniform scale driven by the card WIDTH so the preview fills the FULL card
-  // width, preserving the aspect ratio (no stretch/distortion). Anchored to the
-  // top so the navbar/hero is always visible; excess height clips at the card.
-  const scale = box.width > 0 ? box.width / RENDER_WIDTH : 0;
+  // "Cover" scaling: scale by the LARGER of the width/height ratios so the
+  // desktop render (1440×900) ALWAYS fills the entire card area on every device
+  // and card size — no empty gaps, no clipping on the sides. The overflow is
+  // distributed evenly by centering, and the preview is anchored toward the top
+  // so the nav + hero (first viewport) remain visible.
+  const scaleX = box.width > 0 ? box.width / RENDER_WIDTH : 0;
+  const scaleY = box.height > 0 ? box.height / RENDER_HEIGHT : 0;
+  const scale = Math.max(scaleX, scaleY);
 
-  // Anchor to the top-left: the preview fills the full card width and shows the
-  // top of the page (nav + hero). No horizontal offset needed since it spans
-  // the full width; vertical offset is 0 to keep it top-anchored.
-  const offsetX = 0;
-  const offsetY = 0;
+  // Center the scaled render both ways so overfill is split symmetrically.
+  const offsetX = (box.width - RENDER_WIDTH * scale) / 2;
+  const offsetY = (box.height - RENDER_HEIGHT * scale) / 2;
 
   return (
     <div
       ref={wrapperRef}
       className="relative w-full overflow-hidden bg-slate-900 select-none"
-      style={{ minHeight: height, maxHeight: height }}
+      style={
+        height
+          ? { minHeight: height, maxHeight: height }
+          : { aspectRatio: "16 / 9", width: "100%" }
+      }
       aria-hidden="true"
     >
       {!inView ? (
@@ -194,4 +200,3 @@ const showPreview = inView && config && box.width > 0;
 const TemplateThumbnail = memo(TemplateThumbnailBase);
 
 export { TemplateThumbnail };
-
