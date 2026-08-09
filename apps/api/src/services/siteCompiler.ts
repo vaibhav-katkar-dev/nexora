@@ -79,13 +79,14 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
   const secondary = theme.secondaryColor;
 
   switch (section.type) {
-    case "hero":
+case "hero":
       return `
         <section id="${section.id}" class="hero-section">
           <div class="hero-inner">
             ${section.content?.badge ? `<span class="badge">${section.content.badge}</span>` : ""}
             <h1>${section.title || ""}</h1>
             ${section.subtitle ? `<p class="subtitle">${section.subtitle}</p>` : ""}
+            ${section.content?.avatarUrl ? `<img src="${section.content.avatarUrl}" alt="${section.title || "Hero"}" class="hero-image" />` : ""}
             ${section.content?.ctaText
               ? `<a href="${section.content.ctaLink || "#"}" class="cta-btn">${section.content.ctaText}</a>`
               : ""}
@@ -113,6 +114,78 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
                 <h3>${item.title || ""}</h3>
                 <p>${item.desc || ""}</p>
               </div>`).join("")}
+          </div>
+        </section>`;
+
+case "services":
+      const serviceItems: any[] = section.content?.items || [];
+      return `
+        <section id="${section.id}" class="services-section">
+          <h2>${section.title || "Services"}</h2>
+          ${section.subtitle ? `<p class="section-subtitle">${section.subtitle}</p>` : ""}
+          <div class="services-grid">
+            ${serviceItems.map((item: any) => `
+              <article class="service-card">
+                ${item.image ? `<img src="${item.image}" alt="${item.title || ""}" />` : ""}
+                <div class="service-card-body">
+                  <h3>${item.title || ""}</h3>
+                  <p>${item.desc || ""}</p>
+                </div>
+              </article>`).join("")}
+          </div>
+        </section>`;
+
+    case "gallery":
+      const galleryImages: any[] = section.content?.images || [];
+      return `
+        <section id="${section.id}" class="gallery-section">
+          <h2>${section.title || "Gallery"}</h2>
+          ${section.subtitle ? `<p class="section-subtitle">${section.subtitle}</p>` : ""}
+          <div class="gallery-grid">
+            ${galleryImages.map((img: any) => `
+              <figure class="gallery-item">
+                <img src="${img.url || ""}" alt="${img.alt || "Gallery image"}" loading="lazy" />
+              </figure>`).join("")}
+          </div>
+        </section>`;
+
+    case "team":
+      const members: any[] = section.content?.members || [];
+      return `
+        <section id="${section.id}" class="team-section">
+          <h2>${section.title || "Our Team"}</h2>
+          ${section.subtitle ? `<p class="section-subtitle">${section.subtitle}</p>` : ""}
+          <div class="team-grid">
+            ${members.map((m: any) => `
+              <article class="team-card">
+                ${m.avatar ? `<img src="${m.avatar}" alt="${m.name || ""}" loading="lazy" />` : ""}
+                <div class="team-card-body">
+                  <h3>${m.name || ""}</h3>
+                  <div class="team-role">${m.role || ""}</div>
+                  ${m.bio ? `<p>${m.bio}</p>` : ""}
+                </div>
+              </article>`).join("")}
+          </div>
+        </section>`;
+
+    case "testimonials":
+      const testimonies: any[] = section.content?.items || [];
+      return `
+        <section id="${section.id}" class="testimonials-section">
+          <h2>${section.title || "Testimonials"}</h2>
+          ${section.subtitle ? `<p class="section-subtitle">${section.subtitle}</p>` : ""}
+          <div class="testimonials-grid">
+            ${testimonies.map((t: any) => `
+              <figure class="testimonial-card">
+                <blockquote>“${t.quote || ""}”</blockquote>
+                <figcaption>
+                  ${t.avatar ? `<img src="${t.avatar}" alt="${t.author || ""}" class="testimonial-avatar" loading="lazy" />` : ""}
+                  <div class="testimonial-meta">
+                    <div class="testimonial-author">${t.author || ""}</div>
+                    ${t.role ? `<div class="testimonial-role">${t.role}</div>` : ""}
+                  </div>
+                </figcaption>
+              </figure>`).join("")}
           </div>
         </section>`;
 
@@ -189,7 +262,7 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
         </section>`;
     }
 
-    case "contact":
+case "contact":
       const c = section.content || {};
       return `
         <section id="${section.id}" class="contact-section">
@@ -203,6 +276,43 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
             ${c.github ? `<p><a href="${c.github}" target="_blank" rel="noopener">GitHub →</a></p>` : ""}
           </div>
         </section>`;
+
+    case "maps":
+      const embedSrc =
+        section.content?.embedUrl ||
+        (section.content?.lat || section.content?.lng
+          ? `https://maps.google.com/maps?q=${section.content.lat},${section.content.lng}&z=${section.content.zoom || 15}&output=embed`
+          : section.content?.address || section.content?.query
+          ? `https://maps.google.com/maps?q=${encodeURIComponent(section.content.address || section.content.query)}&z=${section.content.zoom || 15}&output=embed`
+          : "");
+      return `
+        <section id="${section.id}" class="maps-section">
+          <h2>${section.title || "Location"}</h2>
+          ${section.subtitle ? `<p class="section-subtitle">${section.subtitle}</p>` : ""}
+          ${section.content?.address ? `<p class="map-address">📍 ${section.content.address}</p>` : ""}
+          ${embedSrc
+            ? `<div class="map-frame"><iframe src="${embedSrc}" width="100%" height="${section.content.height || 380}" style="border:0" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>`
+            : `<div class="map-empty">Add an address or coordinates to display the map.</div>`}
+        </section>`;
+
+    case "whatsapp":
+      const waPhone = (section.content?.phone || "").replace(/[^0-9]/g, "");
+      const waLink = `https://wa.me/${waPhone || "15551234567"}?text=${encodeURIComponent(section.content?.defaultText || "Hi! I'd like to know more about your services.")}`;
+      return `
+        <section id="${section.id}" class="whatsapp-section">
+          ${section.title ? `<h2>${section.title}</h2>` : ""}
+          ${section.subtitle ? `<p class="section-subtitle">${section.subtitle}</p>` : ""}
+          <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="whatsapp-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            <span>${section.content?.buttonText || "Chat on WhatsApp"}</span>
+          </a>
+          ${section.content?.availability ? `<p class="wa-availability">${section.content.availability}</p>` : ""}
+        </section>`;
+
+case "custom_html":
+      // Render the raw HTML directly so templates that ship full-structure
+      // markup (own <section>/<nav>/<footer> roots) keep their layout intact.
+      return `${section.content?.html || ""}`;
 
     default:
       return `<section id="${section.id}"><h2>${section.title || ""}</h2><p>${section.subtitle || ""}</p></section>`;
@@ -251,7 +361,43 @@ function buildThemeCss(theme: SiteConfigJSON["theme"]): string {
     .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
     .portfolio-card { padding: 1.75rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); }
     .portfolio-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-    .tag { display: inline-block; margin-top: 0.75rem; padding: 0.25rem 0.75rem; background: var(--primary); color: #fff; border-radius: 999px; font-size: 0.75rem; }
+.tag { display: inline-block; margin-top: 0.75rem; padding: 0.25rem 0.75rem; background: var(--primary); color: #fff; border-radius: 999px; font-size: 0.75rem; }
+
+    /* Hero image */
+    .hero-image { width: 100%; max-width: 720px; height: 380px; object-fit: cover; border-radius: 18px; margin: 1.5rem auto 2rem; box-shadow: 0 25px 60px rgba(0,0,0,0.4); }
+
+    /* Services */
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+    .service-card { overflow: hidden; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: ${isGlass ? "rgba(255,255,255,0.05)" : isDark ? "rgba(255,255,255,0.03)" : "#f8f9fa"}; backdrop-filter: ${isGlass ? "blur(12px)" : "none"}; transition: transform 0.3s, box-shadow 0.3s; }
+    .service-card:hover { transform: translateY(-6px); box-shadow: 0 20px 45px rgba(0,0,0,0.25); }
+    .service-card img { width: 100%; height: 180px; object-fit: cover; }
+    .service-card-body { padding: 1.5rem; }
+    .service-card-body h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--primary); }
+
+    /* Gallery */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 2.5rem; }
+    .gallery-item { margin: 0; overflow: hidden; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); }
+    .gallery-item img { width: 100%; height: 220px; object-fit: cover; display: block; transition: transform 0.4s; }
+    .gallery-item:hover img { transform: scale(1.06); }
+
+    /* Team */
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+    .team-card { overflow: hidden; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: ${isGlass ? "rgba(255,255,255,0.05)" : isDark ? "rgba(255,255,255,0.03)" : "#f8f9fa"}; text-align: center; transition: transform 0.3s, box-shadow 0.3s; }
+    .team-card:hover { transform: translateY(-6px); box-shadow: 0 20px 45px rgba(0,0,0,0.25); }
+    .team-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+    .team-card-body { padding: 1.25rem; }
+    .team-card-body h3 { font-size: 1.05rem; font-weight: 700; }
+    .team-role { color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 0.35rem 0 0.5rem; }
+    .team-card-body p { font-size: 0.85rem; opacity: 0.7; }
+
+    /* Testimonials */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+    .testimonial-card { padding: 1.75rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: ${isGlass ? "rgba(255,255,255,0.05)" : isDark ? "rgba(255,255,255,0.03)" : "#f8f9fa"}; }
+    .testimonial-card blockquote { margin: 0 0 1.25rem; font-size: 0.95rem; font-style: italic; opacity: 0.85; line-height: 1.6; }
+    .testimonial-card figcaption { display: flex; align-items: center; gap: 0.75rem; }
+    .testimonial-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+    .testimonial-author { font-weight: 700; font-size: 0.9rem; }
+    .testimonial-role { font-size: 0.8rem; opacity: 0.6; }
 
     /* Menu */
     .menu-category { margin-bottom: 3rem; }
@@ -341,17 +487,21 @@ export async function buildStaticSite(project: IProjectDocument): Promise<{ stat
   const sectionsHtml = config.sections.map((s) => renderSection(s, config.theme)).join("\n");
 
 
-  // Scoped template customCss escape hatch (sanitized + scoped to the container)
+// Scoped template customCss escape hatch (sanitized + scoped to the container).
+  // Also scope customCode.css (uploaded templates store their animated CSS there)
+  // so its "body.tpl-<slug>" selectors are rewritten to the container class.
   const containerClass = resolveTemplateContainerClass(config);
   const containerSelector = `.${containerClass}`;
-  const scopedTemplateCss = sanitizeTemplateCss(config.customCss, containerSelector);
+  const scopedTemplateCss = sanitizeTemplateCss(
+[config.customCss, config.customCode?.css, customCode?.css].filter(Boolean).join("\n"),
+    containerSelector
+  );
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   ${seoHead}
   <style>${themeCss}</style>
-  ${customCode?.css ? `<style>${customCode.css}</style>` : ""}
   ${scopedTemplateCss ? `<style>${scopedTemplateCss}</style>` : ""}
 </head>
 <body>

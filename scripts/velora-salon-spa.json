@@ -1,0 +1,316 @@
+{
+  "meta": {
+    "id": "velora-salon-spa",
+    "slug": "velora-salon-spa",
+    "title": "Velora Salon & Spa",
+    "description": "A premium emerald-and-gold salon experience with editorial typography, refined glass surfaces, elegant service cards, luxury imagery, subtle motion, and a sophisticated booking experience.",
+    "category": "business",
+    "author": "Nexora Design Studio",
+    "version": "2.0.0",
+    "tags": [
+      "Salon",
+      "Luxury",
+      "Emerald & Gold",
+      "Premium",
+      "Elegant",
+      "Animated"
+    ],
+    "popularity": 98,
+    "isNew": true,
+    "status": "published"
+  },
+  "theme": {
+    "primaryColor": "#C9A227",
+    "secondaryColor": "#0B3B2E",
+    "accentColor": "#E7C9A9",
+    "backgroundColor": "#0B3B2E",
+    "textColor": "#F7F3EA",
+    "fontFamily": "Inter",
+    "headingFont": "Cormorant Garamond",
+    "bodyFont": "Jost",
+    "borderRadius": "18px",
+    "buttonVariant": "pill",
+    "cardVariant": "glass",
+    "shadow": "xl",
+    "mode": "dark",
+    "spacingScale": "roomy",
+    "animations": true
+  },
+  "sections": [
+    {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "transparent",
+      "content": {
+        "ctaText": "Book Your Ritual",
+        "ctaLink": "#contact",
+        "links": [
+          {
+            "label": "Services",
+            "url": "#services"
+          },
+          {
+            "label": "Gallery",
+            "url": "#gallery"
+          },
+          {
+            "label": "Our Team",
+            "url": "#team"
+          },
+          {
+            "label": "Stories",
+            "url": "#testimonials"
+          },
+          {
+            "label": "Contact",
+            "url": "#contact"
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "hero",
+      "type": "hero",
+      "variant": "split",
+      "title": "Radiance, Redefined.",
+      "subtitle": "Where modern artistry meets timeless indulgence — hair, skin and body rituals crafted around the way you want to feel.",
+      "badge": "✦ Emerald City's Premier Salon Since 2010",
+      "content": {
+        "ctaText": "Reserve Your Ritual",
+        "ctaLink": "#contact",
+        "secondaryCtaText": "Explore Services",
+        "secondaryCtaLink": "#services",
+        "avatarUrl": "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=700&q=80",
+        "stats": [
+          {
+            "label": "Years of Craft",
+            "value": "15+"
+          },
+          {
+            "label": "Happy Clients",
+            "value": "20K+"
+          },
+          {
+            "label": "Master Stylists",
+            "value": "12"
+          },
+          {
+            "label": "Average Rating",
+            "value": "4.9★"
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "services",
+      "type": "menu_list",
+      "variant": "default",
+      "title": "Rituals Crafted Around You",
+      "subtitle": "Signature treatments for hair, skin, nails and complete-body renewal.",
+      "content": {
+        "categories": [
+          {
+            "name": "Hair",
+            "items": [
+              {
+                "name": "Signature Cut & Style",
+                "desc": "Precision cut finished with a personalized blowout.",
+                "price": "$85",
+                "badge": "POPULAR"
+              },
+              {
+                "name": "Balayage & Color Melt",
+                "desc": "Hand-painted dimension designed around your features.",
+                "price": "$220"
+              },
+              {
+                "name": "Keratin Smoothing",
+                "desc": "Long-lasting smoothness, shine and effortless styling.",
+                "price": "$180"
+              }
+            ]
+          },
+          {
+            "name": "Skin",
+            "items": [
+              {
+                "name": "Gold Collagen Facial",
+                "desc": "A luminous facial ritual focused on hydration and radiance.",
+                "price": "$120"
+              },
+              {
+                "name": "Velora Glow Facial",
+                "desc": "Deep cleansing, exfoliation and signature glow treatment.",
+                "price": "$145"
+              }
+            ]
+          },
+          {
+            "name": "Body",
+            "items": [
+              {
+                "name": "Aromatherapy Massage",
+                "desc": "A calming full-body ritual using botanical oils.",
+                "price": "$110"
+              },
+              {
+                "name": "Hot Stone Therapy",
+                "desc": "Deep relaxation through warmth and therapeutic pressure.",
+                "price": "$135"
+              }
+            ]
+          },
+          {
+            "name": "Bridal",
+            "items": [
+              {
+                "name": "Velora Bridal Experience",
+                "desc": "A complete beauty experience designed for your biggest moment.",
+                "price": "$450",
+                "badge": "SIGNATURE"
+              }
+            ]
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "gallery",
+      "type": "gallery",
+      "variant": "masonry",
+      "title": "Inside Velora",
+      "subtitle": "A space designed for slowing down.",
+      "content": {
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1600948836101-f9ffda59d250?auto=format&fit=crop&w=700&q=80",
+            "alt": "Velora salon interior"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=700&q=80",
+            "alt": "Hair color treatment"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=700&q=80",
+            "alt": "Private salon suite"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&w=700&q=80",
+            "alt": "Finished hairstyle"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1595475884562-073c30d45670?auto=format&fit=crop&w=700&q=80",
+            "alt": "Facial treatment"
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "team",
+      "type": "team",
+      "variant": "default",
+      "title": "The Artists Behind Velora",
+      "subtitle": "Experienced specialists who treat every appointment as a craft.",
+      "content": {
+        "members": [
+          {
+            "name": "Adriana Costa",
+            "role": "Founder & Master Colorist",
+            "avatar": "https://images.unsplash.com/photo-1595959183082-7b570b7e08e2?auto=format&fit=crop&w=400&q=80",
+            "bio": "15 years specializing in dimensional color and bespoke transformations."
+          },
+          {
+            "name": "Julien Marchand",
+            "role": "Senior Hair Stylist",
+            "avatar": "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=400&q=80",
+            "bio": "Editorial cutting specialist trained in Paris."
+          },
+          {
+            "name": "Sofia Reyes",
+            "role": "Skin & Wellness Specialist",
+            "avatar": "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=400&q=80",
+            "bio": "Specialist in luxury facials, skin rituals and restorative treatments."
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "testimonials",
+      "type": "testimonials",
+      "variant": "default",
+      "title": "Stories From Our Clients",
+      "subtitle": "The Velora experience, in their own words.",
+      "content": {
+        "items": [
+          {
+            "quote": "Velora doesn't just style your hair — it resets you. I leave every appointment feeling like a more radiant version of myself.",
+            "author": "Hannah Price",
+            "role": "Client since 2019",
+            "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
+          },
+          {
+            "quote": "The attention to detail is incredible. Everything feels intentional, calm and genuinely luxurious.",
+            "author": "Marisol Ibarra",
+            "role": "Client since 2021",
+            "avatar": "https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=100&q=80"
+          },
+          {
+            "quote": "I came for the color and stayed for the entire experience. Velora feels completely different from a typical salon.",
+            "author": "Clara Bennett",
+            "role": "Client since 2022",
+            "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
+          }
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "contact",
+      "type": "contact",
+      "variant": "default",
+      "title": "Reserve Your Ritual",
+      "subtitle": "Limited appointments available each week. Walk-ins welcome, reservations preferred.",
+      "content": {
+        "email": "hello@velorasalon.com",
+        "phone": "+1 (212) 555-0198",
+        "address": "88 Blossom Lane, New York, NY",
+        "hours": "Tue – Sun: 9AM – 7PM",
+        "instagram": "https://instagram.com",
+        "ctaText": "Book an Appointment",
+        "ctaLink": "tel:+12125550198"
+      },
+      "visible": true
+    },
+    {
+      "id": "footer",
+      "type": "footer",
+      "variant": "default",
+      "title": "Velora Salon & Spa",
+      "content": {},
+      "visible": true
+    }
+  ],
+  "seo": {
+    "metaTitle": "Velora Salon & Spa — Radiance, Redefined",
+    "metaDescription": "Luxury salon and spa offering signature hair, skin, nail and wellness rituals in an elegant emerald-and-gold setting.",
+    "ogImage": "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80",
+    "keywords": [
+      "luxury salon",
+      "spa website",
+      "hair salon",
+      "beauty salon",
+      "emerald gold salon",
+      "premium salon"
+    ]
+  },
+  "customCode": {
+    "html": "",
+    "css": "/* =========================================================\n   VELORA SALON & SPA — PREMIUM MOTION SYSTEM\n   Structured-section compatible\n   ========================================================= */\n\nbody {\n  --vl-gold: #C9A227;\n  --vl-gold-light: #E7C9A9;\n  --vl-emerald: #0B3B2E;\n  --vl-emerald-2: #123F32;\n  --vl-cream: #F7F3EA;\n  --vl-white: #FFFDF8;\n  --vl-muted: rgba(247,243,234,.68);\n  --vl-border: rgba(201,162,39,.22);\n  --vl-glow: rgba(201,162,39,.18);\n  --vl-radius: 18px;\n  --vl-ease: cubic-bezier(.16,1,.3,1);\n}\n\nbody {\n  overflow-x: hidden;\n  background:\n    radial-gradient(circle at 12% 8%, rgba(201,162,39,.12), transparent 28%),\n    radial-gradient(circle at 88% 28%, rgba(231,201,169,.08), transparent 26%),\n    linear-gradient(135deg, #071F18 0%, #0B3B2E 48%, #071F18 100%);\n  color: var(--vl-cream);\n}\n\nbody::before {\n  content: \"\";\n  position: fixed;\n  inset: 0;\n  pointer-events: none;\n  z-index: 999;\n  opacity: .035;\n  background-image:\n    url(\"data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E\");\n  mix-blend-mode: overlay;\n}\n\nbody .navbar,\nbody nav {\n  backdrop-filter: blur(18px) saturate(140%);\n  -webkit-backdrop-filter: blur(18px) saturate(140%);\n  background: linear-gradient(180deg, rgba(11,59,46,.88), rgba(11,59,46,.58));\n  border-bottom: 1px solid rgba(201,162,39,.14);\n  box-shadow: 0 10px 40px rgba(0,0,0,.16), inset 0 -1px 0 rgba(255,255,255,.03);\n  transition: background .5s var(--vl-ease), box-shadow .5s var(--vl-ease), transform .5s var(--vl-ease);\n}\n\nbody nav a { position: relative; transition: color .35s var(--vl-ease), transform .35s var(--vl-ease); }\nbody nav a:not(:has(button))::after {\n  content: \"\";\n  position: absolute;\n  left: 50%;\n  bottom: -8px;\n  width: 0;\n  height: 1px;\n  transform: translateX(-50%);\n  background: linear-gradient(90deg, transparent, var(--vl-gold), transparent);\n  transition: width .4s var(--vl-ease);\n}\nbody nav a:hover::after { width: 80%; }\nbody nav a:hover { color: var(--vl-gold-light); transform: translateY(-2px); }\n\nbody #hero {\n  position: relative;\n  isolation: isolate;\n  min-height: 720px;\n  overflow: hidden;\n  background:\n    radial-gradient(circle at 75% 35%, rgba(201,162,39,.16), transparent 30%),\n    radial-gradient(circle at 10% 80%, rgba(231,201,169,.07), transparent 25%);\n}\nbody #hero::before {\n  content: \"\";\n  position: absolute;\n  width: 520px;\n  height: 520px;\n  right: -180px;\n  top: 80px;\n  border-radius: 50%;\n  background: radial-gradient(circle, rgba(201,162,39,.18), rgba(201,162,39,.05) 35%, transparent 70%);\n  filter: blur(8px);\n  animation: vlAura 9s ease-in-out infinite alternate;\n  pointer-events: none;\n  z-index: -1;\n}\nbody #hero::after {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  background: linear-gradient(120deg, transparent 35%, rgba(255,255,255,.025) 50%, transparent 65%);\n  background-size: 220% 100%;\n  animation: vlSweep 10s linear infinite;\n}\n@keyframes vlAura {\n  0% { transform: scale(.85) translate3d(0,20px,0); opacity: .55; }\n  100% { transform: scale(1.15) translate3d(-40px,-20px,0); opacity: 1; }\n}\n@keyframes vlSweep {\n  0% { background-position: 180% 0; }\n  100% { background-position: -40% 0; }\n}\nbody #hero h1 {\n  position: relative;\n  letter-spacing: -.045em;\n  line-height: .94;\n  background: linear-gradient(105deg, #F7F3EA 5%, #E7C9A9 40%, #C9A227 65%, #FFF4CF 85%, #F7F3EA 100%);\n  background-size: 250% auto;\n  -webkit-background-clip: text;\n  background-clip: text;\n  color: transparent;\n  animation: vlGoldText 7s ease-in-out infinite alternate;\n}\n@keyframes vlGoldText {\n  0% { background-position: 0% center; }\n  100% { background-position: 100% center; }\n}\nbody #hero [class*=\"badge\"] {\n  border: 1px solid rgba(201,162,39,.38);\n  background: rgba(201,162,39,.08);\n  box-shadow: 0 0 0 1px rgba(255,255,255,.025) inset, 0 10px 35px rgba(201,162,39,.08);\n  backdrop-filter: blur(12px);\n  -webkit-backdrop-filter: blur(12px);\n  animation: vlBadgeFloat 5s ease-in-out infinite;\n}\n@keyframes vlBadgeFloat {\n  0%,100% { transform: translateY(0); }\n  50% { transform: translateY(-5px); }\n}\n\nbody button,\nbody a[class*=\"button\"],\nbody a[class*=\"Button\"] {\n  position: relative;\n  overflow: hidden;\n  isolation: isolate;\n  transition: transform .35s var(--vl-ease), box-shadow .35s var(--vl-ease), border-color .35s var(--vl-ease);\n}\nbody button::before,\nbody a[class*=\"button\"]::before,\nbody a[class*=\"Button\"]::before {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  transform: translateX(-120%);\n  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,.38) 50%, transparent 80%);\n  transition: transform .7s var(--vl-ease);\n  pointer-events: none;\n}\nbody button:hover::before,\nbody a[class*=\"button\"]:hover::before,\nbody a[class*=\"Button\"]:hover::before { transform: translateX(120%); }\nbody button:hover,\nbody a[class*=\"button\"]:hover,\nbody a[class*=\"Button\"]:hover {\n  transform: translateY(-4px);\n  box-shadow: 0 12px 28px rgba(0,0,0,.22), 0 0 30px rgba(201,162,39,.13);\n}\n\nbody section h2 {\n  position: relative;\n  letter-spacing: -.035em;\n  background: linear-gradient(110deg, #F7F3EA, #E7C9A9 40%, #C9A227 70%, #FFF1C8);\n  -webkit-background-clip: text;\n  background-clip: text;\n  color: transparent;\n}\nbody section h2::after {\n  content: \"\";\n  display: block;\n  width: 56px;\n  height: 1px;\n  margin-top: 18px;\n  background: linear-gradient(90deg, transparent, var(--vl-gold), transparent);\n  box-shadow: 0 0 16px rgba(201,162,39,.45);\n}\n\nbody #services { position: relative; isolation: isolate; }\nbody #services::before {\n  content: \"\";\n  position: absolute;\n  width: 360px;\n  height: 360px;\n  left: -180px;\n  top: 20%;\n  border-radius: 50%;\n  background: rgba(201,162,39,.08);\n  filter: blur(90px);\n  animation: vlOrb 12s ease-in-out infinite alternate;\n  pointer-events: none;\n  z-index: -1;\n}\n@keyframes vlOrb {\n  from { transform: translate3d(0,0,0) scale(.8); }\n  to { transform: translate3d(100px,-50px,0) scale(1.2); }\n}\nbody #services article,\nbody #services [class*=\"card\"],\nbody #services [class*=\"Card\"] {\n  position: relative;\n  overflow: hidden;\n  border: 1px solid var(--vl-border);\n  background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.018));\n  backdrop-filter: blur(18px);\n  -webkit-backdrop-filter: blur(18px);\n  box-shadow: 0 20px 55px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.045);\n  transition: transform .6s var(--vl-ease), box-shadow .6s var(--vl-ease), border-color .6s var(--vl-ease);\n}\nbody #services article::before,\nbody #services [class*=\"card\"]::before {\n  content: \"\";\n  position: absolute;\n  width: 180px;\n  height: 180px;\n  right: -80px;\n  top: -80px;\n  border-radius: 50%;\n  background: rgba(201,162,39,.10);\n  filter: blur(30px);\n  transition: transform .7s var(--vl-ease);\n}\nbody #services article:hover,\nbody #services [class*=\"card\"]:hover {\n  transform: translateY(-10px) rotateX(2deg) rotateY(-2deg);\n  border-color: rgba(201,162,39,.48);\n  box-shadow: 0 30px 80px rgba(0,0,0,.26), 0 0 45px rgba(201,162,39,.09), inset 0 1px 0 rgba(255,255,255,.08);\n}\nbody #services article:hover::before,\nbody #services [class*=\"card\"]:hover::before { transform: scale(1.5); }\n\nbody #gallery { position: relative; }\nbody #gallery img {\n  display: block;\n  width: 100%;\n  object-fit: cover;\n  filter: saturate(.88) contrast(1.02);\n  transform: scale(1.001);\n  transition: transform 1s var(--vl-ease), filter .7s ease;\n}\nbody #gallery a,\nbody #gallery figure,\nbody #gallery [class*=\"card\"] {\n  position: relative;\n  overflow: hidden;\n  border: 1px solid rgba(201,162,39,.18);\n  box-shadow: 0 25px 65px rgba(0,0,0,.25);\n  transition: transform .7s var(--vl-ease), box-shadow .7s var(--vl-ease);\n}\nbody #gallery a::after,\nbody #gallery figure::after,\nbody #gallery [class*=\"card\"]::after {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  background: linear-gradient(135deg, transparent 35%, rgba(255,255,255,.12) 50%, transparent 65%);\n  background-size: 250% 250%;\n  background-position: 120% 120%;\n  transition: background-position 1s var(--vl-ease);\n  pointer-events: none;\n}\nbody #gallery a:hover,\nbody #gallery figure:hover,\nbody #gallery [class*=\"card\"]:hover {\n  transform: translateY(-12px) rotate(-1deg);\n  box-shadow: 0 40px 90px rgba(0,0,0,.32), 0 0 35px rgba(201,162,39,.12);\n}\nbody #gallery a:hover img,\nbody #gallery figure:hover img,\nbody #gallery [class*=\"card\"]:hover img { transform: scale(1.08); filter: saturate(1.08) contrast(1.04); }\nbody #gallery a:hover::after,\nbody #gallery figure:hover::after,\nbody #gallery [class*=\"card\"]:hover::after { background-position: -20% -20%; }\n\nbody #team [class*=\"card\"],\nbody #team article {\n  overflow: hidden;\n  border: 1px solid rgba(201,162,39,.17);\n  background: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.015));\n  backdrop-filter: blur(15px);\n  -webkit-backdrop-filter: blur(15px);\n  transition: transform .6s var(--vl-ease), border-color .5s ease, box-shadow .6s var(--vl-ease);\n}\nbody #team [class*=\"card\"]:hover,\nbody #team article:hover {\n  transform: translateY(-10px);\n  border-color: rgba(201,162,39,.42);\n  box-shadow: 0 35px 70px rgba(0,0,0,.25), 0 0 35px rgba(201,162,39,.09);\n}\nbody #team img { transition: transform .8s var(--vl-ease), filter .6s ease; }\nbody #team [class*=\"card\"]:hover img,\nbody #team article:hover img { transform: scale(1.06); filter: saturate(1.08); }\n\nbody #testimonials { position: relative; isolation: isolate; }\nbody #testimonials::before {\ncontent: \"“\";\n  position: absolute;\n  left: 5%;\n  top: -40px;\n  font-family: \"Cormorant Garamond\", serif;\n  font-size: clamp(180px, 25vw, 360px);\n  line-height: 1;\n  color: rgba(201,162,39,.055);\n  pointer-events: none;\n  z-index: -1;\n}\nbody #testimonials [class*=\"card\"],\nbody #testimonials article {\n  border: 1px solid rgba(201,162,39,.18);\n  background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.015));\n  backdrop-filter: blur(18px);\n  -webkit-backdrop-filter: blur(18px);\n  box-shadow: 0 25px 65px rgba(0,0,0,.17), inset 0 1px 0 rgba(255,255,255,.045);\n  transition: transform .55s var(--vl-ease), border-color .5s ease;\n}\nbody #testimonials [class*=\"card\"]:hover,\nbody #testimonials article:hover { transform: translateY(-8px); border-color: rgba(201,162,39,.45); }\n\nbody #contact {\n  position: relative;\n  isolation: isolate;\n  overflow: hidden;\n  background: radial-gradient(circle at 50% 0%, rgba(201,162,39,.14), transparent 42%);\n}\nbody #contact::after {\n  content: \"\";\n  position: absolute;\n  width: 420px;\n  height: 420px;\n  right: -180px;\n  bottom: -180px;\n  border-radius: 50%;\n  border: 1px solid rgba(201,162,39,.12);\n  box-shadow: 0 0 0 40px rgba(201,162,39,.025), 0 0 0 80px rgba(201,162,39,.018), 0 0 0 120px rgba(201,162,39,.012);\n  animation: vlRing 14s linear infinite;\n  pointer-events: none;\n}\n@keyframes vlRing { to { transform: rotate(360deg); } }\nbody #contact [class*=\"card\"],\nbody #contact form {\n  border: 1px solid rgba(201,162,39,.2);\n  background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.018));\n  backdrop-filter: blur(20px);\n  -webkit-backdrop-filter: blur(20px);\n  box-shadow: 0 30px 80px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05);\n}\n\nbody input,\nbody textarea,\nbody select {\n  background: rgba(255,255,255,.045) !important;\n  border: 1px solid rgba(201,162,39,.18) !important;\n  color: var(--vl-cream) !important;\n  transition: border-color .35s ease, box-shadow .35s ease, background .35s ease;\n}\nbody input:focus,\nbody textarea:focus,\nbody select:focus {\n  outline: none !important;\n  background: rgba(255,255,255,.065) !important;\n  border-color: rgba(201,162,39,.65) !important;\n  box-shadow: 0 0 0 4px rgba(201,162,39,.08), 0 0 30px rgba(201,162,39,.08);\n}\n\nbody footer {\n  position: relative;\n  border-top: 1px solid rgba(201,162,39,.13);\n  background: linear-gradient(180deg, rgba(5,25,19,.35), rgba(3,17,13,.85));\n}\nbody footer::before {\n  content: \"\";\n  position: absolute;\n  left: 50%;\n  top: 0;\n  width: 180px;\n  height: 1px;\n  transform: translateX(-50%);\n  background: linear-gradient(90deg, transparent, var(--vl-gold), transparent);\n  box-shadow: 0 0 20px rgba(201,162,39,.5);\n}\n\nbody section > * { animation: vlReveal .9s var(--vl-ease) both; }\nbody section > *:nth-child(2) { animation-delay: .08s; }\nbody section > *:nth-child(3) { animation-delay: .16s; }\nbody section > *:nth-child(4) { animation-delay: .24s; }\n@keyframes vlReveal {\n  from { opacity: 0; transform: translateY(28px); }\n  to { opacity: 1; transform: translateY(0); }\n}\n\nbody #hero,\nbody #services,\nbody #gallery { --particle: rgba(201,162,39,.7); }\nbody #hero::marker { display: none; }\n\n@media (max-width: 900px) {\n  body #hero { min-height: 620px; }\n  body #hero h1 { font-size: clamp(3rem, 12vw, 5.5rem); }\n  body section { overflow: hidden; }\n}\n@media (max-width: 640px) {\n  body { --vl-radius: 14px; }\n  body #hero { min-height: 580px; }\n  body #hero::before { width: 340px; height: 340px; right: -160px; }\n  body #services article:hover,\n  body #services [class*=\"card\"]:hover,\n  body #team article:hover,\n  body #team [class*=\"card\"]:hover { transform: translateY(-5px); }\n}\n\n@media (prefers-reduced-motion: reduce) {\n  *, *::before, *::after {\n    animation-duration: .01ms !important;\n    animation-iteration-count: 1 !important;\n    scroll-behavior: auto !important;\n    transition-duration: .01ms !important;\n  }\n}",
+    "js": ""
+  }
+}

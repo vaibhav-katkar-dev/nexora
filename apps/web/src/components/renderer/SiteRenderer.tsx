@@ -6,7 +6,7 @@ import {
   sanitizeTemplateCss,
   resolveTemplateContainerClass,
 } from "@ai-platform/shared";
-import { CSSProperties, useState, useEffect } from "react";
+import { CSSProperties, useState, useEffect, useMemo } from "react";
 import {
   Sparkles,
   Zap,
@@ -72,6 +72,44 @@ function elementSel(key: string, selectedElementKey?: string | null) {
     "data-element-key": key,
     "data-selected": selectedElementKey === key ? "true" : "false",
   };
+}
+
+/**
+ * Determines whether a custom_html section's markup already declares its own
+ * semantic root element (section / nav / footer / header / main / article /
+ * aside / div with an id or class). When it does, the raw HTML should be
+ * rendered as-is so the template's own layout (full-bleed sections, sticky nav,
+ * marquee, etc.) is preserved — WITHOUT an extra padded <section> wrapper that
+ * would conflict with the template's CSS.
+ *
+ * When the HTML is just a bare fragment (no semantic root), we wrap it in a
+ * plain <div> (no padding/spacing) so it still renders safely and future
+ * templates that ship fragments keep working.
+ */
+function customHtmlHasRootElement(html: string): boolean {
+  const trimmed = (html || "").trim();
+  if (!trimmed) return false;
+  // Match the FIRST opening tag. If it's a semantic/structural element that
+  // carries its own layout, treat it as the section root.
+  const firstTag = trimmed.match(/^\s*<([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>/);
+  if (!firstTag) return false;
+  const tag = firstTag[1].toLowerCase();
+  const rootTags = new Set([
+    "section",
+    "nav",
+    "footer",
+    "header",
+    "main",
+    "article",
+    "aside",
+    "div",
+    "ul",
+    "ol",
+    "table",
+    "form",
+    "figure",
+  ]);
+  return rootTags.has(tag);
 }
 
 // ─── Theme Style Builder ───────────────────────────────────────────────────
@@ -185,10 +223,21 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
         {section.title}
       </h1>
 
-      {section.subtitle && (
+{section.subtitle && (
         <p {...elementSel("subtitle", selectedElementKey)} className="text-lg sm:text-xl opacity-85 max-w-2xl font-normal leading-relaxed mb-10">
           {section.subtitle}
         </p>
+      )}
+
+      {content.avatarUrl && (
+        <div className="w-full max-w-3xl mb-16">
+          <img
+            src={content.avatarUrl}
+            alt={section.title || "Hero"}
+            className="w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
+            style={{ borderRadius: "var(--radius)" }}
+          />
+        </div>
       )}
 
       <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
@@ -337,6 +386,100 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive }: Se
             </div>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+function ServicesSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const items: any[] = section.content?.items || [];
+
+  return (
+    <section id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
+      <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {items.map((item: any, i: number) => {
+          const IconComponent = ICON_MAP[item.icon] || Sparkles;
+          return (
+            <article
+              key={i}
+              {...elementSel(`content.items.${i}`, selectedElementKey)}
+              className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.03)",
+                borderColor: "rgba(255, 255, 255, 0.08)",
+                borderRadius: "var(--radius)",
+              }}
+            >
+              {item.image && (
+                <div className="h-52 overflow-hidden relative">
+                  <img
+                    {...elementSel(`content.items.${i}.image`, selectedElementKey)}
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div className="p-6 flex-1 flex flex-col">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-md"
+                  style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
+                >
+                  <IconComponent size={24} />
+                </div>
+                <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+                  {item.title}
+                </h3>
+                <p className="opacity-75 text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function GallerySection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const images: any[] = section.content?.images || [];
+
+  return (
+    <section id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
+      <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {images.map((img: any, i: number) => (
+          <figure
+            key={i}
+            {...elementSel(`content.images.${i}`, selectedElementKey)}
+            className="gallery-item rounded-2xl border overflow-hidden cursor-pointer"
+            style={{
+              borderColor: "rgba(255, 255, 255, 0.1)",
+              borderRadius: "var(--radius)",
+            }}
+          >
+            <img
+              {...elementSel(`content.images.${i}.url`, selectedElementKey)}
+              src={img.url}
+              alt={img.alt || `Gallery image ${i + 1}`}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </figure>
+        ))}
       </div>
     </section>
   );
@@ -796,6 +939,105 @@ function LinksSection({ section, theme, selectedElementKey, interactive }: Secti
   );
 }
 
+function TeamSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const members: any[] = section.content?.members || [];
+
+  return (
+    <section id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
+      <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {members.map((m: any, i: number) => (
+          <article
+            key={i}
+            {...elementSel(`content.members.${i}`, selectedElementKey)}
+            className="rounded-2xl border backdrop-blur-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.03)",
+              borderColor: "rgba(255, 255, 255, 0.08)",
+              borderRadius: "var(--radius)",
+            }}
+          >
+            {m.avatar && (
+              <div className="aspect-square overflow-hidden relative">
+                <img
+                  {...elementSel(`content.members.${i}.avatar`, selectedElementKey)}
+                  src={m.avatar}
+                  alt={m.name}
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <div className="p-6 text-center">
+              <h3 className="text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>{m.name}</h3>
+              <div className="text-xs font-semibold uppercase tracking-wider mt-1 mb-3" style={{ color: theme.primaryColor }}>
+                {m.role}
+              </div>
+              {m.bio && <p className="text-sm opacity-70 leading-relaxed">{m.bio}</p>}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TestimonialsSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const items: any[] = section.content?.items || [];
+
+  return (
+    <section id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
+      <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {items.map((t: any, i: number) => (
+          <figure
+            key={i}
+            {...elementSel(`content.items.${i}`, selectedElementKey)}
+            className="rounded-2xl border backdrop-blur-sm p-8 flex flex-col gap-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.03)",
+              borderColor: "rgba(255, 255, 255, 0.08)",
+              borderRadius: "var(--radius)",
+            }}
+          >
+            <blockquote className="opacity-85 leading-relaxed text-sm md:text-base italic">
+              “{t.quote}”
+            </blockquote>
+            <figcaption className="flex items-center gap-3 mt-auto">
+              {t.avatar && (
+                <img
+                  {...elementSel(`content.items.${i}.avatar`, selectedElementKey)}
+                  src={t.avatar}
+                  alt={t.author}
+                  className="w-11 h-11 rounded-full object-cover border-2"
+                  style={{ borderColor: `${theme.primaryColor}55` }}
+                  loading="lazy"
+                />
+              )}
+              <div>
+                <div className="font-bold text-sm">{t.author}</div>
+                {t.role && <div className="text-xs opacity-60">{t.role}</div>}
+              </div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ContactSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const c = section.content || {};
 
@@ -884,6 +1126,111 @@ function FooterSection({ section, theme, selectedElementKey, interactive }: Sect
   );
 }
 
+function MapsSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const c = section.content || {};
+  // Build a Google Maps embed URL from either a full URL or address/lat-long.
+  let embedSrc = c.embedUrl || "";
+  const query = c.address || c.query || "";
+  const lat = c.lat;
+  const lng = c.lng;
+
+  if (!embedSrc && (lat || lng)) {
+    embedSrc = `https://maps.google.com/maps?q=${lat},${lng}&z=${c.zoom || 15}&output=embed`;
+  } else if (!embedSrc && query) {
+    embedSrc = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=${c.zoom || 15}&output=embed`;
+  }
+
+  return (
+    <section id={section.id} className="py-16 px-6 max-w-6xl mx-auto">
+      <div className="text-center mb-10 space-y-2">
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+        {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="opacity-75 max-w-2xl mx-auto">{section.subtitle}</p>}
+      </div>
+
+      {c.address && (
+        <p {...elementSel("address", selectedElementKey)} className="text-center text-sm mb-6 opacity-80 flex items-center justify-center gap-2">
+          <MapPin size={16} style={{ color: theme.primaryColor }} /> {c.address}
+        </p>
+      )}
+
+      <div
+        className="w-full overflow-hidden rounded-2xl border shadow-lg"
+        style={{ borderColor: "rgba(255,255,255,0.1)", height: c.height || 380, borderRadius: "var(--radius)" }}
+      >
+        {embedSrc ? (
+          <iframe
+            {...elementSel("embedUrl", selectedElementKey)}
+            title={section.title || "Map"}
+            src={embedSrc}
+            width="100%"
+            height="100%"
+            style={{ border: 0, filter: theme.mode === "dark" ? "invert(0.9) hue-rotate(180deg)" : "none" }}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-slate-800/40 text-slate-400 text-sm">
+            <MapPin size={20} className="mr-2" /> Add an address or coordinates to display the map.
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function WhatsAppSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const c = section.content || {};
+  const phone = c.phone || "15551234567";
+  const defaultText = c.defaultText || "Hi! I'd like to know more about your services.";
+  const waLink = `https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(defaultText)}`;
+
+  return (
+    <section id={section.id} className="py-16 px-6 text-center">
+      {section.title && (
+        <h2 {...elementSel("title", selectedElementKey)} className="text-3xl sm:text-4xl font-bold tracking-tight mb-3" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+      )}
+      {section.subtitle && <p {...elementSel("subtitle", selectedElementKey)} className="opacity-75 mb-8 max-w-2xl mx-auto">{section.subtitle}</p>}
+
+      <a
+        {...elementSel("phone", selectedElementKey)}
+        href={waLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => {
+          if (!interactive) e.preventDefault();
+        }}
+        className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-lg shadow-xl transition-all hover:scale-105 hover:shadow-2xl"
+        style={{ backgroundColor: "#25D366", borderRadius: "var(--radius)" }}
+      >
+        <span className="w-9 h-9 rounded-full bg-white flex items-center justify-center">
+          <SvgWhatsApp className="w-5 h-5 text-[#25D366]" />
+        </span>
+        {c.buttonText || "Chat on WhatsApp"}
+      </a>
+
+      {c.availability && (
+        <p {...elementSel("availability", selectedElementKey)} className="text-xs opacity-60 mt-4 flex items-center justify-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> {c.availability}
+        </p>
+      )}
+    </section>
+  );
+}
+
+// Lightweight inline WhatsApp glyph (avoids extra icon dependency).
+function SvgWhatsApp({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
+
 // ─── Section Dispatcher ────────────────────────────────────────────────────
 interface RenderSectionProps {
   section: Section;
@@ -909,8 +1256,16 @@ function RenderSection({ section, theme, selectedElementKey, interactive }: Rend
       return <HeroSection {...rendererProps} />;
     case "about":
       return <AboutSection {...rendererProps} />;
-    case "features":
+case "features":
       return <FeaturesSection {...rendererProps} />;
+    case "services":
+      return <ServicesSection {...rendererProps} />;
+    case "gallery":
+      return <GallerySection {...rendererProps} />;
+    case "team":
+      return <TeamSection {...rendererProps} />;
+    case "testimonials":
+      return <TestimonialsSection {...rendererProps} />;
     case "portfolio_grid":
       return <PortfolioSection {...rendererProps} />;
     case "menu_list":
@@ -921,17 +1276,28 @@ function RenderSection({ section, theme, selectedElementKey, interactive }: Rend
       return <PricingSection {...rendererProps} />;
     case "faq":
       return <FAQSection {...rendererProps} />;
-    case "links":
+case "links":
       return <LinksSection {...rendererProps} />;
     case "digital_card":
       return <DigitalCardSection {...rendererProps} />;
     case "contact":
       return <ContactSection {...rendererProps} />;
-    case "custom_html":
-      return (
-        <section id={section.id} className="custom-html-section py-8 px-6">
-          {section.content?.html ? (
-            <div dangerouslySetInnerHTML={{ __html: section.content.html }} />
+    case "maps":
+      return <MapsSection {...rendererProps} />;
+    case "whatsapp":
+      return <WhatsAppSection {...rendererProps} />;
+case "custom_html": {
+      const rawHtml = section.content?.html || "";
+      // If the template ships its own semantic root (section/nav/footer/...),
+      // render the raw HTML directly so its layout & full-bleed styling apply.
+      // Only wrap bare fragments in a plain, padding-free <div> for safety.
+      const hasRoot = customHtmlHasRootElement(rawHtml);
+      return hasRoot ? (
+        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
+      ) : (
+        <section id={section.id} className="custom-html-section">
+          {rawHtml ? (
+            <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
           ) : (
             <div className="text-center py-8 text-slate-400 text-xs border border-dashed border-slate-700 rounded-xl">
               [Custom HTML Section: {section.title || "Empty"}]
@@ -939,6 +1305,7 @@ function RenderSection({ section, theme, selectedElementKey, interactive }: Rend
           )}
         </section>
       );
+    }
     case "footer":
       return <FooterSection {...rendererProps} />;
     default:
@@ -989,20 +1356,22 @@ export function SiteRenderer({
     });
   }, [config?.theme?.headingFont, config?.theme?.bodyFont]);
 
-  // ─── Custom JS & Inline Script Executor ─────────────────────────────────
-  // Executes customCode.js + any embedded <script> tags from full HTML documents
+// ─── Custom JS & Inline Script Executor ─────────────────────────────────
+  // Executes customCode.js + any embedded <script> tags from full HTML documents.
+  // Falls back to config.customCode when the prop isn't passed (e.g. thumbnails).
   useEffect(() => {
+    const cc = customCode || config?.customCode;
     // Extract any inline <script> tags inside customCode.html
     const inlineScripts: string[] = [];
-    if (customCode?.html) {
+    if (cc?.html) {
       const regex = /<script(?![^>]*\bsrc=)[\s\S]*?>([\s\S]*?)<\/script>/gi;
       let m;
-      while ((m = regex.exec(customCode.html)) !== null) {
+      while ((m = regex.exec(cc.html)) !== null) {
         if (m[1]?.trim()) inlineScripts.push(m[1].trim());
       }
     }
 
-    const combinedJs = [customCode?.js || "", ...inlineScripts].filter(Boolean).join("\n;\n");
+const combinedJs = [cc?.js || "", ...inlineScripts].filter(Boolean).join("\n;\n");
     if (!combinedJs.trim()) return;
 
     const timer = setTimeout(() => {
@@ -1016,19 +1385,24 @@ if (prev) prev.remove();
       } catch (e) {
         console.warn("[Nexora Custom JS inject error]:", e);
       }
-    }, 200);
+}, 200);
     return () => clearTimeout(timer);
-  }, [customCode?.js, customCode?.html]);
+  }, [customCode?.js, customCode?.html, config?.customCode?.js, config?.customCode?.html]);
 
   if (!config) return null;
 
-  const containerClass = resolveTemplateContainerClass(config);
+const containerClass = resolveTemplateContainerClass(config);
   const containerSelector = `.${containerClass}`;
-  const scopedTemplateCss = sanitizeTemplateCss(config.customCss, containerSelector);
+  // Scope & sanitize BOTH the template-level customCss and the customCode.css
+  // (uploaded templates store their animated CSS in customCode.css). This ensures
+  // their "body.tpl-<slug>" selectors are rewritten to the container class.
+  const scopedTemplateCss = sanitizeTemplateCss(
+[config.customCss, config.customCode?.css, customCode?.css].filter(Boolean).join("\n"),
+    containerSelector
+  );
 
   return (
     <div className={containerClass} style={buildCssVariables(config.theme)}>
-      {customCode?.css && <style dangerouslySetInnerHTML={{ __html: customCode.css }} />}
       {scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
 
       {config.sections.map((section) => {
@@ -1085,7 +1459,9 @@ if (prev) prev.remove();
         );
       })}
 
-      {customCode?.html && <div dangerouslySetInnerHTML={{ __html: customCode.html }} />}
+{(customCode?.html || config.customCode?.html) && (
+        <div dangerouslySetInnerHTML={{ __html: customCode?.html || config.customCode?.html || "" }} />
+      )}
     </div>
   );
 }
