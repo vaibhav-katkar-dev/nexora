@@ -7,7 +7,7 @@ import { templatesApi, authApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
-import { validateTemplateJSON } from "@ai-platform/templates";
+import { validateTemplateJSON, checkTemplateCompatibility, TemplateCompatibilityReport } from "@ai-platform/templates";
 import { Navbar } from "@/components/navigation/Navbar";
 import {
   Shield,
@@ -167,8 +167,9 @@ const [formErrors, setFormErrors] = useState<string[]>([]);
   const [bulkResult, setBulkResult] = useState<{ imported?: any[]; failed?: any[]; duplicates?: any[] } | null>(null);
   const [importing, setImporting] = useState(false);
 
-  // JSON Creation Guide modal
+  // JSON Creation Guide & Compatibility Check modal
   const [showGuide, setShowGuide] = useState(false);
+  const [compatibilityReport, setCompatibilityReport] = useState<TemplateCompatibilityReport | null>(null);
 
 // Trash view
   const [showTrash, setShowTrash] = useState(false);
@@ -393,6 +394,25 @@ const setFormField = (key: keyof FormState, value: any) => {
       featuredOrder: form.featuredOrder,
       defaultConfig,
     };
+  };
+
+  const handleRunCompatibilityCheck = () => {
+    if (!form.defaultConfigJson.trim()) {
+      toast.error("Template JSON is empty", "Paste or load a template JSON config first.");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(form.defaultConfigJson);
+      const report = checkTemplateCompatibility(parsed);
+      setCompatibilityReport(report);
+      if (report.overallValid) {
+        toast.success("Compatibility Check Passed!", `Score: ${report.score}% — Template is ready to publish.`);
+      } else {
+        toast.error("Compatibility Warning", `Score: ${report.score}% — Issues detected in template config.`);
+      }
+    } catch (e: any) {
+      toast.error("Invalid JSON Syntax", e.message);
+    }
   };
 
   const handleSave = async () => {
@@ -1260,12 +1280,73 @@ await templatesApi.seed();
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-end gap-2 shrink-0 bg-slate-950/50">
-              <button onClick={() => { if (!saving) setShowForm(false); }} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 border border-slate-700 hover:bg-slate-800">Cancel</button>
-              <button onClick={handleSave} disabled={saving} className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5 disabled:opacity-50">
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-                {saving ? "Saving…" : editingId ? "Save Changes" : "Create Template"}
+            <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0 bg-slate-950/50">
+              <button
+                onClick={handleRunCompatibilityCheck}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-amber-300 border border-amber-500/40 bg-amber-950/30 hover:bg-amber-900/50 transition-all flex items-center gap-1.5"
+              >
+                <Sparkles size={13} className="text-amber-400" /> Run Compatibility Check
               </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { if (!saving) setShowForm(false); }} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 border border-slate-700 hover:bg-slate-800">Cancel</button>
+                <button onClick={handleSave} disabled={saving} className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5 disabled:opacity-50">
+                  {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                  {saving ? "Saving…" : editingId ? "Save Changes" : "Create Template"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Compatibility Report Modal ────────────────────────────────────── */}
+      {compatibilityReport && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setCompatibilityReport(null)}>
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50 shrink-0">
+              <div className="flex items-center gap-2">
+                <Shield className={compatibilityReport.overallValid ? "text-emerald-400" : "text-amber-400"} size={20} />
+                <h3 className="font-bold text-slate-100 text-sm">Template Compatibility Audit</h3>
+              </div>
+              <button onClick={() => setCompatibilityReport(null)} className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"><X size={16} /></button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+              <div className={`p-4 rounded-2xl border flex items-center justify-between ${compatibilityReport.overallValid ? "bg-emerald-950/30 border-emerald-700/40 text-emerald-200" : "bg-amber-950/30 border-amber-700/40 text-amber-200"}`}>
+                <div>
+                  <div className="text-xs uppercase font-extrabold tracking-wider font-mono opacity-75">Compatibility Score</div>
+                  <div className="text-2xl font-black">{compatibilityReport.score}% — {compatibilityReport.overallValid ? "Ready to Publish" : "Action Recommended"}</div>
+                </div>
+                <div className={`px-3 py-1.5 rounded-full text-xs font-bold font-mono ${compatibilityReport.overallValid ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-amber-500/20 text-amber-300 border border-amber-500/30"}`}>
+                  {compatibilityReport.overallValid ? "PASS ✓" : "WARNING ⚠"}
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                {compatibilityReport.checks.map((chk, idx) => (
+                  <div key={idx} className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-start gap-3">
+                    <div className={`mt-0.5 shrink-0 ${chk.passed ? "text-emerald-400" : "text-rose-400"}`}>
+                      {chk.passed ? <Check size={16} /> : <AlertTriangle size={16} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-200">
+                        <span>{chk.title}</span>
+                        <span className="font-mono text-[10px] uppercase text-slate-400 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">{chk.category}</span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">{chk.message}</p>
+                      {chk.details && chk.details.length > 0 && (
+                        <ul className="mt-1.5 space-y-0.5 pl-3 list-disc text-[11px] text-rose-300/90 font-mono">
+                          {chk.details.map((d, i) => <li key={i}>{d}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-800 flex justify-end bg-slate-950/50">
+              <button onClick={() => setCompatibilityReport(null)} className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500">Close Audit Report</button>
             </div>
           </div>
         </div>

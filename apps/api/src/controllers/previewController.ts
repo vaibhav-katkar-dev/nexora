@@ -35,15 +35,19 @@ export const previewSite = async (req: Request, res: Response) => {
       `);
     }
 
-    // Serve stored HTML if available, otherwise recompile on-the-fly
-    let html = project.publishedHtml;
-    if (!html) {
-      const compiled = await buildStaticSite(project);
-      html = compiled.html;
+    // Always compile fresh HTML from project.config using latest siteCompiler
+    const { html } = await buildStaticSite(project);
+
+    // Persist latest compiled HTML to project document
+    if (project.publishedHtml !== html) {
+      project.publishedHtml = html;
+      await project.save();
     }
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.send(html);
   } catch (error: any) {
     res.status(500).send(`

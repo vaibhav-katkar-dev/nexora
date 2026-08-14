@@ -102,13 +102,13 @@ export function Navbar({
                 <button
                   key={item.label}
                   onClick={item.action}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  className={`group px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                     isActive
                       ? "bg-white text-indigo-600 shadow-sm"
                       : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
                   }`}
                 >
-                  <IconComp size={13} className={isActive ? "text-indigo-500" : "text-slate-400"} />
+                  <IconComp size={13} className={isActive ? "text-indigo-500" : "text-slate-400 group-hover:text-indigo-500 transition-colors"} />
                   {item.label}
                 </button>
               );
@@ -118,13 +118,13 @@ export function Navbar({
               <Link
                 key={item.label}
                 href={item.href || "#"}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                className={`group px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   isActive
                     ? "bg-white text-indigo-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-white/60"
+                    : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
                 }`}
               >
-                <IconComp size={13} className={isActive ? "text-indigo-500" : "text-slate-400"} />
+                <IconComp size={13} className={isActive ? "text-indigo-500" : "text-slate-400 group-hover:text-indigo-500 transition-colors"} />
                 {item.label}
               </Link>
             );
@@ -229,12 +229,17 @@ export function Navbar({
         <div className="absolute top-16 left-0 right-0 bg-white border-b border-slate-200 p-3 shadow-xl lg:hidden flex flex-col gap-1 z-50 animate-fade-in">
           {navItems.map((item) => {
             const IconComp = item.icon;
+            const isActiveMobile = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
             if (item.action) {
               return (
                 <button
                   key={item.label}
                   onClick={() => { setMobileMenuOpen(false); item.action?.(); }}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 w-full text-left"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold w-full text-left transition-colors ${
+                    isActiveMobile
+                      ? "bg-indigo-50 text-indigo-600"
+                      : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                  }`}
                 >
                   <IconComp size={16} /> {item.label}
                 </button>
@@ -245,7 +250,11 @@ export function Navbar({
                 key={item.label}
                 href={item.href || "#"}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  isActiveMobile
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                }`}
               >
                 <IconComp size={16} /> {item.label}
               </Link>

@@ -122,6 +122,7 @@ export const SectionSchema = z.object({
   // section-scoped CSS rule so it works in both the editor and the
   // published site while leaving all other styling untouched.
   elementColors: z.record(z.string(), z.string()).optional(),
+  elementStyles: z.record(z.string(), z.record(z.string(), z.string())).optional(),
   styling: z
     .object({
       paddingTop: z.string().optional(),

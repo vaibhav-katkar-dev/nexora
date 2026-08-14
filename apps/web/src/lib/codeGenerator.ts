@@ -28,12 +28,17 @@ export function generateHtmlFromSections(sections: Section[]): string {
     switch (sec.type) {
       case "navbar": {
         const links: any[] = c.links || [];
+        const logoImage = c.logoImage || c.logo || (sec as any).logoImage;
+        const logoWidth = c.logoWidth || (sec as any).logoWidth || 36;
         const linksHtml = links
-          .map((l) => `      <a href="${l.url || "#"}" class="nav-link">${l.label || "Link"}</a>`)
+          .map((l) => `      <a href="${typeof l === "string" ? "#" : l.url || "#"}" class="nav-link">${typeof l === "string" ? l : l.label || "Link"}</a>`)
           .join("\n");
+        const logoHtml = logoImage
+          ? `<img src="${logoImage}" alt="Logo" class="nav-logo" style="width: ${logoWidth}px; max-height: 56px; object-fit: contain;"> `
+          : "";
         htmlBlocks.push(
           `<nav id="${id}" class="site-navbar">\n` +
-          `  <div class="nav-brand">${title || "Brand"}</div>\n` +
+          `  <div class="nav-brand">${logoHtml}<span class="brand-title">${title || "Brand"}</span></div>\n` +
           `  <div class="nav-links">\n${linksHtml || "      <!-- Nav links -->"}\n  </div>\n` +
           (c.ctaText ? `  <a href="${c.ctaLink || "#"}" class="btn-primary">${c.ctaText}</a>\n` : "") +
           `</nav>`

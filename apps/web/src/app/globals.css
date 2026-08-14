@@ -295,31 +295,61 @@ body {
    VISUAL EDITOR — ELEMENT-LEVEL SELECTION
 ══════════════════════════════════════════════ */
 
-/* Exact clicked element outline (small highlight) */
+/* Smooth selection ring & faint accent background for the currently edited inline element */
 .nexora-el-selected,
 [data-element-key][data-selected="true"] {
   outline: 2px solid rgba(99, 102, 241, 0.85);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline-offset: 3px;
+  background-color: rgba(99, 102, 241, 0.12);
+  border-radius: 6px;
   position: relative;
   z-index: 5;
+  transition: background-color 0.15s ease, outline-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Brief pulse animation on the clicked element for clear visual feedback */
+/* Focused contentEditable element gets a clear input-like highlight */
+[contenteditable="true"]:focus {
+  outline: 2px solid rgba(99, 102, 241, 0.95) !important;
+  outline-offset: 3px !important;
+  background-color: rgba(99, 102, 241, 0.16) !important;
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: text;
+}
+
+/* Show intuitive placeholder if an editable element is cleared/empty */
+[contenteditable="true"]:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(148, 163, 184, 0.7);
+  font-style: italic;
+  pointer-events: none;
+  display: inline-block;
+}
+
+/* Subtle hover affordance for editable content */
+[data-element-key]:hover {
+  outline: 1.5px dashed rgba(99, 102, 241, 0.5);
+  outline-offset: 3px;
+  border-radius: 6px;
+  cursor: text;
+}
+
+/* Gentle highlight when an element is tapped */
 @keyframes nexoraElPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.55); }
-  100% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.25); }
+  100% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
 }
 .nexora-el-pulse {
-  animation: nexoraElPulse 0.7s cubic-bezier(0.16, 1, 0.3, 1) 2;
+  animation: nexoraElPulse 0.55s cubic-bezier(0.16, 1, 0.3, 1) 1;
 }
 
-/* Inspector field flash — highlights the matching form field */
+/* Inspector field flash — highlights the matching form field in the sidebar */
 @keyframes nexoraFieldFlash {
-  0%   { background-color: rgba(99, 102, 241, 0.35); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.45); }
+  0%   { background-color: rgba(99, 102, 241, 0.4); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5); }
+  50%  { background-color: rgba(99, 102, 241, 0.25); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); }
   100% { background-color: transparent; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
 }
 .nexora-field-flash {
-  animation: nexoraFieldFlash 1.1s cubic-bezier(0.16, 1, 0.3, 1) 1;
+  animation: nexoraFieldFlash 1.4s cubic-bezier(0.16, 1, 0.3, 1) 1;
   border-radius: 8px;
 }

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { projectsApi } from "@/lib/api";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
+import { injectSeoHeadTags } from "@/lib/seoGenerator";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 const RESERVED_SLUGS = ["dashboard", "login", "register", "editor", "api", "admin", "favicon.ico"];
@@ -31,8 +32,12 @@ export default function PublicSitePage() {
       .then((res) => {
         if (res?.data) {
           setProject(res.data);
-          const title = res.data.seo?.metaTitle || res.data.name || "Digital Presence";
-          document.title = title;
+          injectSeoHeadTags({
+            config: res.data.config,
+            seo: res.data.seo,
+            slug: slug,
+            projectName: res.data.name,
+          });
         } else {
           setError("Site not found");
         }

@@ -4,6 +4,7 @@ import { useRef, useEffect } from "react";
 import { useEditorStore } from "@/store/editorStore";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { DeviceFrame } from "@/components/editor/DeviceFrame";
+import { ContextToolbar } from "@/components/editor/ContextToolbar";
 import { Layers } from "lucide-react";
 
 interface CanvasPreviewProps {
@@ -11,6 +12,7 @@ interface CanvasPreviewProps {
   onSelectSection: (id: string) => void;
   selectedElementKey?: string | null;
   onSelectElement?: (elementKey: string, sectionId: string) => void;
+  onRequestImageEdit?: (sectionId: string, elementKey: string) => void;
 }
 
 export function CanvasPreview({
@@ -18,8 +20,11 @@ export function CanvasPreview({
   onSelectSection,
   selectedElementKey,
   onSelectElement,
+  onRequestImageEdit,
 }: CanvasPreviewProps) {
-  const { config, customCode, viewport } = useEditorStore();
+  const config = useEditorStore((state) => state.config);
+  const customCode = useEditorStore((state) => state.customCode);
+  const viewport = useEditorStore((state) => state.viewport);
 
   // Ref to the scroll container — used for scroll-to-section behavior
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -63,8 +68,14 @@ export function CanvasPreview({
     return () => clearTimeout(timer);
   }, [selectedElementKey]);
 
-return (
+  return (
     <div className="flex-1 h-full bg-slate-950 overflow-hidden flex items-center justify-center relative">
+      {/* Context-Aware Floating Toolbar */}
+      <ContextToolbar
+        scrollRef={scrollContainerRef}
+        onRequestImageEdit={onRequestImageEdit}
+      />
+
       {/* Device Frame — content scrolls INSIDE the device screen, not the canvas */}
       <DeviceFrame viewport={viewport} scrollRef={scrollContainerRef}>
         {config ? (
@@ -75,6 +86,7 @@ return (
             onSelectSection={onSelectSection}
             selectedElementKey={selectedElementKey}
             onSelectElement={onSelectElement}
+            onRequestImageEdit={onRequestImageEdit}
             interactive={true}
           />
         ) : (

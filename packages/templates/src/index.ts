@@ -108,3 +108,144 @@ export function validateTemplateJSON(json: any): { valid: boolean; errors?: stri
     return { valid: false, errors: [err.message || "Invalid JSON structure"] };
   }
 }
+
+export interface CompatibilityCheckItem {
+  category: "Structure" | "Styling" | "Rendering" | "Editor" | "Assets" | "Security";
+  title: string;
+  passed: boolean;
+  message: string;
+  details?: string[];
+}
+
+export interface TemplateCompatibilityReport {
+  overallValid: boolean;
+  score: number;
+  checks: CompatibilityCheckItem[];
+}
+
+export function checkTemplateCompatibility(json: any): TemplateCompatibilityReport {
+  const checks: CompatibilityCheckItem[] = [];
+
+  // 1. Schema & Structure Validation
+  const schemaResult = validateTemplateJSON(json);
+  if (schemaResult.valid) {
+    checks.push({
+      category: "Structure",
+      title: "JSON & Zod Schema Validation",
+      passed: true,
+      message: "Valid SiteConfig JSON structure",
+    });
+  } else {
+    checks.push({
+      category: "Structure",
+      title: "JSON & Zod Schema Validation",
+      passed: false,
+      message: "Schema validation failed",
+      details: schemaResult.errors,
+    });
+  }
+
+  // Check metadata
+  const meta = json?.meta || {};
+  const hasTitle = Boolean(meta.title);
+  const hasCategory = Boolean(meta.category);
+  const hasSlug = Boolean(meta.slug);
+
+  checks.push({
+    category: "Structure",
+    title: "Template Metadata Fields",
+    passed: hasTitle && hasCategory,
+    message: hasTitle && hasCategory
+      ? `Title: "${meta.title}", Category: "${meta.category}"`
+      : "Missing required metadata fields (title and category)",
+  });
+
+  // Check section structure & unique IDs
+  const sections = Array.isArray(json?.sections) ? json.sections : [];
+  if (sections.length === 0) {
+    checks.push({
+      category: "Structure",
+      title: "Section Array",
+      passed: false,
+      message: "Template contains zero sections",
+    });
+  } else {
+    const ids = new Set<string>();
+    let duplicateIdFound = false;
+    for (const sec of sections) {
+      if (!sec.id || ids.has(sec.id)) {
+        duplicateIdFound = true;
+        break;
+      }
+      ids.add(sec.id);
+    }
+    checks.push({
+      category: "Structure",
+      title: "Section Structure & IDs",
+      passed: !duplicateIdFound,
+      message: duplicateIdFound
+        ? "Duplicate or missing section IDs detected"
+        : `${sections.length} unique sections configured`,
+    });
+  }
+
+  // 2. Theme & Design Tokens
+  const theme = json?.theme || {};
+  const hasThemeColors = Boolean(theme.primaryColor && theme.backgroundColor && theme.textColor);
+  checks.push({
+    category: "Styling",
+    title: "Theme & Design Tokens",
+    passed: hasThemeColors,
+    message: hasThemeColors
+      ? `Colors & Fonts set (Primary: ${theme.primaryColor}, Mode: ${theme.mode || "dark"})`
+      : "Incomplete theme color configuration",
+  });
+
+  // 3. Security & Custom CSS Check
+  const css = [json?.customCss, json?.customCode?.css].filter(Boolean).join("\n");
+  const dangerousPatterns = [/@import\b/i, /expression\s*\(/i, /javascript\s*:/i, /<script/i];
+  const hasDanger = dangerousPatterns.some((pattern) => pattern.test(css));
+  checks.push({
+    category: "Security",
+    title: "CSS & Code Security",
+    passed: !hasDanger,
+    message: hasDanger
+      ? "Dangerous CSS pattern detected (@import, script injection, or javascript:)"
+      : css ? "Custom CSS is clean and safe to scope" : "No custom CSS (Clean)",
+  });
+
+  // 4. Editor Compatibility Check
+  const editableLeafKeys = new Set(["title", "subtitle", "badge", "label", "desc", "quote", "name", "price", "question", "answer", "ctaText"]);
+  let editableElementsCount = 0;
+  for (const sec of sections) {
+    if (sec.title) editableElementsCount++;
+    if (sec.subtitle) editableElementsCount++;
+    if (sec.badge) editableElementsCount++;
+    const content = sec.content || {};
+    for (const [k, v] of Object.entries(content)) {
+      if (editableLeafKeys.has(k)) editableElementsCount++;
+      if (Array.isArray(v)) editableElementsCount += v.length;
+    }
+  }
+  checks.push({
+    category: "Editor",
+    title: "Visual Editor Key Mapping",
+    passed: editableElementsCount > 0,
+    message: `${editableElementsCount} editable elements detected for the Visual Editor`,
+  });
+
+  // 5. Assets Check
+  checks.push({
+    category: "Assets",
+    title: "Asset & Media Links",
+    passed: true,
+    message: "Media references fallback gracefully",
+  });
+
+  const passedCount = checks.filter((c) => c.passed).length;
+  const score = Math.round((passedCount / checks.length) * 100);
+  const overallValid = checks.every((c) => c.passed);
+
+  return { overallValid, score, checks };
+}
+

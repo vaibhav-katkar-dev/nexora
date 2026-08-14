@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { projectsApi } from "@/lib/api";
+import { resolveElementValue } from "@/lib/editorElements";
 import { useEditorStore } from "@/store/editorStore";
 import { useToast } from "@/components/ui/Toast";
 import { buildPublishedSiteUrl } from "@/lib/siteUrl";
@@ -25,20 +26,26 @@ import { Loader2 } from "lucide-react";
 export default function EditorPage() {
   const params = useParams();
   const router = useRouter();
-  const {
-    projectId,
-    projectName,
-    config,
-    loadProject,
-    viewMode,
-    setViewMode,
-    publish,
-    setProjectSlug,
-  } = useEditorStore();
+  const projectId = useEditorStore((state) => state.projectId);
+  const projectName = useEditorStore((state) => state.projectName);
+  const config = useEditorStore((state) => state.config);
+  const activeSectionId = useEditorStore((state) => state.activeSectionId);
+  const selectedElementKey = useEditorStore((state) => state.selectedElementKey);
+  const loadProject = useEditorStore((state) => state.loadProject);
+  const viewMode = useEditorStore((state) => state.viewMode);
+  const setViewMode = useEditorStore((state) => state.setViewMode);
+  const publish = useEditorStore((state) => state.publish);
+  const save = useEditorStore((state) => state.save);
+  const setProjectSlug = useEditorStore((state) => state.setProjectSlug);
+  const setActiveSectionId = useEditorStore((state) => state.setActiveSectionId);
+  const setSelectedElementKey = useEditorStore((state) => state.setSelectedElementKey);
+  const selectSection = useEditorStore((state) => state.selectSection);
+  const selectElement = useEditorStore((state) => state.selectElement);
+  const updateElementValue = useEditorStore((state) => state.updateElementValue);
+  const undo = useEditorStore((state) => state.undo);
+  const redo = useEditorStore((state) => state.redo);
 
   const [activeTab, setActiveTab] = useState<SidebarTab>("sections");
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [selectedElementKey, setSelectedElementKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [developerMode, setDeveloperMode] = useState(false);
   const [showSlugModal, setShowSlugModal] = useState(false);
@@ -77,9 +84,6 @@ export default function EditorPage() {
           if (cached && cached.config) {
             loadProject(cached);
             setCurrentSlug(cached.slug || "");
-            if (cached.config?.sections?.length > 0) {
-              setActiveSectionId(cached.config.sections[0].id);
-            }
             setIsLoading(false);
             return;
           }
@@ -94,9 +98,6 @@ export default function EditorPage() {
         if (res.data) {
           loadProject(res.data);
           setCurrentSlug(res.data.slug || "");
-          if (res.data.config?.sections?.length > 0) {
-            setActiveSectionId(res.data.config.sections[0].id);
-          }
         }
       } catch (err) {
         console.error("Failed to load project", err);
@@ -109,19 +110,45 @@ export default function EditorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id, loadProject]);
 
-  // Sync active section when sections change or section is selected
-  const handleSelectSection = (sectionId: string) => {
-    setActiveSectionId(sectionId);
-    setSelectedElementKey(null);
-    if (activeTab !== "inspector" && activeTab !== "sections") {
-      setActiveTab("inspector");
+  useEffect(() => {
+    if (viewMode === "code" && !developerMode) {
+      setViewMode("visual");
     }
+  }, [developerMode, setViewMode, viewMode]);
+
+  useEffect(() => {
+    if (!developerMode && activeTab === "code") {
+      setActiveTab("sections");
+    }
+  }, [activeTab, developerMode]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isMeta = event.metaKey || event.ctrlKey;
+      if (!isMeta) return;
+
+      if (event.key.toLowerCase() === "z" && !event.shiftKey) {
+        event.preventDefault();
+        undo();
+      } else if (event.key.toLowerCase() === "y" || (event.key.toLowerCase() === "z" && event.shiftKey)) {
+        event.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [redo, undo]);
+
+  // When a section or element is selected in the visual workspace, set selection
+  // and open the Inspector tab so controls are accessible in both canvas and inspector panel.
+  const handleSelectSection = (sectionId: string) => {
+    selectSection(sectionId);
+    setActiveTab("inspector");
   };
 
-  // Element-level click-to-inspect: auto-open inspector, select section + element
   const handleSelectElement = (elementKey: string, sectionId: string) => {
-    setActiveSectionId(sectionId);
-    setSelectedElementKey(elementKey);
+    selectElement(sectionId, elementKey);
     setActiveTab("inspector");
   };
 
@@ -129,17 +156,23 @@ export default function EditorPage() {
   useEffect(() => {
     if (!config?.sections || config.sections.length === 0) {
       setActiveSectionId(null);
+      setSelectedElementKey(null);
       return;
     }
     const exists = config.sections.some((s) => s.id === activeSectionId);
     if (!exists) {
       setActiveSectionId(config.sections[0].id);
+      setSelectedElementKey(null);
     }
-  }, [config?.sections, activeSectionId]);
+  }, [activeSectionId, config?.sections, setActiveSectionId, setSelectedElementKey]);
 
   const handlePublishWithSlug = async (slug: string) => {
     setShowSlugModal(false);
     try {
+      // Always save the current state first so the published version matches
+      // what the user sees in the editor right now.
+      await save();
+
       if (projectId) {
         await projectsApi.updateSlug(projectId, slug);
         setCurrentSlug(slug);
@@ -152,9 +185,73 @@ export default function EditorPage() {
     }
   };
 
-  const [panelWidth, setPanelWidth] = useState(320);
+  const [panelWidth, setPanelWidth] = useState(300);
 
-  // Drag handle width resizer logic
+  // ── Mobile bottom-sheet state ─────────────────────────────────────────────
+  // sheetH: current height in vh (0 = collapsed/handle-only, 40 = peek, 90 = expanded)
+  const SHEET_COLLAPSED = 0;
+  const SHEET_PEEK = 40;
+  const SHEET_EXPANDED = 82;
+  const [sheetH, setSheetH] = useState(SHEET_PEEK);
+  const [isSheetOpen, setIsSheetOpen] = useState(true);
+  const sheetDragRef = useRef<{ startY: number; startH: number } | null>(null);
+
+  const snapSheet = (rawH: number) => {
+    // Snap to nearest breakpoint
+    if (rawH < 18) { setSheetH(SHEET_COLLAPSED); setIsSheetOpen(false); }
+    else if (rawH < 62) { setSheetH(SHEET_PEEK); setIsSheetOpen(true); }
+    else { setSheetH(SHEET_EXPANDED); setIsSheetOpen(true); }
+  };
+
+  const onSheetDragStart = (clientY: number) => {
+    sheetDragRef.current = { startY: clientY, startH: sheetH };
+  };
+
+  const onSheetDragMove = (clientY: number) => {
+    if (!sheetDragRef.current) return;
+    const deltaVh = ((sheetDragRef.current.startY - clientY) / window.innerHeight) * 100;
+    const newH = Math.min(90, Math.max(0, sheetDragRef.current.startH + deltaVh));
+    setSheetH(newH);
+    if (newH > 5) setIsSheetOpen(true);
+  };
+
+  const onSheetDragEnd = () => {
+    if (!sheetDragRef.current) return;
+    snapSheet(sheetH);
+    sheetDragRef.current = null;
+  };
+
+  // Touch handlers for the drag pill
+  const handleSheetTouchStart = (e: React.TouchEvent) => {
+    onSheetDragStart(e.touches[0].clientY);
+  };
+  const handleSheetTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    onSheetDragMove(e.touches[0].clientY);
+  };
+  const handleSheetTouchEnd = () => onSheetDragEnd();
+
+  // Mouse handlers for desktop (same handle, drag vertically on desktop too)
+  const handleSheetMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onSheetDragStart(e.clientY);
+    const move = (ev: MouseEvent) => onSheetDragMove(ev.clientY);
+    const up = () => { onSheetDragEnd(); window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  };
+
+  const toggleSheet = () => {
+    if (!isSheetOpen || sheetH <= SHEET_COLLAPSED) {
+      setSheetH(SHEET_PEEK);
+      setIsSheetOpen(true);
+    } else {
+      setSheetH(SHEET_COLLAPSED);
+      setIsSheetOpen(false);
+    }
+  };
+
+  // Drag handle width resizer logic (desktop only)
   const handleResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
@@ -175,7 +272,24 @@ export default function EditorPage() {
     window.addEventListener("mouseup", handleMouseUp);
   };
 
+  const handleRequestImageEdit = (sectionId: string, elementKey: string) => {
+    const section = config?.sections.find((item) => item.id === sectionId);
+    if (!section) return;
+
+    const currentValue = resolveElementValue(section, elementKey);
+    setImagePickerState({
+      isOpen: true,
+      currentUrl: typeof currentValue === "string" ? currentValue : "",
+      onSelect: (url) => {
+        updateElementValue(sectionId, elementKey, url);
+        setImagePickerState({ isOpen: false, currentUrl: "" });
+      },
+    });
+  };
+
   const activeSection = config?.sections.find((s) => s.id === activeSectionId);
+  const showSidebar = viewMode !== "preview";
+  const showCodeEditor = developerMode && (viewMode === "code" || activeTab === "code");
 
   if (isLoading) {
     return (
@@ -196,82 +310,187 @@ export default function EditorPage() {
       />
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex min-h-0 overflow-hidden relative">
-        {/* Left Sidebar Navigation */}
-        <EditorSidebar
-          activeTab={activeTab}
-          onTabChange={(t) => setActiveTab(t)}
-          developerMode={developerMode}
-          activeSectionTitle={activeSection?.title}
-        />
-
-        {/* Active Sidebar Drawer / Resizable Inspector Panel */}
-        {activeTab !== "code" && (
-          <div
-            style={{ width: `${panelWidth}px` }}
-            className="flex-shrink-0 relative flex h-full bg-slate-900 border-r border-slate-800"
-          >
-            <div className="w-full h-full flex-1 overflow-hidden flex flex-col">
-              {activeTab === "sections" && (
-                <SectionListPanel
-                  activeSectionId={activeSectionId}
-                  onSelectSection={handleSelectSection}
-                  onOpenAddPanel={() => setActiveTab("add")}
-                />
-              )}
-
-{activeTab === "inspector" && (
-                <SectionInspectorPanel
-                  sectionId={activeSectionId}
-                  onOpenImagePicker={(url, onSelect) =>
-                    setImagePickerState({ isOpen: true, currentUrl: url, onSelect })
-                  }
-                  selectedElementKey={selectedElementKey}
-                  onClearElement={() => setSelectedElementKey(null)}
-                />
-              )}
-
-              {activeTab === "add" && (
-                <AddSectionPanel
-                  onSectionAdded={(newId) => {
-                    setActiveSectionId(newId);
-                    setActiveTab("inspector");
-                  }}
-                />
-              )}
-
-              {activeTab === "theme" && <ThemeInspectorPanel />}
-
-              {activeTab === "seo" && <SeoInspectorPanel />}
-
-              {activeTab === "ai" && <AiCopilotPanel />}
-            </div>
-
-            {/* Width Drag Handle */}
-            <div
-              onMouseDown={handleResizeStart}
-              className="absolute top-0 right-0 bottom-0 w-2 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 transition-colors z-30 -mr-1"
-              title="Drag to resize panel width"
-            />
-          </div>
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden relative">
+        {showSidebar && (
+          <EditorSidebar
+            activeTab={activeTab}
+            onTabChange={(t) => setActiveTab(t)}
+            developerMode={developerMode}
+            activeSectionTitle={activeSection?.title}
+          />
         )}
 
-        {/* Center Main Content Area */}
+        {showSidebar && activeTab !== "code" && (
+          <>
+            {/* ── Desktop panel (unchanged width-resizable sidebar) ──────── */}
+            <div
+              style={{ width: `${panelWidth}px` }}
+              className="flex-shrink-0 relative flex h-full bg-slate-900 border-r border-slate-800 transition-all duration-200 ease-out hidden md:flex"
+            >
+              <div className="w-full h-full flex-1 overflow-hidden flex flex-col">
+                {activeTab === "sections" && (
+                  <SectionListPanel
+                    activeSectionId={activeSectionId}
+                    onSelectSection={handleSelectSection}
+                    onOpenAddPanel={() => setActiveTab("add")}
+                  />
+                )}
+                {activeTab === "inspector" && (
+                  <SectionInspectorPanel
+                    onOpenImagePicker={(url, onSelect) =>
+                      setImagePickerState({ isOpen: true, currentUrl: url, onSelect })
+                    }
+                  />
+                )}
+                {activeTab === "add" && (
+                  <AddSectionPanel
+                    onSectionAdded={(newId) => {
+                      setActiveSectionId(newId);
+                      setActiveTab("inspector");
+                    }}
+                  />
+                )}
+                {activeTab === "theme" && <ThemeInspectorPanel />}
+                {activeTab === "seo" && <SeoInspectorPanel />}
+                {activeTab === "ai" && <AiCopilotPanel />}
+              </div>
+
+              {/* Desktop horizontal resize handle */}
+              <div
+                onMouseDown={handleResizeStart}
+                className="absolute top-0 right-0 bottom-0 w-2 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 transition-colors z-30 -mr-1"
+                title="Drag to resize panel width"
+              />
+            </div>
+
+            {/* ── Mobile bottom-sheet panel ─────────────────────────────── */}
+            <div
+              className="md:hidden fixed inset-x-0 bottom-12 z-40 flex flex-col"
+              style={{
+                height: isSheetOpen ? `${sheetH}vh` : "3rem",
+                minHeight: "3rem",
+                transition: sheetDragRef.current ? "none" : "height 0.32s cubic-bezier(0.32, 0.72, 0, 1)",
+                willChange: "height",
+              }}
+            >
+              {/* Sheet surface */}
+              <div className="flex flex-col h-full bg-slate-900 border-t border-slate-700/80 rounded-t-2xl shadow-2xl overflow-hidden">
+
+                {/* ── Drag handle + tab label bar ─────────────────────────── */}
+                <div
+                  className="flex-shrink-0 flex flex-col items-center w-full cursor-grab active:cursor-grabbing select-none"
+                  onMouseDown={handleSheetMouseDown}
+                  onTouchStart={handleSheetTouchStart}
+                  onTouchMove={handleSheetTouchMove}
+                  onTouchEnd={handleSheetTouchEnd}
+                >
+                  {/* Drag pill */}
+                  <div className="w-10 h-1 rounded-full bg-slate-600 mt-2.5 mb-1 mx-auto" />
+
+                  {/* Label + toggle row — tap this row to open/close */}
+                  <button
+                    type="button"
+                    onClick={toggleSheet}
+                    className="w-full flex items-center justify-between px-4 py-2 text-left"
+                  >
+                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
+                      {activeTab === "inspector" ? "Inspector"
+                        : activeTab === "sections" ? "Sections"
+                        : activeTab === "add" ? "Add Section"
+                        : activeTab === "theme" ? "Theme"
+                        : activeTab === "seo" ? "SEO"
+                        : activeTab === "ai" ? "AI Copilot"
+                        : "Panel"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {/* Height snap buttons — shown when open */}
+                      {isSheetOpen && (
+                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => { setSheetH(SHEET_PEEK); setIsSheetOpen(true); }}
+                            className={`w-6 h-6 rounded-md border text-[9px] font-bold transition-colors ${sheetH <= SHEET_PEEK + 5 && sheetH > SHEET_COLLAPSED ? "bg-indigo-600 border-indigo-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"}`}
+                            title="Half height"
+                          >½</button>
+                          <button
+                            type="button"
+                            onClick={() => { setSheetH(SHEET_EXPANDED); setIsSheetOpen(true); }}
+                            className={`w-6 h-6 rounded-md border text-[9px] font-bold transition-colors ${sheetH > SHEET_PEEK + 5 ? "bg-indigo-600 border-indigo-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"}`}
+                            title="Full height"
+                          >↑</button>
+                        </div>
+                      )}
+                      {/* Chevron */}
+                      <svg
+                        width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        className={`text-slate-400 transition-transform duration-300 ${isSheetOpen ? "rotate-180" : "rotate-0"}`}
+                        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                      >
+                        <polyline points="18 15 12 9 6 15" />
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+
+                {/* ── Scrollable panel content ───────────────────────────── */}
+                {isSheetOpen && (
+                  <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+                    {activeTab === "sections" && (
+                      <SectionListPanel
+                        activeSectionId={activeSectionId}
+                        onSelectSection={handleSelectSection}
+                        onOpenAddPanel={() => setActiveTab("add")}
+                      />
+                    )}
+                    {activeTab === "inspector" && (
+                      <SectionInspectorPanel
+                        onOpenImagePicker={(url, onSelect) =>
+                          setImagePickerState({ isOpen: true, currentUrl: url, onSelect })
+                        }
+                      />
+                    )}
+                    {activeTab === "add" && (
+                      <AddSectionPanel
+                        onSectionAdded={(newId) => {
+                          setActiveSectionId(newId);
+                          setActiveTab("inspector");
+                        }}
+                      />
+                    )}
+                    {activeTab === "theme" && <ThemeInspectorPanel />}
+                    {activeTab === "seo" && <SeoInspectorPanel />}
+                    {activeTab === "ai" && <AiCopilotPanel />}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
         <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-slate-950">
-          {/* Code Mode or Dev Mode Code Tab */}
-          {viewMode === "code" || (developerMode && activeTab === "code") ? (
+          {showCodeEditor ? (
             <CodeEditorPanel />
           ) : viewMode === "preview" ? (
-            <div className="flex-1 h-full overflow-y-auto bg-slate-950">
-              {config && <SiteRenderer config={config} />}
+            <div className="flex-1 h-full overflow-hidden bg-slate-950 relative">
+              <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode("visual")}
+                  className="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur hover:bg-slate-800"
+                >
+                  Back to edit
+                </button>
+              </div>
+              <div className="h-full overflow-y-auto flex flex-col">
+                {config && <SiteRenderer config={config} />}
+              </div>
             </div>
           ) : (
-/* Visual Canvas View with Click-to-Select Sync */
             <CanvasPreview
               selectedSectionId={activeSectionId}
               onSelectSection={handleSelectSection}
               selectedElementKey={selectedElementKey}
               onSelectElement={handleSelectElement}
+              onRequestImageEdit={handleRequestImageEdit}
             />
           )}
         </div>

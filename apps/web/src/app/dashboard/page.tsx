@@ -23,7 +23,10 @@ import {
   ExternalLink,
   Wand2,
   LayoutTemplate,
+  QrCode,
 } from "lucide-react";
+import { QrModal } from "@/components/common/QrModal";
+import { buildPublishedSiteUrl } from "@/lib/siteUrl";
 
 
 
@@ -49,6 +52,13 @@ export default function DashboardPage() {
   // Filters
   const [projectTab, setProjectTab] = useState<ProjectTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<ProjectTab>("all");
+  const [qrModalData, setQrModalData] = useState<{ isOpen: boolean; url: string; title: string; slug: string }>({
+    isOpen: false,
+    url: "",
+    title: "",
+    slug: "",
+  });
   const [isCreating, setIsCreating] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -392,21 +402,52 @@ export default function DashboardPage() {
                         <Send size={13} />
                       </Link>
                       {isPublished && proj.slug && (
-                        <Link
-                          href={`/${proj.slug}`}
-                          target="_blank"
-                          className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-300 transition-colors"
-                          title="View live published site"
-                        >
-                          <ExternalLink size={13} />
-                        </Link>
+                        <>
+                          <a
+                            href={buildPublishedSiteUrl(proj.slug)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-300 transition-colors"
+                            title="View live published site"
+                          >
+                            <ExternalLink size={13} />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const liveUrl = buildPublishedSiteUrl(proj.slug);
+                              navigator.clipboard.writeText(liveUrl);
+                              toast.success("Live URL Copied!", liveUrl);
+                            }}
+                            className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
+                            title="Copy live site link"
+                          >
+                            <Copy size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const liveUrl = buildPublishedSiteUrl(proj.slug);
+                              setQrModalData({
+                                isOpen: true,
+                                url: liveUrl,
+                                title: proj.name,
+                                slug: proj.slug,
+                              });
+                            }}
+                            className="p-1.5 rounded-xl border border-slate-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100/70 hover:border-indigo-300 transition-colors"
+                            title="Generate & Download QR Code"
+                          >
+                            <QrCode size={13} />
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => handleDuplicateProject(proj._id)}
                         className="p-1.5 rounded-xl border border-slate-200 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
                         title="Duplicate project"
                       >
-                        <Copy size={13} />
+                        <FolderKanban size={13} />
                       </button>
                       <button
                         onClick={() => handleDeleteProject(proj._id)}
@@ -423,6 +464,14 @@ export default function DashboardPage() {
           )}
         </section>
       </main>
+
+      <QrModal
+        isOpen={qrModalData.isOpen}
+        onClose={() => setQrModalData({ ...qrModalData, isOpen: false })}
+        url={qrModalData.url}
+        title={qrModalData.title}
+        slug={qrModalData.slug}
+      />
     </div>
   );
 }

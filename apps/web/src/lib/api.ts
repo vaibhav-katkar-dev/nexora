@@ -126,6 +126,9 @@ export const authApi = {
 };
 
 // ─── Projects ─────────────────────────────────────────────────────────────
+const publicSiteCache = new Map<string, { data: any; timestamp: number }>();
+const PUBLIC_CACHE_TTL_MS = 60 * 1000; // 60s memory cache
+
 export const projectsApi = {
   list: (params?: { page?: number; status?: string }) => {
     const qs = new URLSearchParams(params as any).toString();
@@ -145,8 +148,23 @@ export const projectsApi = {
 
   getOne: (id: string) => apiFetch<{ data: any }>(`/projects/${id}`),
 
-  getPublic: (slug: string) =>
-    apiFetch<{ data: any }>(`/projects/public/${slug}`),
+  getPublic: async (slug: string) => {
+    const cached = publicSiteCache.get(slug);
+    const now = Date.now();
+    if (cached && now - cached.timestamp < PUBLIC_CACHE_TTL_MS) {
+      return cached.data;
+    }
+    const res = await apiFetch<{ data: any }>(`/projects/public/${slug}`);
+    if (res?.data) {
+      publicSiteCache.set(slug, { data: res, timestamp: now });
+    }
+    return res;
+  },
+
+  invalidatePublicCache: (slug?: string) => {
+    if (slug) publicSiteCache.delete(slug);
+    else publicSiteCache.clear();
+  },
 
   create: (body: { name: string; category: string; config: SiteConfigJSON }) =>
     apiFetch<{ data: any }>("/projects", {

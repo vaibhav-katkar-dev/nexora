@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import { Project } from "../models/Project.js";
+import { buildStaticSite } from "../services/siteCompiler.js";
 import { SiteConfigSchema } from "@ai-platform/shared";
 import { z } from "zod";
 import { randomUUID } from "crypto";
@@ -94,6 +95,9 @@ export const getPublicProject = async (req: AuthenticatedRequest, res: Response)
         error: { code: "NOT_FOUND", message: "Site not found" },
       });
     }
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.json({ success: true, data: project });
   } catch (error: any) {
     res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });
@@ -183,6 +187,18 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response) =>
         error: { code: "NOT_FOUND", message: "Project not found" },
       });
     }
+
+    // Recompile published HTML if the site is already published
+    if (project.status === "published") {
+      try {
+        const { html } = await buildStaticSite(project);
+        project.publishedHtml = html;
+        await project.save();
+      } catch (compileErr) {
+        console.error("Failed to recompile static site on save:", compileErr);
+      }
+    }
+
     res.json({ success: true, message: "Project saved", data: project });
   } catch (error: any) {
     if (error instanceof z.ZodError) {

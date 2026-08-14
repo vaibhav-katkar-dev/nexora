@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useEditorStore } from "@/store/editorStore";
 import { Section } from "@ai-platform/shared";
 import {
@@ -53,6 +54,8 @@ export function SectionListPanel({
 }: SectionListPanelProps) {
   const { config, setConfig, removeSection, addSection } = useEditorStore();
   const sections = config?.sections || [];
+  const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
   const moveSection = (index: number, direction: "up" | "down") => {
     if (!config) return;
@@ -82,6 +85,22 @@ export function SectionListPanel({
       id: newId,
       title: sec.title ? `${sec.title} (Copy)` : undefined,
     });
+  };
+
+  const reorderSections = (fromId: string, toId: string) => {
+    if (!config || fromId === toId) return;
+
+    const currentSections = [...config.sections];
+    const fromIndex = currentSections.findIndex((sec) => sec.id === fromId);
+    const toIndex = currentSections.findIndex((sec) => sec.id === toId);
+
+    if (fromIndex < 0 || toIndex < 0) return;
+
+    const [movedSection] = currentSections.splice(fromIndex, 1);
+    const adjustedIndex = toIndex > fromIndex ? toIndex - 1 : toIndex;
+    currentSections.splice(adjustedIndex, 0, movedSection);
+
+    setConfig({ ...config, sections: currentSections });
   };
 
   return (
@@ -122,9 +141,31 @@ export function SectionListPanel({
             return (
               <div
                 key={sec.id}
+                draggable
+                onDragStart={() => setDraggedSectionId(sec.id)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDropTargetId(sec.id);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedSectionId) {
+                    reorderSections(draggedSectionId, sec.id);
+                  }
+                  setDraggedSectionId(null);
+                  setDropTargetId(null);
+                }}
+                onDragEnd={() => {
+                  setDraggedSectionId(null);
+                  setDropTargetId(null);
+                }}
                 onClick={() => onSelectSection(sec.id)}
-                className={`group relative p-3 rounded-xl border transition-all cursor-pointer ${
-                  isSelected
+                className={`group relative p-3 rounded-xl border transition-all duration-200 cursor-pointer select-none ${
+                  draggedSectionId === sec.id
+                    ? "opacity-60 scale-[0.99] border-indigo-500/40"
+                    : dropTargetId === sec.id && draggedSectionId && draggedSectionId !== sec.id
+                    ? "border-indigo-400/70 bg-indigo-950/30 shadow-lg shadow-indigo-950/20"
+                    : isSelected
                     ? "bg-indigo-950/40 border-indigo-500/60 shadow-md shadow-indigo-950/20"
                     : isHidden
                     ? "bg-slate-950/40 border-slate-800/60 opacity-60"

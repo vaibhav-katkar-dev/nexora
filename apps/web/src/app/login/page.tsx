@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authApi } from "@/lib/api";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Sparkles, ShieldCheck, Zap, Layers, Globe, Lock, Mail } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,104 +30,171 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex" }}>
-      {/* Left — decorative panel */}
-      <div className="hidden lg:flex flex-col justify-between" style={{ width: "44%", background: "linear-gradient(145deg, #3D2DB8 0%, #5B47E0 50%, #9B87F5 100%)", padding: "48px", position: "relative", overflow: "hidden" }}>
-        {/* Orbs */}
-        <div className="orb orb-warm w-80 h-80" style={{ top: "-60px", right: "-60px", opacity: 0.35 }} />
-        <div className="orb w-48 h-48" style={{ bottom: "60px", left: "-20px", background: "radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%)" }} />
+    <div className="min-h-screen bg-slate-950 text-white flex select-none relative overflow-hidden font-sans">
+      {/* Ambient background glowing orbs */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: "2s" }} />
 
-        {/* Logo */}
-        <div className="flex items-center gap-2 relative">
-          <div style={{ width: "36px", height: "36px", borderRadius: "12px", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ color: "white", fontWeight: 900, fontSize: "16px" }}>N</span>
+      {/* Left — Brand & Hero Panel */}
+      <div className="hidden lg:flex flex-col justify-between w-[46%] bg-slate-900/60 border-r border-slate-800/80 p-12 relative overflow-hidden backdrop-blur-xl">
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+
+        {/* Top Logo */}
+        <div className="flex items-center gap-3 relative z-10">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+            <Sparkles size={20} className="text-white animate-spin-slow" />
           </div>
-          <span style={{ color: "white", fontWeight: 700, fontSize: "18px" }}>Nexora <span style={{ fontWeight: 500, opacity: 0.8 }}>Studio</span></span>
+          <span className="font-extrabold text-xl tracking-tight text-white">
+            Nexora <span className="text-indigo-400 font-medium">Studio</span>
+          </span>
         </div>
 
-        {/* Center copy */}
-        <div className="relative">
-          <h2 style={{ color: "white", fontWeight: 900, fontSize: "2.4rem", lineHeight: 1.1, letterSpacing: "-0.03em", marginBottom: "20px" }}>
-            Your ideas,<br />beautifully live.
-          </h2>
-          <p style={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.7, fontSize: "1.02rem" }}>
-            Build any digital presence — portfolio, card, menu, landing page — in minutes. Powered by AI. Loved by creators.
+        {/* Center Copy */}
+        <div className="space-y-6 relative z-10 my-auto py-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-indigo-300 text-xs font-semibold shadow-sm">
+            <Zap size={14} className="text-indigo-400 animate-bounce" />
+            <span>AI Digital Presence Builder v2.0</span>
+          </div>
+
+          <h1 className="text-4xl xl:text-5xl font-black tracking-tight text-white leading-[1.15]">
+            Build & Publish <br />
+            <span className="bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+              In Minutes Flat.
+            </span>
+          </h1>
+
+          <p className="text-slate-400 text-sm xl:text-base leading-relaxed max-w-lg">
+            Create high-converting landing pages, portfolio cards, menus, and link hubs with AI. Export static code, generate instant QR codes, and host live globally.
           </p>
+
+          {/* Feature Chips */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            {[
+              { icon: Globe, text: "Instant Global Hosting" },
+              { icon: Layers, text: "Drag & Drop Canvas" },
+              { icon: Sparkles, text: "AI Copilot Rewriter" },
+              { icon: ShieldCheck, text: "High-Res QR Code Export" },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-xs font-medium text-slate-300">
+                <Icon size={14} className="text-indigo-400 shrink-0" />
+                <span className="truncate">{text}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Testimonial chip */}
-        <div style={{ background: "rgba(255,255,255,0.12)", borderRadius: "16px", padding: "20px 24px", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.18)", position: "relative" }}>
-          <p style={{ color: "white", fontSize: "0.9rem", lineHeight: 1.65, marginBottom: "14px", fontStyle: "italic" }}>
-            "I built my entire portfolio in 4 minutes. It ranked on Google within a week."
+        {/* Bottom Testimonial Card */}
+        <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-md relative z-10 shadow-xl space-y-3">
+          <p className="text-xs text-slate-300 italic leading-relaxed">
+            "Nexora allowed us to publish our entire product portfolio in under 5 minutes with downloadable QR cards. The speed is unmatched."
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "13px", color: "white" }}>AR</div>
+          <div className="flex items-center gap-3 pt-1 border-t border-slate-800/60">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xs text-white shadow-sm">
+              AR
+            </div>
             <div>
-              <div style={{ color: "white", fontWeight: 600, fontSize: "13px" }}>Alex Rivera</div>
-              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px" }}>Senior AI Engineer</div>
+              <div className="text-xs font-bold text-white">Alex Rivera</div>
+              <div className="text-[10px] text-slate-400">Founder & Tech Lead</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right — login form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div style={{ width: "100%", maxWidth: "400px" }}>
-          {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-10">
-            <div style={{ width: "32px", height: "32px", borderRadius: "10px", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-brand)" }}>
-              <span style={{ color: "white", fontWeight: 900, fontSize: "14px" }}>N</span>
+      {/* Right — Form Section */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative z-10">
+        <div className="w-full max-w-md space-y-8 animate-fade-in">
+          {/* Mobile Header Logo */}
+          <div className="flex lg:hidden items-center justify-center gap-2.5 mb-2">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <Sparkles size={18} className="text-white" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: "17px" }}>Nexora Studio</span>
+            <span className="font-extrabold text-lg tracking-tight text-white">
+              Nexora <span className="text-indigo-400 font-medium">Studio</span>
+            </span>
           </div>
 
-          <div className="animate-fade-up">
-            <h1 style={{ fontSize: "2rem", fontWeight: 900, marginBottom: "8px", letterSpacing: "-0.02em" }}>Welcome back</h1>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "36px", fontSize: "0.95rem" }}>
-              Sign in to your workspace and keep building.
+          {/* Form Header */}
+          <div className="space-y-2 text-center lg:text-left">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Welcome back
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Sign in to your account to access your digital workspace.
             </p>
+          </div>
 
-            {error && (
-              <div style={{ background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: "12px", padding: "12px 16px", marginBottom: "20px", color: "#DC2626", fontSize: "14px" }}>
-                {error}
-              </div>
-            )}
+          {/* Error Banner */}
+          {error && (
+            <div className="p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/60 text-xs text-rose-300 font-medium animate-fade-in flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>Email</label>
-                <input id="login-email" type="email" required value={form.email}
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">Email Address</label>
+              <div className="relative">
+                <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                <input
+                  id="login-email"
+                  type="email"
+                  required
+                  value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="input" placeholder="you@example.com" />
+                  placeholder="you@example.com"
+                  className="w-full bg-slate-900/90 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 transition-all"
+                />
               </div>
+            </div>
 
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>Password</label>
-                  <a href="#" style={{ fontSize: "12px", color: "var(--brand)", textDecoration: "none", fontWeight: 500 }}>Forgot password?</a>
-                </div>
-                <div style={{ position: "relative" }}>
-                  <input id="login-password" type={showPass ? "text" : "password"} required value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    className="input" placeholder="••••••••" style={{ paddingRight: "44px" }} />
-                  <button type="button" onClick={() => setShowPass(!showPass)}
-                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text-tertiary)", display: "flex" }}>
-                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-300">Password</label>
+                <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
+                  Forgot password?
+                </a>
               </div>
+              <div className="relative">
+                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                <input
+                  id="login-password"
+                  type={showPass ? "text" : "password"}
+                  required
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-900/90 border border-slate-800 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </div>
 
-              <button id="login-submit" type="submit" disabled={loading}
-                className="btn btn-primary"
-                style={{ width: "100%", padding: "13px", fontSize: "15px", marginTop: "4px", opacity: loading ? 0.7 : 1 }}>
-                {loading ? "Signing in…" : <>Sign in <ArrowRight className="w-4 h-4" /></>}
-              </button>
-            </form>
+            <button
+              id="login-submit"
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25 group active:scale-[0.99]"
+            >
+              <span>{loading ? "Signing in…" : "Sign In to Workspace"}</span>
+              <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </form>
 
-            <p style={{ textAlign: "center", marginTop: "28px", fontSize: "14px", color: "var(--text-secondary)" }}>
-              New to Nexora Studio?{" "}
-              <Link href="/register" style={{ color: "var(--brand)", fontWeight: 600, textDecoration: "none" }}>
-                Create a free account
+          {/* Footer Navigation Switcher */}
+          <div className="text-center pt-2">
+            <p className="text-xs text-slate-400">
+              Don't have an account?{" "}
+              <Link href="/register" className="text-indigo-400 hover:text-indigo-300 font-bold underline-offset-4 hover:underline transition-colors">
+                Create free account →
               </Link>
             </p>
           </div>
@@ -136,3 +203,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

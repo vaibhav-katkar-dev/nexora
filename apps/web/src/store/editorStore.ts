@@ -14,6 +14,8 @@ interface EditorState {
   projectName: string;
   projectSlug: string;
   config: SiteConfigJSON | null;
+  activeSectionId: string | null;
+  selectedElementKey: string | null;
   customCode: { html?: string; css?: string; js?: string };
   seo: { metaTitle: string; metaDescription: string; ogImage?: string; keywords?: string[] };
   isDirty: boolean;
@@ -32,14 +34,24 @@ interface EditorState {
 
   // Actions
   loadProject: (project: any) => void;
-  setConfig: (config: SiteConfigJSON) => void;
+  pushHistorySnapshot: () => void;
+  setConfig: (config: SiteConfigJSON, pushHistory?: boolean) => void;
   updateSection: (sectionId: string, updates: Record<string, any>) => void;
+  duplicateSection: (sectionId: string) => void;
+  toggleSectionVisibility: (sectionId: string) => void;
+  updateElementValue: (sectionId: string, elementKey: string, value: string | number, pushHistory?: boolean) => void;
+  updateElementStyle: (sectionId: string, elementKey: string, styleUpdates: Record<string, string>) => void;
+  moveSection: (fromSectionId: string, toSectionId: string) => void;
   addSection: (section: SiteConfigJSON["sections"][0]) => void;
   removeSection: (sectionId: string) => void;
   updateTheme: (theme: Partial<SiteConfigJSON["theme"]>) => void;
   setCustomCode: (key: "html" | "css" | "js", value: string) => void;
   setSeo: (updates: Partial<EditorState["seo"]>) => void;
   setProjectSlug: (slug: string) => void;
+  setActiveSectionId: (sectionId: string | null) => void;
+  setSelectedElementKey: (elementKey: string | null) => void;
+  selectSection: (sectionId: string | null) => void;
+  selectElement: (sectionId: string, elementKey: string | null) => void;
   setViewMode: (mode: EditorState["viewMode"]) => void;
   setViewport: (viewport: EditorState["viewport"]) => void;
   undo: () => void;
@@ -75,13 +87,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   projectName: "",
   projectSlug: "",
   config: null,
+  activeSectionId: null,
+  selectedElementKey: null,
   customCode: {},
   seo: { metaTitle: "", metaDescription: "" },
   isDirty: false,
   isSaving: false,
   saveError: null,
   isPublishing: false,
-  viewMode: "visual",
+  viewMode: "preview",
   viewport: "desktop",
   past: [],
   future: [],
@@ -93,6 +107,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       projectName: project.name,
       projectSlug: project.slug || "",
       config: project.config,
+      activeSectionId: project.config?.sections?.[0]?.id || null,
+      selectedElementKey: null,
       customCode: project.customCode || {},
       seo: project.seo || { metaTitle: "", metaDescription: "" },
       isDirty: false,
@@ -102,14 +118,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       _skipAutoSave: false,
     }),
 
-  setConfig: (config) => {
+  pushHistorySnapshot: () => {
+    const { config, customCode } = get();
+    if (!config) return;
+    const clonedConfig = JSON.parse(JSON.stringify(config));
+    const clonedCode = JSON.parse(JSON.stringify(customCode));
+    set((s) => ({
+      past: [...s.past.slice(-49), { config: clonedConfig, customCode: clonedCode }],
+      future: [],
+    }));
+  },
+
+  setConfig: (config, pushHistory = true) => {
     const { config: prev, customCode } = get();
+    const clonedPrev = prev ? JSON.parse(JSON.stringify(prev)) : null;
+    const clonedCode = JSON.parse(JSON.stringify(customCode));
 
     set((s) => ({
       config,
       isDirty: true,
-      past: prev ? [...s.past.slice(-49), { config: prev, customCode }] : s.past,
-      future: [],
+      past: pushHistory && clonedPrev ? [...s.past.slice(-49), { config: clonedPrev, customCode: clonedCode }] : s.past,
+      future: pushHistory ? [] : s.future,
     }));
     scheduleAutoSave(get, set as any);
   },
@@ -123,6 +152,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         ? {
             ...sec,
             ...updates,
+            // Deep-merge elementColors so updating one element's color never
+            // wipes other elements' colors (shallow spread would replace the object).
+            elementColors: updates.elementColors
+              ? { ...(sec.elementColors || {}), ...updates.elementColors }
+              : sec.elementColors,
             content: updates.content
               ? { ...(sec.content || {}), ...updates.content }
               : sec.content || {},
@@ -130,6 +164,138 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         : sec
     );
     get().setConfig({ ...config, sections: newSections });
+  },
+
+  duplicateSection: (sectionId) => {
+    const { config } = get();
+    if (!config) return;
+    const currentSections = Array.isArray(config.sections) ? config.sections : [];
+    const idx = currentSections.findIndex((s) => s.id === sectionId);
+    if (idx === -1) return;
+    const targetSec = currentSections[idx];
+    const newId = `${targetSec.type}-${Date.now()}`;
+    const duplicatedSec = {
+      ...JSON.parse(JSON.stringify(targetSec)),
+      id: newId,
+      title: targetSec.title ? `${targetSec.title} (Copy)` : undefined,
+    };
+    const nextSections = [...currentSections];
+    nextSections.splice(idx + 1, 0, duplicatedSec);
+    get().setConfig({ ...config, sections: nextSections });
+  },
+
+  toggleSectionVisibility: (sectionId) => {
+    const { config } = get();
+    if (!config) return;
+    const currentSections = Array.isArray(config.sections) ? config.sections : [];
+    const nextSections = currentSections.map((sec) =>
+      sec.id === sectionId ? { ...sec, visible: sec.visible === false ? true : false } : sec
+    );
+    get().setConfig({ ...config, sections: nextSections });
+  },
+
+  updateElementValue: (sectionId, elementKey, value, pushHistory = true) => {
+    const { config } = get();
+    if (!config) return;
+
+    // Deep clone config so object references inside past history snapshots are never mutated in-place
+    const clonedConfig: SiteConfigJSON = JSON.parse(JSON.stringify(config));
+    const currentSections = Array.isArray(clonedConfig.sections) ? clonedConfig.sections : [];
+    const nextSections = currentSections.map((sec) => {
+      if (sec.id !== sectionId) return sec;
+
+      const normalizedKey = elementKey.replace(/^content\./, "");
+      const topLevelKeys = new Set(["badge", "title", "subtitle"]);
+
+      if (topLevelKeys.has(normalizedKey)) {
+        return { ...sec, [normalizedKey]: value } as any;
+      }
+
+      const nextContent = (sec.content || {}) as Record<string, any>;
+      const pathParts = normalizedKey.split(".").filter(Boolean);
+      if (pathParts.length === 0) return sec;
+
+      let cursor: Record<string, any> = nextContent;
+      pathParts.forEach((part, index) => {
+        const isLast = index === pathParts.length - 1;
+        if (isLast) {
+          if (typeof cursor[part] === "object" && cursor[part] !== null && !Array.isArray(cursor[part])) {
+            cursor[part] = { ...cursor[part], label: value, title: value, name: value };
+          } else {
+            cursor[part] = value;
+          }
+          return;
+        }
+
+        const nextValue = cursor[part];
+        const nextPart = pathParts[index + 1];
+        const shouldCreateArray = /^\d+$/.test(nextPart);
+
+        if (nextValue && typeof nextValue === "object") {
+          cursor = nextValue as Record<string, any>;
+        } else if (typeof nextValue === "string" && !shouldCreateArray) {
+          const converted = { label: nextValue, title: nextValue, name: nextValue };
+          cursor[part] = converted;
+          cursor = converted;
+        } else {
+          const nextContainer = shouldCreateArray ? [] : {};
+          cursor[part] = nextContainer;
+          cursor = nextContainer as Record<string, any>;
+        }
+      });
+
+      return { ...sec, content: nextContent } as any;
+    });
+
+    get().setConfig({ ...clonedConfig, sections: nextSections }, pushHistory);
+  },
+
+  updateElementStyle: (sectionId, elementKey, styleUpdates) => {
+    const { config } = get();
+    if (!config) return;
+
+    const currentSections = Array.isArray(config.sections) ? config.sections : [];
+    const nextSections = currentSections.map((sec) => {
+      if (sec.id !== sectionId) return sec;
+
+      const normalizedKey = elementKey.replace(/^content\./, "");
+      const existingStyles = (sec.elementStyles || {}) as Record<string, Record<string, string>>;
+      const nextStyles = { ...existingStyles };
+      const nextElementStyles = { ...(nextStyles[normalizedKey] || {}) } as Record<string, string>;
+
+      Object.entries(styleUpdates).forEach(([property, value]) => {
+        if (value === "" || value === null || value === undefined) {
+          delete nextElementStyles[property];
+        } else {
+          nextElementStyles[property] = String(value);
+        }
+      });
+
+      if (Object.keys(nextElementStyles).length > 0) {
+        nextStyles[normalizedKey] = nextElementStyles;
+      } else {
+        delete nextStyles[normalizedKey];
+      }
+
+      return { ...sec, elementStyles: nextStyles } as any;
+    });
+
+    get().setConfig({ ...config, sections: nextSections });
+  },
+
+  moveSection: (fromSectionId, toSectionId) => {
+    const { config } = get();
+    if (!config) return;
+
+    const currentSections = Array.isArray(config.sections) ? config.sections : [];
+    const fromIndex = currentSections.findIndex((section) => section.id === fromSectionId);
+    const toIndex = currentSections.findIndex((section) => section.id === toSectionId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+
+    const nextSections = [...currentSections];
+    const [moved] = nextSections.splice(fromIndex, 1);
+    nextSections.splice(toIndex, 0, moved);
+    get().setConfig({ ...config, sections: nextSections });
   },
 
   addSection: (section) => {
@@ -192,20 +358,37 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   setProjectSlug: (slug) => set({ projectSlug: slug }),
 
+  setActiveSectionId: (activeSectionId) => set({ activeSectionId }),
+  setSelectedElementKey: (selectedElementKey) => set({ selectedElementKey }),
+  selectSection: (sectionId) => set({ activeSectionId: sectionId, selectedElementKey: null }),
+  selectElement: (sectionId, elementKey) =>
+    set({
+      activeSectionId: sectionId,
+      selectedElementKey: elementKey,
+    }),
+
   setViewMode: (viewMode) => set({ viewMode }),
   setViewport: (viewport) => set({ viewport }),
 
   undo: () => {
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     const { past, config, customCode } = get();
     if (past.length === 0) return;
     const prev = past[past.length - 1];
+    const clonedPrevConfig = JSON.parse(JSON.stringify(prev.config));
+    const clonedPrevCode = JSON.parse(JSON.stringify(prev.customCode));
+    const clonedCurrentConfig = config ? JSON.parse(JSON.stringify(config)) : null;
+    const clonedCurrentCode = JSON.parse(JSON.stringify(customCode));
+
     // Suppress auto-save during undo navigation
     set((s) => ({
       _skipAutoSave: true,
-      config: prev.config,
-      customCode: prev.customCode,
+      config: clonedPrevConfig,
+      customCode: clonedPrevCode,
       past: s.past.slice(0, -1),
-      future: [{ config: config!, customCode }, ...s.future.slice(0, 49)],
+      future: [{ config: clonedCurrentConfig!, customCode: clonedCurrentCode }, ...s.future.slice(0, 49)],
       isDirty: true,
     }));
     // Re-enable auto-save after brief delay
@@ -213,15 +396,23 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   redo: () => {
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     const { future, config, customCode } = get();
     if (future.length === 0) return;
     const next = future[0];
+    const clonedNextConfig = JSON.parse(JSON.stringify(next.config));
+    const clonedNextCode = JSON.parse(JSON.stringify(next.customCode));
+    const clonedCurrentConfig = config ? JSON.parse(JSON.stringify(config)) : null;
+    const clonedCurrentCode = JSON.parse(JSON.stringify(customCode));
+
     set((s) => ({
       _skipAutoSave: true,
-      config: next.config,
-      customCode: next.customCode,
+      config: clonedNextConfig,
+      customCode: clonedNextCode,
       future: s.future.slice(1),
-      past: [...s.past.slice(-49), { config: config!, customCode }],
+      past: [...s.past.slice(-49), { config: clonedCurrentConfig!, customCode: clonedCurrentCode }],
       isDirty: true,
     }));
     setTimeout(() => set((s) => ({ ...s, _skipAutoSave: false })), 100);
@@ -250,6 +441,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (!projectId) throw new Error("No project loaded");
     set({ isPublishing: true });
     try {
+      await get().save();
       const res = await projectsApi.publish(projectId);
       set({ isPublishing: false });
       return res.data.staticUrl;

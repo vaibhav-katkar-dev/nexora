@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Component, ErrorInfo, ReactNode } from "react";
 import { SiteConfigJSON } from "@ai-platform/shared";
 import { SiteRenderer } from "./SiteRenderer";
@@ -41,44 +41,48 @@ export interface TemplateThumbnailProps {
   config?: SiteConfigJSON;
   name?: string;
   category?: string;
-  /** Optional fallback height (px). When omitted the preview uses a wide 16:9 ratio. */
+  /** Optional fallback height (px). When omitted the preview uses a 16:10 ratio. */
   height?: number;
 }
 
-// The miniature is rendered at a real desktop resolution (1440×900) and then
-// uniformly scaled DOWN to fit the card WIDTH. This reproduces the actual
-// desktop first viewport — from the top navigation through the main hero —
-// exactly as it would appear on a real monitor. Nothing is re-layed-out into a
-// card or mobile composition; the finished website is simply scaled to fit.
-const RENDER_WIDTH = 1440;
-const RENDER_HEIGHT = 900; // ≈ desktop first viewport
-const PAGE_BG = "#ffffff";
+// Fixed standard desktop width for isolated responsive scaling.
+// Scaling by (containerWidth / RENDER_WIDTH) guarantees 100% edge-to-edge fit
+// without horizontal cropping, aspect ratio distortion, or section overflow.
+const RENDER_WIDTH = 1280;
+const PAGE_BG = "#090D16";
 
-const FALLBACK_BG = "bg-gradient-to-br from-slate-800 to-slate-950";
+const FALLBACK_BG = "bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950";
 
 /**
- * Renders an authentic, scaled-down desktop screenshot of a template config —
- * the way the finished website actually looks on a desktop monitor.
+ * Renders an isolated, perfectly scaled preview of the template's HERO / 1st section.
  *
- * The site is rendered at 1440×900 and uniformly scaled to fill the card WIDTH
- * (proportional, aspect-ratio preserved, never stretched), anchored to the top
- * so the desktop navigation and hero are always visible — reproducing the real
- * first viewport rather than a narrow portrait crop.
- *
- * Performance:
- *  - Intersection Observer lazy-mounts the render only when inside the viewport.
- *  - React.memo prevents re-renders on unrelated state changes.
- *  - pointer-events:none + aria-hidden keep the preview inert & cheap.
- *  - ResizeObserver keeps the preview in sync with the card width.
- *  - transforms + will-change:transform use the GPU (60fps safe).
- *  - Error boundary + graceful fallback: a broken config never crashes the grid.
+ * Highlights the template's signature hero section (badge, title, CTA, design)
+ * scaled 1:1 edge-to-edge across all device widths and aspect ratios.
  */
 function TemplateThumbnailBase({ config, name, category, height }: TemplateThumbnailProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [box, setBox] = useState({ width: 0, height: 0 });
 
-  // Lazy-mount only when the card is (or was) visible in the viewport.
+  // Extract Hero / Primary section so only the 1st section design is displayed
+  const heroConfig = useMemo(() => {
+    if (!config || !Array.isArray(config.sections) || config.sections.length === 0) {
+      return config;
+    }
+    const visibleSections = config.sections.filter((s) => s.visible !== false);
+    if (visibleSections.length === 0) return config;
+
+    const primarySection =
+      visibleSections.find((s) => /hero|main|header|banner|intro/i.test(s.type || s.id || "")) ||
+      visibleSections[0];
+
+    return {
+      ...config,
+      sections: [primarySection],
+    };
+  }, [config]);
+
+  // Lazy-mount only when card enters viewport
   useEffect(() => {
     const node = wrapperRef.current;
     if (!node) return;
@@ -100,11 +104,10 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
       return () => observer.disconnect();
     }
 
-    // Fallback: no IntersectionObserver -> render immediately.
     setInView(true);
   }, []);
 
-  // Track the container's rendered size so the preview scales 1:1 with the card.
+  // Track container width/height for exact 1:1 responsive scaling
   useEffect(() => {
     const node = wrapperRef.current;
     if (!node) return;
@@ -125,78 +128,68 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
 
   const fallback = (
     <div className={`absolute inset-0 flex items-center justify-center ${FALLBACK_BG}`}>
-      <div className="flex flex-col items-center gap-2 text-slate-500">
-        <LayoutTemplate size={24} />
-        <span className="text-[10px] font-semibold capitalize">
-          {category || name || "Preview"}
+      <div className="flex flex-col items-center gap-2 text-slate-400">
+        <LayoutTemplate size={24} className="text-indigo-400 opacity-80" />
+        <span className="text-xs font-semibold capitalize tracking-wide text-slate-300">
+          {category || name || "Template Preview"}
         </span>
       </div>
     </div>
   );
 
-const showPreview = inView && config && box.width > 0 && box.height > 0;
+  const showPreview = inView && heroConfig && box.width > 0 && box.height > 0;
 
-  // "Cover" scaling: scale by the LARGER of the width/height ratios so the
-  // desktop render (1440×900) ALWAYS fills the entire card area on every device
-  // and card size — no empty gaps, no clipping on the sides. The overflow is
-  // distributed evenly by centering, and the preview is anchored toward the top
-  // so the nav + hero (first viewport) remain visible.
-  const scaleX = box.width > 0 ? box.width / RENDER_WIDTH : 0;
-  const scaleY = box.height > 0 ? box.height / RENDER_HEIGHT : 0;
-  const scale = Math.max(scaleX, scaleY);
-
-  // Center the scaled render both ways so overfill is split symmetrically.
-  const offsetX = (box.width - RENDER_WIDTH * scale) / 2;
-  const offsetY = (box.height - RENDER_HEIGHT * scale) / 2;
+  // Exact 1:1 edge-to-edge horizontal scale
+  const scale = box.width > 0 ? box.width / RENDER_WIDTH : 1;
+  const innerHeight = box.height > 0 ? Math.ceil(box.height / scale) : 800;
 
   return (
     <div
       ref={wrapperRef}
-      className="relative w-full overflow-hidden bg-slate-900 select-none"
+      className="relative w-full overflow-hidden bg-slate-950 select-none group"
       style={
         height
           ? { minHeight: height, maxHeight: height }
-          : { aspectRatio: "16 / 9", width: "100%" }
+          : { aspectRatio: "16 / 10", width: "100%" }
       }
       aria-hidden="true"
     >
       {!inView ? (
-        // Lightweight skeleton placeholder while waiting to lazy-load.
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900 animate-pulse">
-          <Loader2 size={20} className="text-slate-600 animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-950 animate-pulse">
+          <Loader2 size={20} className="text-indigo-500 animate-spin" />
         </div>
       ) : showPreview ? (
         <PreviewErrorBoundary fallback={fallback}>
           <div
-            className="pointer-events-none will-change-transform"
+            className="pointer-events-none will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.025]"
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               width: RENDER_WIDTH,
-              height: RENDER_HEIGHT,
-              backgroundColor: PAGE_BG,
-              transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale}) translateZ(0)`,
-              transformOrigin: "0 0",
+              height: innerHeight,
+              backgroundColor: config?.theme?.backgroundColor || PAGE_BG,
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
             }}
           >
-            <SiteRenderer config={config} />
+            <SiteRenderer config={heroConfig} />
           </div>
         </PreviewErrorBoundary>
       ) : (
         fallback
       )}
 
-      {/* Premium depth: soft inner shadow + top border highlight, theme-neutral */}
-      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),inset_0_-20px_28px_-16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.10)]" />
+      {/* Subtle depth inner shadow */}
+      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),inset_0_-16px_24px_-12px_rgba(0,0,0,0.4)]" />
 
-      {/* Subtle vignette so focus stays on the template (keeps site visible) */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,transparent_55%,rgba(0,0,0,0.10)_100%)]" />
+      {/* Subtle hover gradient accent */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>
   );
 }
 
-// Memoized: only re-renders if the template's identity actually changes.
+// Memoized for fast grid scrolling
 const TemplateThumbnail = memo(TemplateThumbnailBase);
 
 export { TemplateThumbnail };

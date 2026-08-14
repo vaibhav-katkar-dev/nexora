@@ -34,33 +34,31 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
   // ── Desktop: modern browser window ─────────────────────────────────────
   if (viewport === "desktop") {
     return (
-      <div className="w-full max-w-6xl mx-auto my-6 flex flex-col items-center">
-        {/* Browser title bar */}
-        <div className="w-full rounded-t-xl bg-slate-800 border border-slate-700 border-b-0 flex items-center gap-3 px-4 py-2.5 shadow-xl">
-          {/* Traffic lights */}
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-            <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-            <span className="w-3 h-3 rounded-full bg-[#28C840]" />
-          </div>
-          {/* Address bar */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700 rounded-md px-3 py-1 text-[11px] text-slate-300 font-mono max-w-md w-full">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" className="text-emerald-400 shrink-0">
-                <path d="M12 2C7 2 3 6 3 11c0 5.5 7 11 7 11s2-1.5 4-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="12" cy="11" r="3" stroke="currentColor" strokeWidth="2" />
-              </svg>
-              <span>https://your-site.com</span>
+      <div className="w-full h-full flex flex-col items-stretch justify-stretch p-1 sm:p-2 lg:p-3 overflow-hidden">
+        <div className="w-full h-full min-h-0 flex flex-col rounded-[1.25rem] border border-slate-700/80 bg-slate-900/70 shadow-2xl overflow-hidden">
+          {/* Browser title bar */}
+          <div className="w-full flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/80 bg-slate-800/90">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+              <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+              <span className="w-3 h-3 rounded-full bg-[#28C840]" />
             </div>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700 rounded-md px-3 py-1 text-[11px] text-slate-300 font-mono max-w-md w-full">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" className="text-emerald-400 shrink-0">
+                  <path d="M12 2C7 2 3 6 3 11c0 5.5 7 11 7 11s2-1.5 4-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <circle cx="12" cy="11" r="3" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                <span>https://your-site.com</span>
+              </div>
+            </div>
+            <div className="w-8" />
           </div>
-          <div className="w-8" />
-        </div>
 
-        {/* Browser content — scrolls inside here */}
-        <div
-          className="w-full h-[calc(100vh-220px)] min-h-[480px] max-h-[820px] bg-slate-950 rounded-b-xl border border-slate-700 border-t-0 overflow-y-auto overflow-x-hidden shadow-2xl"
-        >
-          {children}
+          {/* Browser content — scrolls inside here */}
+          <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col">
+            {children}
+          </div>
         </div>
       </div>
     );
@@ -69,18 +67,15 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
   // ── Tablet: realistic tablet shell ─────────────────────────────────────
   if (viewport === "tablet") {
     return (
-      <div className="my-6 flex flex-col items-center">
-        <div className="bg-slate-900 rounded-[2.4rem] p-2.5 shadow-2xl border border-slate-700">
-          {/* Bezel + camera */}
+      <div className="h-full flex flex-col items-center justify-center p-3 sm:p-4">
+        <div className="bg-slate-900/90 rounded-[2.4rem] p-2.5 shadow-2xl border border-slate-700">
           <div className="bg-slate-950 rounded-[1.9rem] p-2">
             <div className="relative bg-black rounded-[1.5rem] overflow-hidden">
-              {/* Front camera + speaker */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 w-28 h-6 flex items-center justify-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-slate-800 ring-1 ring-slate-700" />
                 <span className="w-10 h-1.5 rounded-full bg-slate-800" />
               </div>
 
-              {/* Status bar (iOS style) */}
               <div className="relative z-10 h-9 flex items-center justify-between px-6 pt-1 text-white text-[10px] font-semibold">
                 <span>9:41</span>
                 <div className="flex items-center gap-1">
@@ -93,15 +88,13 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
                 </div>
               </div>
 
-{/* Screen — realistic tablet proportions, scrolls inside here */}
               <div
                 ref={scrollRef as React.RefObject<HTMLDivElement>}
-                className="w-[768px] h-[min(1024px,calc(100vh-320px))] min-h-[520px] overflow-y-auto overflow-x-hidden bg-slate-950"
+                className="w-[768px] max-w-[calc(100vw-3rem)] h-[min(900px,calc(100vh-220px))] min-h-[520px] overflow-y-auto overflow-x-hidden flex flex-col"
               >
                 {children}
               </div>
 
-              {/* Home indicator */}
               <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-28 h-1 rounded-full bg-white/80 z-20" />
             </div>
           </div>
@@ -112,38 +105,29 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
 
   // ── Mobile: authentic Android phone ────────────────────────────────────
   return (
-    <div className="my-6 flex flex-col items-center">
-      {/* Phone outer shell */}
+    <div className="h-full flex flex-col items-center justify-center p-3 sm:p-4">
       <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.6rem] p-[10px] shadow-2xl border border-slate-700">
-        {/* Side buttons */}
         <div className="absolute -left-[3px] top-24 w-[3px] h-12 rounded-l bg-slate-700" />
         <div className="absolute -left-[3px] top-40 w-[3px] h-16 rounded-l bg-slate-700" />
         <div className="absolute -right-[3px] top-28 w-[3px] h-20 rounded-r bg-slate-700" />
 
         <div className="bg-black rounded-[2rem] overflow-hidden relative">
-          {/* Punch-hole front camera (top-left, Android style) */}
           <div className="absolute top-2.5 left-5 z-30 w-3 h-3 rounded-full bg-slate-800 ring-1 ring-slate-700" />
 
-          {/* Android status bar */}
           <div className="relative z-20 h-7 flex items-center justify-between px-5 pt-1 text-white">
-            {/* Time (left) */}
             <span className="text-[11px] font-semibold tracking-wide">9:41</span>
-            {/* Right icons: signal / wifi / battery */}
             <div className="flex items-center gap-1.5">
-              {/* Signal */}
               <svg width="15" height="11" viewBox="0 0 15 11" className="fill-white">
                 <rect x="0" y="7" width="2.5" height="4" rx="0.5" />
                 <rect x="4" y="5" width="2.5" height="6" rx="0.5" />
                 <rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5" />
                 <rect x="12" y="0" width="2.5" height="11" rx="0.5" />
               </svg>
-              {/* Wifi */}
               <svg width="15" height="11" viewBox="0 0 15 11" className="fill-white">
                 <path d="M7.5 9.5 L9.5 7.5 C8.9 6.9 8.2 6.6 7.5 6.6 C6.8 6.6 6.1 6.9 5.5 7.5 Z" />
                 <ellipse cx="7.5" cy="4.6" rx="5" ry="3.2" />
                 <ellipse cx="7.5" cy="7.6" rx="2.2" ry="1.4" />
               </svg>
-              {/* Battery */}
               <div className="flex items-center gap-[2px]">
                 <div className="w-5 h-2.5 border border-white/80 rounded-[3px] flex items-center p-[1.5px]">
                   <div className="w-3.5 h-full bg-white rounded-[1px]" />
@@ -153,15 +137,13 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
             </div>
           </div>
 
-{/* Screen — realistic Android phone proportions (~360x800), scrolls inside here */}
           <div
             ref={scrollRef as React.RefObject<HTMLDivElement>}
-            className="w-[360px] h-[min(800px,calc(100vh-300px))] min-h-[560px] overflow-y-auto overflow-x-hidden bg-slate-950"
+            className="w-[360px] max-w-[calc(100vw-2rem)] h-[min(800px,calc(100vh-230px))] min-h-[560px] overflow-y-auto overflow-x-hidden flex flex-col"
           >
             {children}
           </div>
 
-          {/* Android bottom navigation bar (back / home / recents) */}
           <div className="relative z-20 h-9 flex items-end justify-center pb-2 gap-16 bg-black">
             <span className="w-4 h-4 rounded-full border-2 border-white/80" />
             <span className="w-4 h-4 rounded-[3px] border-2 border-white/80" />

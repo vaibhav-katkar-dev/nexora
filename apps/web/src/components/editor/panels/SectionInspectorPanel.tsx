@@ -1,8 +1,10 @@
 "use client";
 
+import { normalizeElementKey, resolveElementValue } from "@/lib/editorElements";
 import { useEditorStore } from "@/store/editorStore";
 import { useState, useEffect, useRef } from "react";
 import { humanizeElementKey } from "@/lib/elementKeys";
+import { LinkBuilderModal } from "@/components/editor/LinkBuilderModal";
 import {
   Sparkles,
   SlidersHorizontal,
@@ -15,6 +17,7 @@ import {
   ChevronDown,
   Palette,
   RotateCcw,
+  MessageCircle,
 } from "lucide-react";
 
 // ─── Per-Element Custom Color -------------------------------------------------
@@ -28,10 +31,7 @@ const COLOR_PRESETS = [
 ];
 
 interface SectionInspectorPanelProps {
-  sectionId: string | null;
   onOpenImagePicker?: (currentUrl: string, onSelect: (url: string) => void) => void;
-  selectedElementKey?: string | null;
-  onClearElement?: () => void;
 }
 
 /** Helper to generate smart item blueprints matching existing item schemas */
@@ -71,16 +71,20 @@ function getSmartItemBlueprint(sectionType: string, keyName: string, existingIte
   // Fallback defaults based on section type & array key
   switch (sectionType) {
     case "features":
-      return { icon: "Sparkles", title: "New Feature", desc: "Detailed description of this feature capability." };
+      return { icon: "Sparkles", title: "New Feature", desc: "Detailed description of this feature capability.", buttonText: "", url: "" };
+    case "services":
+      return { icon: "Briefcase", title: "New Service", desc: "Service description and what clients can expect.", buttonText: "Learn More", url: "#" };
+    case "products":
+      return { image: "", title: "New Product", desc: "Product description and key specifications.", price: "$0", badge: "", buttonText: "Buy Now", url: "#" };
     case "portfolio_grid":
       return { name: "New Project", desc: "Project overview and case study details.", tag: "Web / AI", url: "#" };
     case "pricing":
-      return { name: "Pro Plan", price: "$49", period: "/mo", desc: "For growing teams", features: ["Unlimited Access", "Priority Support"], isPopular: false, badge: "" };
+      return { name: "Pro Plan", price: "$49", period: "/mo", desc: "For growing teams", features: ["Unlimited Access", "Priority Support"], buttonText: "Get Started", url: "#", isPopular: false, badge: "" };
     case "menu_list":
       if (keyName === "categories") {
-        return { name: "New Category", items: [{ name: "Signature Dish", desc: "Fresh ingredients", price: "$18" }] };
+        return { name: "New Category", items: [{ name: "Signature Dish", desc: "Fresh ingredients", price: "$18", badge: "", image: "", buttonText: "", url: "" }] };
       }
-      return { name: "New Item", desc: "Description of ingredients", price: "$15", badge: "" };
+      return { name: "New Item", desc: "Description of ingredients", price: "$15", badge: "", image: "", buttonText: "", url: "" };
     case "timeline":
       return { period: "2024 - Present", role: "Position Title", company: "Organization / Company", desc: "Summary of responsibilities and achievements." };
     case "faq":
@@ -94,21 +98,28 @@ function getSmartItemBlueprint(sectionType: string, keyName: string, existingIte
       return { label: "My Social Link", url: "https://", icon: "Globe", badge: "" };
     case "digital_card":
       return { label: "New Link", url: "https://", icon: "Globe", badge: "" };
+    case "team":
+      return { name: "Team Member", role: "Role / Title", desc: "Bio or short description about this team member.", image: "", url: "" };
+    case "testimonials":
+      return { name: "Customer Name", role: "CEO, Company", quote: "Amazing experience with this product or service.", avatar: "", rating: 5 };
     default:
-      return { title: "New Item", desc: "Description text..." };
+      return { title: "New Item", desc: "Description text...", url: "" };
   }
 }
 
 export function SectionInspectorPanel({
-  sectionId,
   onOpenImagePicker,
-  selectedElementKey,
-  onClearElement,
 }: SectionInspectorPanelProps) {
-  const { config, updateSection, removeSection } = useEditorStore();
+  const config = useEditorStore((state) => state.config);
+  const sectionId = useEditorStore((state) => state.activeSectionId);
+  const selectedElementKey = useEditorStore((state) => state.selectedElementKey);
+  const viewport = useEditorStore((state) => state.viewport);
+  const updateSection = useEditorStore((state) => state.updateSection);
+  const removeSection = useEditorStore((state) => state.removeSection);
+  const setSelectedElementKey = useEditorStore((state) => state.setSelectedElementKey);
   const section = config?.sections.find((s) => s.id === sectionId);
 
-const inputClass =
+  const inputClass =
     "w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors shadow-sm";
   const labelClass = "block text-xs font-semibold text-slate-300 mb-1 capitalize";
 
@@ -118,13 +129,15 @@ const inputClass =
   // Tracks whether the per-element color popup is open (Rules-of-Hooks:
   // must be declared here, before any early return).
   const [colorOpen, setColorOpen] = useState(false);
+  const [linkModalState, setLinkModalState] = useState<{ isOpen: boolean; currentUrl: string; fieldPath: string }>({
+    isOpen: false,
+    currentUrl: "",
+    fieldPath: "",
+  });
 
   useEffect(() => {
     if (!selectedElementKey) return;
-    // Normalize: strip "content." prefix for matching data-field-path
-    const fieldPath = selectedElementKey.startsWith("content.")
-      ? selectedElementKey.slice("content.".length)
-      : selectedElementKey;
+    const fieldPath = normalizeElementKey(selectedElementKey);
 
     const timer = setTimeout(() => {
       const el = panelScrollRef.current?.querySelector(
@@ -160,6 +173,22 @@ const inputClass =
     updateSection(section.id, {
       content: { ...(section.content || {}), [key]: value },
     });
+  };
+
+  const handleSaveInspectorLink = (url: string) => {
+    if (!linkModalState.fieldPath) return;
+    if (linkModalState.fieldPath.includes(".")) {
+      const parts = linkModalState.fieldPath.split(".");
+      const arrKey = parts[0];
+      const index = parseInt(parts[1], 10);
+      const list = [...((section.content || {})[arrKey] || [])];
+      if (list[index]) {
+        list[index] = { ...list[index], url };
+        handleFieldChange(arrKey, list);
+      }
+    } else {
+      handleFieldChange(linkModalState.fieldPath, url);
+    }
   };
 
   const content = section.content || {};
@@ -254,6 +283,13 @@ const removeArrayItem = (key: string, index: number) => {
         </button>
       </div>
 
+      {viewport === "mobile" && (
+        <div className="mx-4 mt-2 px-3 py-1.5 rounded-lg bg-amber-950/40 border border-amber-800/40 text-[10px] text-amber-300 font-medium flex items-center gap-1.5">
+          <span>📱</span>
+          <span>Mobile View Mode: Edit fields here for exact responsiveness.</span>
+        </div>
+      )}
+
 {/* Element editing banner */}
       {selectedElementKey && (
         <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-between gap-2">
@@ -263,15 +299,13 @@ const removeArrayItem = (key: string, index: number) => {
               Editing: {humanElementLabel || selectedElementKey}
             </p>
           </div>
-          {onClearElement && (
-            <button
-              onClick={onClearElement}
-              className="text-[10px] font-bold text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex-shrink-0"
-              title="Deselect element"
-            >
-              ✕
-            </button>
-          )}
+          <button
+            onClick={() => setSelectedElementKey(null)}
+            className="text-[10px] font-bold text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex-shrink-0"
+            title="Deselect element"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -407,6 +441,40 @@ const removeArrayItem = (key: string, index: number) => {
               className={`${inputClass} resize-none`}
             />
           </div>
+
+          {/* Section Layout Format selector */}
+          {["menu_list", "products", "services", "features", "portfolio_grid", "pricing", "team", "testimonials"].includes(section.type) && (
+            <div data-field-path="variant" className="pt-2 border-t border-slate-800">
+              <label className={labelClass}>Layout Display Format</label>
+              <div className="grid grid-cols-3 gap-1.5 mt-1.5">
+                {[
+                  { id: "list", label: "Classic List" },
+                  { id: "grid", label: "Photo Grid" },
+                  { id: "compact", label: "Compact" },
+                ].map((l) => {
+                  const currentVariant = section.variant || (content as any)?.layout || "list";
+                  const isActive = currentVariant === l.id;
+                  return (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => {
+                        updateSection(section.id, { variant: l.id });
+                        handleFieldChange("layout", l.id);
+                      }}
+                      className={`px-2 py-1.5 rounded-lg border text-[11px] font-bold transition-all text-center ${
+                        isActive
+                          ? "bg-indigo-600/30 border-indigo-500 text-indigo-200 shadow-sm"
+                          : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900"
+                      }`}
+                    >
+                      {l.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── DIGITAL CARD SPECIAL PANEL ─────────────────────────────── */}
@@ -451,7 +519,17 @@ const removeArrayItem = (key: string, index: number) => {
             <div data-field-path="ctaText" className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-800/30 space-y-2">
               <label className="block text-[11px] font-extrabold uppercase tracking-wider text-indigo-400">Primary CTA Button</label>
               <input type="text" value={content.ctaText || ""} onChange={(e) => handleFieldChange("ctaText", e.target.value)} placeholder="Button text (e.g. Hire Me)" className={inputClass} />
-              <input type="text" value={content.ctaLink || ""} onChange={(e) => handleFieldChange("ctaLink", e.target.value)} placeholder="Button URL (e.g. mailto:...)" className={inputClass} />
+              <div className="flex gap-1.5">
+                <input type="text" value={content.ctaLink || ""} onChange={(e) => handleFieldChange("ctaLink", e.target.value)} placeholder="Button URL (e.g. https://... or wa.me/...)" className={inputClass} />
+                <button
+                  type="button"
+                  onClick={() => setLinkModalState({ isOpen: true, currentUrl: content.ctaLink || "", fieldPath: "ctaLink" })}
+                  className="px-2.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0"
+                  title="Configure WhatsApp or Link Action"
+                >
+                  <MessageCircle size={12} /> WhatsApp
+                </button>
+              </div>
             </div>
 
             {/* Socials */}
@@ -642,8 +720,193 @@ const removeArrayItem = (key: string, index: number) => {
           </div>
         )}
 
+        {/* ── NAVBAR SPECIAL PANEL ─────────────────────────────── */}
+        {section.type === "navbar" && (
+          <div className="pt-3 border-t border-slate-800 space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-indigo-400">◈</span> Navigation Bar Options
+            </h3>
+
+            {/* Logo Image URL + Stock Picker */}
+            <div data-field-path="logoImage">
+              <label className={labelClass}>Image Logo (Optional)</label>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={content.logoImage || content.logo || (section as any).logoImage || ""}
+                  onChange={(e) => {
+                    handleFieldChange("logoImage", e.target.value);
+                    updateSection(section.id, { logoImage: e.target.value });
+                  }}
+                  placeholder="https://example.com/logo.png"
+                  className={inputClass}
+                />
+                {onOpenImagePicker && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onOpenImagePicker(
+                        content.logoImage || content.logo || (section as any).logoImage || "",
+                        (url) => {
+                          handleFieldChange("logoImage", url);
+                          updateSection(section.id, { logoImage: url });
+                        }
+                      )
+                    }
+                    className="px-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg border border-slate-700 transition-colors flex items-center justify-center shrink-0"
+                    title="Pick / Search Stock Logo Image"
+                  >
+                    <ImageIcon size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Logo Size Adjustment */}
+            <div data-field-path="logoWidth" className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className={labelClass}>Logo Display Size</label>
+                <span className="text-[11px] font-mono text-indigo-400 font-bold">
+                  {content.logoWidth || (section as any).logoWidth || 36}px
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min={20}
+                  max={160}
+                  step={2}
+                  value={content.logoWidth || (section as any).logoWidth || 36}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    handleFieldChange("logoWidth", val);
+                    updateSection(section.id, { logoWidth: val });
+                  }}
+                  className="flex-1 accent-indigo-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                />
+                <input
+                  type="number"
+                  min={20}
+                  max={200}
+                  value={content.logoWidth || (section as any).logoWidth || 36}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10) || 36;
+                    handleFieldChange("logoWidth", val);
+                    updateSection(section.id, { logoWidth: val });
+                  }}
+                  className="w-14 bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white text-center font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Primary CTA Button */}
+            <div data-field-path="ctaText" className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-800/30 space-y-2">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-indigo-400">Primary Call To Action Button</label>
+              <input
+                type="text"
+                value={content.ctaText || ""}
+                onChange={(e) => handleFieldChange("ctaText", e.target.value)}
+                placeholder="Button text (e.g. Get Started)"
+                className={inputClass}
+              />
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={content.ctaLink || ""}
+                  onChange={(e) => handleFieldChange("ctaLink", e.target.value)}
+                  placeholder="Button Link (e.g. #contact or wa.me/...)"
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => setLinkModalState({ isOpen: true, currentUrl: content.ctaLink || "", fieldPath: "ctaLink" })}
+                  className="px-2.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0"
+                  title="Configure WhatsApp or Link Action"
+                >
+                  <MessageCircle size={12} /> WhatsApp
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Menu Items */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                  Nav Menu Links ({(content.links || []).length})
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const cur = content.links || [];
+                    handleFieldChange("links", [...cur, { label: "New Link", url: "#" }]);
+                  }}
+                  className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-950/60 border border-indigo-800/40 px-2 py-0.5 rounded-lg flex items-center gap-1"
+                >
+                  <Plus size={12} /> Add Link
+                </button>
+              </div>
+              <div className="space-y-2 pl-2 border-l-2 border-slate-800">
+                {(content.links || []).map((link: any, i: number) => {
+                  const labelVal = typeof link === "string" ? link : link.label || link.name || "";
+                  const urlVal = typeof link === "string" ? "#" : link.url || "#";
+                  return (
+                    <div key={i} data-field-path={`links.${i}`} className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 relative">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-indigo-300">Link #{i + 1}</span>
+                        <div className="flex items-center gap-1">
+                          <button type="button" onClick={() => moveArrayItem("links", i, "up")} disabled={i === 0} className="p-0.5 text-slate-400 hover:text-white disabled:opacity-20"><ChevronUp size={12} /></button>
+                          <button type="button" onClick={() => moveArrayItem("links", i, "down")} disabled={i === (content.links || []).length - 1} className="p-0.5 text-slate-400 hover:text-white disabled:opacity-20"><ChevronDown size={12} /></button>
+                          <button type="button" onClick={() => removeArrayItem("links", i)} className="p-0.5 text-slate-400 hover:text-rose-400"><X size={12} /></button>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        value={labelVal}
+                        onChange={(e) => {
+                          const n = [...(content.links || [])];
+                          n[i] = typeof n[i] === "object" ? { ...n[i], label: e.target.value } : { label: e.target.value, url: "#" };
+                          handleFieldChange("links", n);
+                        }}
+                        placeholder="Link label (e.g. About)"
+                        className={inputClass}
+                      />
+                      <div className="flex gap-1.5">
+                        <input
+                          type="text"
+                          value={urlVal}
+                          onChange={(e) => {
+                            const n = [...(content.links || [])];
+                            n[i] = typeof n[i] === "object" ? { ...n[i], url: e.target.value } : { label: labelVal, url: e.target.value };
+                            handleFieldChange("links", n);
+                          }}
+                          placeholder="https://... or #section"
+                          className={inputClass}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLinkModalState({
+                              isOpen: true,
+                              currentUrl: urlVal,
+                              fieldPath: `links.${i}.url`,
+                            })
+                          }
+                          className="px-2 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0"
+                          title="Configure WhatsApp or Link Action"
+                        >
+                          <MessageCircle size={12} /> WhatsApp
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Dynamic Content Fields (for all other section types) */}
-        {section.type !== "digital_card" && section.type !== "links" && section.type !== "maps" && section.type !== "whatsapp" && (
+        {section.type !== "digital_card" && section.type !== "links" && section.type !== "maps" && section.type !== "whatsapp" && section.type !== "navbar" && (
         <div className="pt-3 border-t border-slate-800 space-y-4">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
             Content Details
@@ -841,24 +1104,47 @@ return (
                                               >
                                                 <X size={11} />
                                               </button>
-                                              {Object.entries(subItem).map(([nestedK, nestedV]) => (
-                                                <div key={nestedK}>
-                                                  <span className="text-[9px] text-slate-500 uppercase">{nestedK}</span>
-                                                  <input
-                                                    type="text"
-                                                    value={String(nestedV || "")}
-                                                    onChange={(e) => {
-                                                      const nextVal = [...val];
-                                                      const subArray = [...nextVal[i][subKey]];
-                                                      subArray[subIdx] = { ...subArray[subIdx], [nestedK]: e.target.value };
-                                                      nextVal[i] = { ...nextVal[i], [subKey]: subArray };
-                                                      handleFieldChange(key, nextVal);
-                                                    }}
-                                                    className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white"
-                                                  />
-                                                </div>
-                                              ))}
-                                            </div>
+                                               {Object.entries(subItem).map(([nestedK, nestedV]) => {
+                                                 const isNestedImage = /image|photo|avatar|thumb|picture|logo/i.test(nestedK);
+                                                 return (
+                                                   <div key={nestedK}>
+                                                     <span className="text-[9px] text-slate-500 uppercase">{nestedK}</span>
+                                                     <div className="flex gap-1">
+                                                       <input
+                                                         type="text"
+                                                         value={String(nestedV || "")}
+                                                         onChange={(e) => {
+                                                           const nextVal = [...val];
+                                                           const subArray = [...nextVal[i][subKey]];
+                                                           subArray[subIdx] = { ...subArray[subIdx], [nestedK]: e.target.value };
+                                                           nextVal[i] = { ...nextVal[i], [subKey]: subArray };
+                                                           handleFieldChange(key, nextVal);
+                                                         }}
+                                                         className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white"
+                                                       />
+                                                       {isNestedImage && onOpenImagePicker && (
+                                                         <button
+                                                           type="button"
+                                                           onClick={() =>
+                                                             onOpenImagePicker(String(nestedV || ""), (newUrl) => {
+                                                               const nextVal = [...val];
+                                                               const subArray = [...nextVal[i][subKey]];
+                                                               subArray[subIdx] = { ...subArray[subIdx], [nestedK]: newUrl };
+                                                               nextVal[i] = { ...nextVal[i], [subKey]: subArray };
+                                                               handleFieldChange(key, nextVal);
+                                                             })
+                                                           }
+                                                           className="px-2 bg-slate-950 border border-slate-800 text-indigo-400 rounded hover:bg-slate-900 flex items-center justify-center shrink-0"
+                                                           title="Pick Dish Photo"
+                                                         >
+                                                           <ImageIcon size={12} />
+                                                         </button>
+                                                       )}
+                                                     </div>
+                                                   </div>
+                                                 );
+                                               })}
+                                             </div>
                                           );
                                         }
                                         return null;
@@ -867,6 +1153,8 @@ return (
                                   </div>
                                 );
                               }
+
+                              const isSubLink = subKey.toLowerCase().includes("url") || subKey.toLowerCase().includes("link");
 
                               return (
                                 <div key={subKey} data-field-path={`${key}.${i}.${subKey}`}>
@@ -882,6 +1170,22 @@ return (
                                       }}
                                       className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
                                     />
+                                    {isSubLink && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setLinkModalState({
+                                            isOpen: true,
+                                            currentUrl: String(subVal || ""),
+                                            fieldPath: `${key}.${i}.${subKey}`,
+                                          })
+                                        }
+                                        className="px-2 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0"
+                                        title="Configure WhatsApp or Link"
+                                      >
+                                        <MessageCircle size={12} /> WhatsApp
+                                      </button>
+                                    )}
                                     {isSubImage && onOpenImagePicker && (
                                       <button
                                         onClick={() =>
@@ -901,6 +1205,40 @@ return (
                                 </div>
                               );
                             })}
+
+                            {/* Fallback buttonText & WhatsApp Link fields for items if missing */}
+                            {(!item.url && !item.link && !item.ctaLink) && (
+                              <div data-field-path={`${key}.${i}.url`} className="pt-1 border-t border-slate-800/50">
+                                <span className="text-[10px] text-slate-400 capitalize block mb-0.5">Button Link / WhatsApp</span>
+                                <div className="flex gap-1">
+                                  <input
+                                    type="text"
+                                    value={String(item.url || item.ctaLink || item.link || "")}
+                                    onChange={(e) => {
+                                      const next = [...val];
+                                      next[i] = { ...next[i], url: e.target.value };
+                                      handleFieldChange(key, next);
+                                    }}
+                                    placeholder="https://... or wa.me/..."
+                                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setLinkModalState({
+                                        isOpen: true,
+                                        currentUrl: String(item.url || item.ctaLink || item.link || ""),
+                                        fieldPath: `${key}.${i}.url`,
+                                      })
+                                    }
+                                    className="px-2 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0"
+                                    title="Configure WhatsApp or Link"
+                                  >
+                                    <MessageCircle size={12} /> WhatsApp
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       }
@@ -988,6 +1326,14 @@ return (
         )}
 
       </div>
+
+      <LinkBuilderModal
+        isOpen={linkModalState.isOpen}
+        onClose={() => setLinkModalState({ isOpen: false, currentUrl: "", fieldPath: "" })}
+        currentUrl={linkModalState.currentUrl}
+        onSave={handleSaveInspectorLink}
+        title="Configure Link & WhatsApp Action"
+      />
     </div>
   );
 }

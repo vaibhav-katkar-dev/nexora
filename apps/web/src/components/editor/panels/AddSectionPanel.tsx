@@ -18,6 +18,11 @@ import {
   Navigation,
   MapPin,
   MessageCircle,
+  ShoppingBag,
+  Briefcase,
+  Users,
+  Star,
+  Image,
 } from "lucide-react";
 
 interface AddSectionPanelProps {
@@ -29,11 +34,16 @@ const SECTION_TEMPLATES = [
   { type: "navbar", label: "Navigation Bar", desc: "Sticky header with links & call-to-action", icon: Navigation },
   { type: "about", label: "About Me / Bio", desc: "Personal bio, skills grid & highlights", icon: User },
   { type: "features", label: "Features Grid", desc: "3-column grid highlighting key capabilities", icon: Zap },
+  { type: "services", label: "Services Section", desc: "Service cards with icons, descriptions & links", icon: Briefcase },
+  { type: "products", label: "Products / Shop", desc: "Product cards with prices, images & buy buttons", icon: ShoppingBag },
   { type: "portfolio_grid", label: "Projects / Portfolio", desc: "Visual showcase cards for work samples", icon: Palette },
   { type: "menu_list", label: "Food / Drink Menu", desc: "Categorized menu items with prices", icon: UtensilsCrossed },
   { type: "timeline", label: "Career & Education", desc: "Chronological career history timeline", icon: Layers },
   { type: "pricing", label: "Pricing Tiers", desc: "Structured subscription or plan options", icon: CreditCard },
   { type: "faq", label: "FAQ Accordion", desc: "Frequently asked questions & answers", icon: AlignLeft },
+  { type: "team", label: "Team Members", desc: "Team grid with photos, roles & bios", icon: Users },
+  { type: "testimonials", label: "Testimonials", desc: "Customer reviews with star ratings", icon: Star },
+  { type: "gallery", label: "Photo Gallery", desc: "Image grid or masonry photo gallery", icon: Image },
   { type: "contact", label: "Contact Form & Details", desc: "Email, social handles & contact form", icon: Mail },
   { type: "maps", label: "Google Map", desc: "Embed a map via address or lat/long", icon: MapPin },
   { type: "whatsapp", label: "WhatsApp Button", desc: "Floating chat button with prefilled message", icon: MessageCircle },
@@ -65,30 +75,51 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
     switch (type) {
       case "hero":
         return {
-          badge: "🚀 Welcome",
-          ctaText: "Get Started",
+          badge: "🚀 Next-Gen Digital Platform",
+          ctaText: "Get Started Free",
           ctaLink: "#contact",
-          secondaryCtaText: "Learn More",
-          secondaryCtaLink: "#about",
+          secondaryCtaText: "Explore Features",
+          secondaryCtaLink: "#features",
+          avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
           stats: [
-            { value: "100+", label: "Projects Completed" },
-            { value: "99%", label: "Client Satisfaction" },
+            { value: "100+", label: "Projects Shipped" },
+            { value: "99.9%", label: "Platform Uptime" },
+            { value: "50k+", label: "Active Users" },
           ],
         };
 
       case "about":
         return {
-          bio: "Passionate engineer and product designer crafting modern, high-performance digital experiences.",
-          skills: ["React", "TypeScript", "Tailwind CSS", "Node.js", "AI Architecture"],
-          highlights: ["Over 5 years of industry experience", "Built 20+ commercial applications"],
+          bio: "Passionate product architect and designer crafting high-performance, accessible digital experiences for startups and enterprise teams globally.",
+          skills: ["React / Next.js", "TypeScript", "Tailwind CSS", "Node.js", "AI Systems", "UI/UX Architecture"],
+          highlights: ["10+ years building scalable web platforms", "Shipped applications reaching over 1M+ active users", "Dedicated to intuitive, accessible, and fast web design"],
+          avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
         };
 
       case "features":
         return {
           items: [
-            { icon: "Sparkles", title: "Lightning Fast", desc: "Sub-second response time and optimized assets." },
-            { icon: "Zap", title: "AI Generation", desc: "Automated layout expansion and content copywriting." },
-            { icon: "Shield", title: "Production Ready", desc: "Built with responsive layout and SEO standards." },
+            { icon: "Sparkles", title: "Lightning Fast Engine", desc: "Sub-second response times and optimized assets for maximum engagement.", url: "#", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80" },
+            { icon: "Zap", title: "AI-Powered Automation", desc: "Automated content generation, smart layout expansion, and instant updates.", url: "#", image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80" },
+            { icon: "Shield", title: "Enterprise Grade Security", desc: "Built with end-to-end encryption, strict access controls, and 99.9% uptime.", url: "#", image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80" },
+          ],
+        };
+
+      case "services":
+        return {
+          items: [
+            { icon: "Briefcase", title: "Strategic Consulting", desc: "Expert strategic advisory tailored to scale your brand and streamline operations.", buttonText: "Learn More", url: "#contact", image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80" },
+            { icon: "Zap", title: "Full-Stack Development", desc: "High-performance web applications built with modern architectures and clean code.", buttonText: "See Work", url: "#portfolio", image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80" },
+            { icon: "Sparkles", title: "AI & Automation Solutions", desc: "Integrate cutting-edge AI models and automated workflows directly into your platform.", buttonText: "Get Quote", url: "#contact", image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80" },
+          ],
+        };
+
+      case "products":
+        return {
+          items: [
+            { title: "Smart AI Headphones", desc: "Active noise cancellation with real-time neural audio tuning and 40-hour battery life.", price: "$299", badge: "POPULAR", buttonText: "Buy Now", url: "#", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" },
+            { title: "Minimalist Mechanical Keyboard", desc: "Hot-swappable switches, wireless multi-device pairing & anodized aluminum chassis.", price: "$179", badge: "BEST VALUE", buttonText: "Buy Now", url: "#", image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80" },
+            { title: "Ergonomic Desk Setup Pack", desc: "Precision crafted wooden monitor riser, felt desk mat, and ambient lightbar.", price: "$129", badge: "NEW", buttonText: "Learn More", url: "#", image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80" },
           ],
         };
 
@@ -96,30 +127,46 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
         return {
           projects: [
             {
-              name: "NeuralStudio AI",
+              name: "NeuralStudio AI Canvas",
               desc: "Generative canvas editor for real-time graphics and LLM orchestration.",
               tag: "AI / Next.js",
               url: "https://example.com",
               image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
             },
             {
-              name: "HyperScale DB",
+              name: "HyperScale Cloud DB",
               desc: "Ultra low-latency distributed key-value store with WebAssembly bindings.",
               tag: "Systems / Rust",
               url: "https://example.com",
               image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+            },
+            {
+              name: "Vanguard Design System",
+              desc: "Accessible enterprise UI kit used by over 50+ engineering teams.",
+              tag: "Design / React",
+              url: "https://example.com",
+              image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80",
             },
           ],
         };
 
       case "menu_list":
         return {
+          layout: "grid",
           categories: [
             {
-              name: "Chef's Specials",
+              name: "Chef's Signature Dishes",
               items: [
-                { name: "Tagliolini Al Tartufo", desc: "House-made egg pasta, black truffle butter, aged parmesan.", price: "$28", badge: "POPULAR" },
-                { name: "Burrata Pugliese", desc: "Heirloom tomatoes, 25-year balsamico, grilled sourdough.", price: "$22" },
+                { name: "Tagliolini Al Tartufo", desc: "Handcrafted egg pasta, shaved black winter truffle, Parmigiano Reggiano.", price: "$32", badge: "SIGNATURE", image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80", buttonText: "Order Now", url: "#order" },
+                { name: "Pan-Seared Sea Bass", desc: "Wild-caught sea bass, saffron risotto, Meyer lemon emulsion.", price: "$38", badge: "FRESH", image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80", buttonText: "Order Now", url: "#order" },
+                { name: "Wagyu Beef Tenderloin", desc: "A5 Wagyu, truffle demi-glace, roasted baby vegetables, Bordelaise reduction.", price: "$95", badge: "CHEF'S PICK", image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80", buttonText: "Reserve", url: "#reserve" },
+              ],
+            },
+            {
+              name: "Artisan Desserts",
+              items: [
+                { name: "Valrhona Chocolate Fondant", desc: "Dark chocolate lava cake, Madagascar vanilla ice cream, gold leaf.", price: "$18", badge: "", image: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=600&q=80", buttonText: "", url: "" },
+                { name: "Tiramisu Classico", desc: "House-made mascarpone, espresso-soaked ladyfingers, Kahlua dusting.", price: "$16", badge: "POPULAR", image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=600&q=80", buttonText: "", url: "" },
               ],
             },
           ],
@@ -149,7 +196,7 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
           ],
         };
 
-case "navbar":
+      case "navbar":
         return {
           links: [
             { label: "Home", url: "#home" },
@@ -206,6 +253,34 @@ case "navbar":
       case "custom_html":
         return {
           html: `<div class="p-8 text-center border border-indigo-500/30 rounded-2xl bg-indigo-950/20">\n  <h3 className="text-xl font-bold text-indigo-400">Custom HTML Block</h3>\n  <p className="text-sm text-slate-300 mt-2">Edit this raw HTML code directly in Monaco Code Editor!</p>\n</div>`,
+        };
+
+      case "team":
+        return {
+          members: [
+            { name: "Alex Rivera", role: "CEO & Co-Founder", desc: "Visionary leader with 10+ years in product strategy and AI.", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", url: "" },
+            { name: "Jordan Lee", role: "CTO", desc: "Full-stack architect specializing in scalable distributed systems.", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80", url: "" },
+            { name: "Sam Chen", role: "Head of Design", desc: "Award-winning UX designer passionate about beautiful interfaces.", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80", url: "" },
+          ],
+        };
+
+      case "testimonials":
+        return {
+          items: [
+            { name: "Michael Thompson", role: "CEO, TechStart Inc.", quote: "This platform transformed our entire digital presence in under a week. Absolutely phenomenal.", rating: 5 },
+            { name: "Sarah Johnson", role: "Product Manager, Acme Corp", quote: "The AI tools and customization options are second to none. Our team productivity doubled.", rating: 5 },
+            { name: "David Kim", role: "Founder, LaunchPad", quote: "Beautiful design, fast loading, and incredibly easy to manage. Worth every penny.", rating: 5 },
+          ],
+        };
+
+      case "gallery":
+        return {
+          images: [
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1433086966358-54859d0ed716?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+          ],
         };
 
       default:
