@@ -365,7 +365,7 @@ export default function EditorPage() {
 
             {/* ── Mobile bottom-sheet panel ─────────────────────────────── */}
             <div
-              className="md:hidden fixed inset-x-0 bottom-12 z-40 flex flex-col"
+              className="md:hidden fixed inset-x-0 bottom-14 z-40 flex flex-col"
               style={{
                 height: isSheetOpen ? `${sheetH}vh` : "3rem",
                 minHeight: "3rem",
@@ -467,7 +467,7 @@ export default function EditorPage() {
           </>
         )}
 
-        <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-slate-950">
+        <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-slate-950 max-md:pb-14">
           {showCodeEditor ? (
             <CodeEditorPanel />
           ) : viewMode === "preview" ? (

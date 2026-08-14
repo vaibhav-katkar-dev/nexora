@@ -573,7 +573,7 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
       </div>
 
       {stats.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 pt-8 border-t border-white/10 w-full max-w-3xl">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-white/10 w-full max-w-3xl">
           {stats.map((st: any, i: number) => (
             <div key={i} {...sel(`content.stats.${i}.value`)} className="text-center">
               <div className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
@@ -873,7 +873,7 @@ function GallerySection({ section, theme, selectedElementKey, interactive }: Sec
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {images.map((img: any, i: number) => (
           <figure
             key={i}
@@ -2227,9 +2227,9 @@ return (
               interactive ? "cursor-pointer" : ""
             } ${
               interactive && isSelected
-                ? "z-20 before:absolute before:inset-0 before:rounded-[0.9rem] before:border before:border-indigo-400/50 before:bg-indigo-500/6"
+                ? "z-20 before:absolute before:inset-0 sm:before:rounded-[0.9rem] before:border before:border-indigo-400/50"
                 : interactive
-                ? "hover:before:absolute hover:before:inset-0 hover:before:rounded-[0.9rem] hover:before:border hover:before:border-slate-700/50 hover:before:bg-slate-500/5"
+                ? "hover:before:absolute hover:before:inset-0 sm:before:rounded-[0.9rem] hover:before:border hover:before:border-slate-700/40"
                 : ""
             }`}
           >

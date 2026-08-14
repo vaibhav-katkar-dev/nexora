@@ -49,7 +49,7 @@ export function EditorSidebar({
   ];
 
   return (
-    <aside className="w-full md:w-16 bg-slate-950 border-t md:border-t-0 md:border-r border-slate-800/90 flex flex-row md:flex-col items-center justify-around md:justify-start py-1.5 md:py-3 px-2 md:px-0 gap-1 md:gap-2 flex-shrink-0 z-30 select-none max-md:order-last">
+    <aside className="w-full md:w-16 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:h-14 max-md:z-50 bg-slate-950/95 border-t md:border-t-0 md:border-r border-slate-800/90 backdrop-blur flex flex-row md:flex-col items-center justify-around md:justify-start py-1.5 md:py-3 px-2 md:px-0 gap-1 md:gap-2 flex-shrink-0 select-none max-md:order-last">
       {primaryTabs.map((t) => {
         const Icon = t.icon;
         const isActive = activeTab === t.id;

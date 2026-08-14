@@ -210,6 +210,24 @@ if (res.data?._id) {
     }
   };
 
+  const handleOpenPreview = (template: any) => {
+    try {
+      sessionStorage.setItem(
+        `nexora-tpl-preview:${template.slug}`,
+        JSON.stringify({ config: template.config })
+      );
+    } catch {
+      /* ignore */
+    }
+
+    const isMobileScreen = typeof window !== "undefined" && window.innerWidth < 768;
+    if (isMobileScreen) {
+      window.open(`/templates/preview/${template.slug}`, "_blank", "noopener,noreferrer");
+    } else {
+      setPreviewTemplate(template);
+    }
+  };
+
   const handleValidateJSON = () => {
     try {
       const parsed = JSON.parse(newTemplateJSON);
@@ -293,7 +311,7 @@ if (res.data?._id) {
                 <div
                   key={template.id}
                   className="group bg-white rounded-[18px] border border-slate-200/80 overflow-hidden flex flex-col shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_24px_-16px_rgba(16,24,40,0.12)] transition-all duration-300 ease-out cursor-pointer will-change-transform hover:-translate-y-1.5 hover:shadow-[0_28px_52px_-18px_rgba(16,24,40,0.22)] p-3"
-                  onClick={() => setPreviewTemplate(template)}
+                  onClick={() => handleOpenPreview(template)}
                 >
                   {/* ── Live Preview Area (the hero) ─────────────────────── */}
                   <div className="relative shrink-0 rounded-[13px] overflow-hidden">
@@ -333,22 +351,7 @@ if (res.data?._id) {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Store the full config so the new-tab preview renders
-                          // instantly (sessionStorage is shared across tabs in
-                          // this browser session).
-                          try {
-                            sessionStorage.setItem(
-                              `nexora-tpl-preview:${template.slug}`,
-                              JSON.stringify({ config: template.config })
-                            );
-                          } catch {
-                            /* ignore quota / privacy-mode failures */
-                          }
-                          window.open(
-                            `/templates/preview/${template.slug}`,
-                            "_blank",
-                            "noopener,noreferrer"
-                          );
+                          handleOpenPreview(template);
                         }}
                         className="px-4 h-[42px] rounded-[10px] text-[13px] font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-colors duration-250 flex items-center justify-center gap-1.5"
                       >
