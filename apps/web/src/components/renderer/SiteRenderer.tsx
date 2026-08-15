@@ -367,11 +367,56 @@ function customHtmlHasRootElement(html: string): boolean {
 }
 
 // ─── Theme Style Builder ───────────────────────────────────────────────────
+// ─── Theme Style Builder ───────────────────────────────────────────────────
+export function isColorDark(colorStr?: string): boolean | null {
+  if (!colorStr || typeof colorStr !== "string") return null;
+  const c = colorStr.trim().toLowerCase();
+  if (c === "transparent" || c === "inherit") return null;
+
+  let hex = c.replace(/^#/, "");
+  if (/^[0-9a-f]{3}$/.test(hex)) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  if (/^[0-9a-f]{6}$/.test(hex)) {
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.5;
+  }
+  if (c.startsWith("rgb")) {
+    const parts = c.match(/\d+/g);
+    if (parts && parts.length >= 3) {
+      const r = parseInt(parts[0], 10);
+      const g = parseInt(parts[1], 10);
+      const b = parseInt(parts[2], 10);
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance < 0.5;
+    }
+  }
+  if (c.startsWith("hsl")) {
+    const parts = c.match(/\d+/g);
+    if (parts && parts.length >= 3) {
+      const l = parseInt(parts[2], 10);
+      return l < 50;
+    }
+  }
+  return null;
+}
+
+export function getIsDarkTheme(theme: SiteConfigJSON["theme"]): boolean {
+  if (theme.backgroundColor) {
+    const bgIsDark = isColorDark(theme.backgroundColor);
+    if (bgIsDark !== null) return bgIsDark;
+  }
+  return theme.mode === "dark" || theme.mode === "glassmorphism";
+}
+
 function buildCssVariables(
   theme: SiteConfigJSON["theme"],
   interactive?: boolean
 ): CSSProperties {
-  const isDark = theme.mode === "dark" || theme.mode === "glassmorphism";
+  const isDark = getIsDarkTheme(theme);
 
   return {
     "--primary": theme.primaryColor || "#3B82F6",
@@ -411,6 +456,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
   const content = section.content || {};
   const links: any[] = content.links || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+  const isDark = getIsDarkTheme(theme);
 
   const logoImage = content.logoImage || content.logo || (section as any).logoImage;
   const logoWidth = content.logoWidth || (section as any).logoWidth || 36;
@@ -422,8 +468,9 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
       data-section-id={section.id}
       className="sticky top-0 z-50 backdrop-blur-md px-6 py-4 border-b flex items-center justify-between"
       style={{
-        backgroundColor: "rgba(11, 15, 25, 0.75)",
-        borderColor: "rgba(255, 255, 255, 0.08)",
+        backgroundColor: isDark ? "rgba(11, 15, 25, 0.75)" : "rgba(255, 255, 255, 0.85)",
+        borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
+        color: "var(--text)",
       }}
     >
       <div className="flex items-center gap-3">
@@ -530,14 +577,15 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
         </p>
       )}
 
-      {content.avatarUrl && (
-        <div className="w-full max-w-3xl mb-16">
+      {(content.avatarUrl || content.image || content.imageUrl || content.bgImage) && (
+        <div className="w-full max-w-3xl mb-16 nexora-hero-image-wrapper">
           <img
-            src={content.avatarUrl}
+            {...sel("content.image")}
+            src={content.avatarUrl || content.image || content.imageUrl || content.bgImage}
             alt={section.title || "Hero"}
             loading="lazy"
             decoding="async"
-            className="w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
+            className="nexora-hero-image w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
             style={{ borderRadius: "var(--radius)" }}
           />
         </div>
@@ -1321,6 +1369,7 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
   const avatar = section.content?.avatar || "";
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+  const isDark = getIsDarkTheme(theme);
 
   const handleLinkClick = (i: number, url: string, e: React.MouseEvent) => {
     if (!url || url === "#") { e.preventDefault(); return; }
@@ -1334,8 +1383,9 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
       <div
         className="max-w-md w-full text-center p-8 rounded-3xl border shadow-2xl backdrop-blur-md"
         style={{
-          backgroundColor: "rgba(255, 255, 255, 0.04)",
-          borderColor: "rgba(255, 255, 255, 0.1)",
+          backgroundColor: isDark ? "rgba(255, 255, 255, 0.04)" : "var(--surface)",
+          borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "var(--border)",
+          color: "var(--text)",
           borderRadius: "var(--radius)",
         }}
       >
@@ -1363,7 +1413,12 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
         {section.content?.bio && <p {...sel("content.bio")} className="text-sm opacity-80 leading-relaxed mb-6">{section.content.bio}</p>}
 
         {section.content?.location && (
-          <div {...sel("content.location")} className="inline-flex items-center gap-1.5 text-xs opacity-60 mb-6 font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+          <div
+            {...sel("content.location")}
+            className={`inline-flex items-center gap-1.5 text-xs opacity-75 mb-6 font-medium px-3 py-1.5 rounded-full border ${
+              isDark ? "bg-white/5 border-white/5" : "bg-slate-100 border-slate-200 text-slate-700"
+            }`}
+          >
             <MapPin size={12} /> {section.content.location}
           </div>
         )}
@@ -1387,22 +1442,50 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
 
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {socials.email && (
-            <a {...sel("content.socials.email")} href={`mailto:${socials.email}`} className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a
+              {...sel("content.socials.email")}
+              href={`mailto:${socials.email}`}
+              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
+                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
+              }`}
+            >
               <Mail size={14} /> Email
             </a>
           )}
           {socials.phone && (
-            <a {...sel("content.socials.phone")} href={`tel:${socials.phone}`} className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a
+              {...sel("content.socials.phone")}
+              href={`tel:${socials.phone}`}
+              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
+                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
+              }`}
+            >
               <Phone size={14} /> Call
             </a>
           )}
           {socials.linkedin && (
-            <a {...sel("content.socials.linkedin")} href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a
+              {...sel("content.socials.linkedin")}
+              href={socials.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
+                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
+              }`}
+            >
               <Linkedin size={14} /> LinkedIn
             </a>
           )}
           {socials.twitter && (
-            <a {...sel("content.socials.twitter")} href={socials.twitter} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full text-xs font-semibold border bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <a
+              {...sel("content.socials.twitter")}
+              href={socials.twitter}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
+                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
+              }`}
+            >
               <Twitter size={14} /> Twitter
             </a>
           )}
@@ -1425,19 +1508,34 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
                   className={`flex items-center justify-between py-3.5 px-5 rounded-2xl border font-bold transition-all shadow-md group ${
                     clicked
                       ? "bg-emerald-500/20 border-emerald-500/50 scale-[0.98]"
-                      : "bg-white/5 hover:bg-white/10 border-white/10 hover:scale-[1.02]"
+                      : isDark
+                      ? "bg-white/5 hover:bg-white/10 border-white/10 hover:scale-[1.02] text-white"
+                      : "bg-slate-50 hover:bg-slate-100 border-slate-200/80 hover:scale-[1.02] text-slate-900"
                   }`}
                   style={{ borderRadius: "var(--radius)" }}
                 >
                   <div className="flex items-center gap-3">
-                    {clicked
-                      ? <CheckCircle2 size={18} className="text-emerald-400" />
-                      : <IconComponent size={18} className="opacity-70 group-hover:opacity-100 transition-opacity" style={{ color: theme.primaryColor }} />
-                    }
-                    <span {...sel(`content.customLinks.${i}.label`)} className={`text-sm transition-colors ${clicked ? "text-emerald-300" : ""}`}>{link.label}</span>
+                    {clicked ? (
+                      <CheckCircle2 size={18} className="text-emerald-400" />
+                    ) : (
+                      <IconComponent
+                        size={18}
+                        className="opacity-70 group-hover:opacity-100 transition-opacity"
+                        style={{ color: theme.primaryColor }}
+                      />
+                    )}
+                    <span
+                      {...sel(`content.customLinks.${i}.label`)}
+                      className={`text-sm transition-colors ${clicked ? "text-emerald-300" : ""}`}
+                    >
+                      {link.label}
+                    </span>
                   </div>
                   {link.badge && !clicked && (
-                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${theme.primaryColor}20`, color: theme.primaryColor }}>
+                    <span
+                      className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: `${theme.primaryColor}20`, color: theme.primaryColor }}
+                    >
                       {link.badge}
                     </span>
                   )}
@@ -1966,6 +2064,121 @@ function VideoSection({ section, theme, selectedElementKey, interactive }: Secti
   );
 }
 
+function CtaSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const content = section.content || {};
+  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+  const isDark = getIsDarkTheme(theme);
+
+  const ctaImage = content.image || content.imageUrl || content.bgImage || content.coverImage;
+  const description = content.bio || content.description || content.desc || section.subtitle;
+
+  return (
+    <section
+      id={section.id}
+      data-section-id={section.id}
+      className="nexora-cta-section relative py-20 px-6 max-w-6xl mx-auto overflow-hidden"
+    >
+      <div
+        className="nexora-cta-container rounded-3xl p-8 sm:p-14 border backdrop-blur-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10 shadow-2xl"
+        style={{
+          backgroundColor: isDark ? "rgba(15, 23, 42, 0.6)" : "rgba(255, 255, 255, 0.8)",
+          borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)",
+          borderRadius: "var(--radius)",
+        }}
+      >
+        <div
+          className="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-20"
+          style={{ background: theme.primaryColor || "#3B82F6" }}
+        />
+
+        <div className="flex-1 space-y-4 text-center lg:text-left z-10">
+          {section.badge && (
+            <span
+              {...sel("badge")}
+              className="nexora-cta-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider border"
+              style={{
+                borderColor: `${theme.primaryColor}40`,
+                background: `${theme.primaryColor}15`,
+                color: theme.primaryColor,
+              }}
+            >
+              {section.badge}
+            </span>
+          )}
+
+          {section.title && (
+            <h2
+              {...sel("title")}
+              className="nexora-cta-title text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              {section.title}
+            </h2>
+          )}
+
+          {description && (
+            <p {...sel("content.bio")} className="nexora-cta-desc text-base sm:text-lg opacity-80 leading-relaxed max-w-xl">
+              {description}
+            </p>
+          )}
+
+          <div className="pt-4 flex flex-wrap gap-3 justify-center lg:justify-start items-center">
+            {content.ctaText && (
+              <a
+                {...sel("content.ctaText")}
+                href={content.ctaLink || "#"}
+                className="nexora-cta-btn-primary px-8 py-3.5 rounded-xl text-sm font-extrabold text-white shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-2xl"
+                style={{
+                  background: `linear-gradient(135deg, ${theme.primaryColor || "#3B82F6"}, ${theme.secondaryColor || theme.primaryColor || "#8B5CF6"})`,
+                  borderRadius: "var(--radius)",
+                }}
+              >
+                {content.ctaText}
+              </a>
+            )}
+
+            {content.secondaryCtaText && (
+              <a
+                {...sel("content.secondaryCtaText")}
+                href={content.secondaryCtaLink || "#"}
+                className="nexora-cta-btn-secondary px-6 py-3.5 rounded-xl text-sm font-bold border transition-all duration-300 hover:bg-white/10"
+                style={{
+                  borderColor: isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)",
+                  borderRadius: "var(--radius)",
+                }}
+              >
+                {content.secondaryCtaText}
+              </a>
+            )}
+          </div>
+        </div>
+
+        {ctaImage && (
+          <div className="nexora-cta-image-wrapper relative shrink-0 z-10 max-w-xs lg:max-w-md w-full">
+            <div
+              className="nexora-cta-image-card p-3 bg-white/10 dark:bg-slate-900/60 border border-white/20 rounded-2xl shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <img
+                {...sel("content.image")}
+                src={ctaImage}
+                alt={section.title || "CTA image"}
+                className="nexora-cta-image w-full h-64 lg:h-72 object-cover rounded-xl shadow-inner"
+                loading="lazy"
+              />
+              {content.caption && (
+                <p {...sel("content.caption")} className="text-center text-xs opacity-75 mt-2 font-mono">
+                  {content.caption}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 // Lightweight inline WhatsApp glyph (avoids extra icon dependency).
 function SvgWhatsApp({ className }: { className?: string }) {
   return (
@@ -2030,6 +2243,8 @@ case "links":
       return <DigitalCardSection {...rendererProps} />;
     case "contact":
       return <ContactSection {...rendererProps} />;
+    case "cta":
+      return <CtaSection {...rendererProps} />;
     case "maps":
       return <MapsSection {...rendererProps} />;
     case "whatsapp":

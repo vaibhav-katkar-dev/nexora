@@ -10,6 +10,8 @@ import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import { validateTemplateJSON, checkTemplateCompatibility, TemplateCompatibilityReport } from "@ai-platform/templates";
 import { Navbar } from "@/components/navigation/Navbar";
+import { AdminTemplatePreviewModal } from "@/components/admin/AdminTemplatePreviewModal";
+import { AdminTemplateGuideModal } from "@/components/admin/AdminTemplateGuideModal";
 import {
   Shield,
   Plus,
@@ -1270,7 +1272,14 @@ const setFormField = (key: keyof FormState, value: any) => {
                     <FileJson size={12} className="text-indigo-400" /> Template JSON (SiteConfigSchema) *
                   </label>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-500">Validated on save</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowGuide(true)}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-950 text-sky-400 hover:text-sky-300 hover:bg-slate-800 transition-all"
+                      title="Open JSON Creation & Retention Guide"
+                    >
+                      <FileJson size={12} /> Creation Guide
+                    </button>
                     <button
                       type="button"
                       onClick={() => setSplitPreview((v) => !v)}
@@ -1408,22 +1417,17 @@ const setFormField = (key: keyof FormState, value: any) => {
         </div>
       )}
 
-      {/* ── Preview Modal (read-only, temp state) ────────────────────────── */}
+      {/* ── Large Interactive Preview Modal ────────────────────────────── */}
       {previewData && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setPreviewData(null)}>
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-5xl w-full h-[88vh] flex flex-col overflow-hidden shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
-              <div>
-                <h3 className="font-bold text-slate-900 text-base">{previewData.name}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">/{previewData.name?.toLowerCase().replace(/\s+/g, "-")} · {previewData.category}</p>
-              </div>
-              <button onClick={() => setPreviewData(null)} className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100"><X size={18} /></button>
-            </div>
-            <div className="flex-1 overflow-auto bg-white">
-              <SiteRenderer config={previewData.defaultConfig} />
-            </div>
-          </div>
-        </div>
+        <AdminTemplatePreviewModal
+          data={previewData}
+          onClose={() => setPreviewData(null)}
+          onEdit={(id) => {
+            const target = templates.find((t) => t._id === id);
+            setPreviewData(null);
+            if (target) openEdit(target);
+          }}
+        />
       )}
 
       {/* ── Bulk Import Modal ────────────────────────────────────────────── */}
@@ -1498,355 +1502,9 @@ const setFormField = (key: keyof FormState, value: any) => {
         </div>
       )}
 
-      {/* ── Creation Guide Modal ─────────────────────────────────────────── */}
-      {showGuide && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowGuide(false)}>
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50 shrink-0">
-              <h3 className="font-bold text-slate-100 flex items-center gap-2">
-                <FileJson size={16} className="text-sky-400" /> Template JSON Creation Guide
-              </h3>
-              <button onClick={() => setShowGuide(false)} className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"><X size={16} /></button>
-            </div>
+      {/* ── Comprehensive Template Guide Modal ────────────────────────────── */}
+      {showGuide && <AdminTemplateGuideModal onClose={() => setShowGuide(false)} />}
 
-<div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Intro */}
-              <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-700/40 text-[11px] text-indigo-200 leading-relaxed">
-                <b className="text-indigo-100">AI / Template Author Guide.</b> A template is a <b className="text-white">SiteConfigJSON</b> object. It defines <code className="text-sky-300">meta</code>, <code className="text-sky-300">theme</code>, <code className="text-sky-300">sections</code>, optional <code className="text-sky-300">seo</code>, and optional <code className="text-sky-300">customCode</code>. The JSON is validated against the schema on save and must be <b className="text-white">strictly valid</b> (see Critical Rules below). Everything below is the reference an AI must follow to generate a working template.
-              </div>
-
-              {/* CRITICAL RULES */}
-              <section>
-                <h4 className="text-xs font-extrabold text-rose-300 uppercase tracking-wider mb-2">⚠ · Critical Rules (reject the JSON if violated)</h4>
-                <ol className="text-[11px] text-rose-200/90 space-y-2 list-decimal pl-4">
-                  <li>
-                    <b className="text-white">No raw newlines inside string values.</b> In particular <code className="text-slate-200">customCode.css</code> and any long text <b className="text-white">must escape line breaks as <code className="text-emerald-300">\n</code></b>. A literal newline inside a JSON string throws <code className="text-slate-200">"Bad control character in string literal"</code>. Write the CSS as a single-line string joined by <code className="text-emerald-300">\n</code>, or generate it programmatically with <code className="text-emerald-300">JSON.stringify</code>.
-                  </li>
-                  <li>
-                    <b className="text-white">No comments in JSON.</b> JSON does not support <code className="text-slate-200">//</code> or <code className="text-slate-200">/* */</code>. Remove them.
-                  </li>
-                  <li>
-                    <b className="text-white">No trailing commas</b> after the last item of an array/object.
-                  </li>
-                  <li>
-                    <b className="text-white">All keys &amp; strings are double-quoted</b> (<code className="text-emerald-300">"key"</code>), not single-quoted.
-                  </li>
-                  <li>
-                    <b className="text-white">CSS scoping:</b> Use the <code className="text-slate-200">body.tpl-{"<slug>"}</code> OR bare <code className="text-slate-200">body</code>-prefixed selectors (e.g. <code className="text-slate-200">body nav</code>, <code className="text-slate-200">body #hero h1</code>, <code className="text-slate-200">body::before</code>, <code className="text-slate-200">body section h2</code>) so the sanitizer rewrites them to the container. Do <b className="text-white">not</b> use <code className="text-slate-200">@import</code>, <code className="text-slate-200">@charset</code>, <code className="text-slate-200">javascript:</code>, or <code className="text-slate-200">behavior:</code> — those are rejected.
-                  </li>
-                  <li>
-                    <b className="text-white">Unique <code className="text-slate-200">meta.slug</code></b> — it becomes the container class (<code className="text-slate-200">nexora-tpl-{"<slug>"}</code>) and the URL slug.
-                  </li>
-                </ol>
-              </section>
-
-              {/* 1. Top-level structure */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">1 · Top-level structure</h4>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-{`{
-  "meta": {
-    "id": "my-tpl",
-    "slug": "my-tpl",
-    "title": "My Template",
-    "category": "portfolio",
-    "description": "Short description",
-    "author": "Nexora AI",
-    "version": "1.0.0",
-    "tags": ["modern", "dark"],
-    "popularity": 90,
-    "isNew": true,
-    "status": "published"
-  },
-  "theme": { ... },
-  "sections": [ ... ],
-  "seo": { "metaTitle": "...", "metaDescription": "...", "ogImage": "...", "keywords": ["..."] },
-  "customCode": { "html": "", "css": "...", "js": "..." }
-}`}
-                </div>
-                <p className="text-[11px] text-slate-500 mt-2">
-                  <code className="text-indigo-300">meta</code>, <code className="text-indigo-300">theme</code>, <code className="text-indigo-300">sections</code> required; <code className="text-indigo-300">seo</code> &amp; <code className="text-indigo-300">customCode</code> optional. Valid categories: <code className="text-slate-300">portfolio, resume, digital_card, restaurant_menu, business, product_landing, startup_landing, personal, event, link_in_bio, blank</code>.
-                </p>
-              </section>
-
-              {/* 2. Theme */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">2 · Theme</h4>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-{`"theme": {
-  "mode": "dark",                 // "light" | "dark" | "glassmorphism"
-  "primaryColor": "#3B82F6",
-  "secondaryColor": "#8B5CF6",
-  "accentColor": "#F59E0B",
-  "backgroundColor": "#090D16",
-  "textColor": "#F8FAFC",
-  "fontFamily": "Inter",
-  "headingFont": "Inter",
-  "bodyFont": "Inter",
-  "borderRadius": "12px",
-  "buttonVariant": "rounded",     // "rounded" | "pill" | "square"
-  "cardVariant": "glass",         // "glass" | "border" | "solid"
-  "shadow": "md",
-  "spacingScale": "comfortable",
-  "animations": true
-}`}
-                </div>
-              </section>
-
-              {/* 3. Sections — schema */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">3 · Section shape</h4>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-{`{
-  "id": "unique-section-id",   // required, unique
-  "type": "hero",              // required, one of the supported types
-  "variant": "centered",       // optional free-form
-  "title": "...",              // optional
-  "subtitle": "...",           // optional
-  "badge": "...",              // optional
-  "content": { ... },          // optional object, type-specific (see below)
-  "visible": true              // optional, default true
-}`}
-                </div>
-                <p className="text-[11px] text-slate-500 mt-2 mb-2">
-                  Supported <code className="text-slate-300">type</code> values:
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {["hero","navbar","about","features","portfolio_grid","menu_list","timeline","gallery","pricing","faq","testimonials","team","services","digital_card","contact","links","maps","whatsapp","blog","footer","custom_html"].map((t) => (
-                    <span key={t} className="px-2 py-0.5 rounded-md bg-slate-800 text-sky-300 text-[10px] font-mono">{t}</span>
-                  ))}
-                </div>
-              </section>
-
-              {/* 4. Per-type content schemas */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">4 · Per-type <code className="text-sky-200">content</code> schema</h4>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-{`// navbar
-{ "links": [{ "label": "About", "url": "#about" }],
-  "ctaText": "Book", "ctaLink": "#contact" }
-
-// hero
-{ "ctaText": "Get Started", "ctaLink": "#contact",
-  "secondaryCtaText": "Learn More", "secondaryCtaLink": "#about",
-  "avatarUrl": "https://...", // optional hero image
-  "stats": [{ "label": "Years", "value": "10" }] }
-
-// about
-{ "bio": "...", "highlights": ["..."],
-  "skills": ["React", "Node"], "avatar": "https://..." }
-
-// features
-{ "items": [{ "title": "Speed", "desc": "...", "icon": "Zap" }] }  // icon from: Sparkles Zap CheckCircle2 Mail Phone MapPin ExternalLink ChevronDown Globe Star Clock Briefcase GraduationCap Shield Rocket User Heart Code2 Calendar Github Instagram Youtube Twitch Linkedin Facebook Twitter
-
-// services
-{ "items": [{ "title": "Hair", "desc": "...", "icon": "Sparkles", "image": "https://..." }] }
-
-// portfolio_grid
-{ "projects": [{ "name": "Project", "desc": "...", "tag": "Web", "image": "https://...", "url": "..." }] }
-
-// menu_list
-{ "categories": [{ "name": "Starters",
-    "items": [{ "name": "Bruschetta", "desc": "...", "price": "$8", "badge": "POPULAR" }] }] }
-
-// gallery
-{ "images": [{ "url": "https://...", "alt": "..." }] }
-
-// pricing
-{ "plans": [{ "name": "Basic", "desc": "...", "price": "$9",
-    "isPopular": false, "badge": "Most Popular",
-    "features": ["Feature 1", "Feature 2"] }] }
-
-// faq
-{ "items": [{ "question": "Q?", "answer": "A." }] }
-
-// testimonials
-{ "items": [{ "quote": "...", "author": "Name", "role": "Client",
-    "avatar": "https://..." }] }
-
-// team
-{ "members": [{ "name": "Jane", "role": "Designer",
-    "avatar": "https://...", "bio": "..." }] }
-
-// digital_card
-{ "socials": { "email": "...", "phone": "...", "linkedin": "...", "twitter": "..." },
-  "customLinks": [{ "label": "Portfolio", "url": "...", "badge": "New", "icon": "ExternalLink" }],
-  "avatar": "https://...", "bio": "...", "location": "...",
-  "ctaText": "Contact", "ctaLink": "..." }
-
-// links
-{ "links": [{ "label": "Portfolio", "url": "...", "badge": "New", "icon": "Globe" }] }
-
-// contact
-{ "email": "a@b.com", "phone": "+1 555 0000", "address": "Street",
-  "hours": "9-5", "instagram": "https://...", "github": "https://...",
-  "ctaText": "Send", "ctaLink": "#" }
-
-// maps
-{ "embedUrl": "https://...", "address": "...", "query": "...",
-  "lat": 40.7, "lng": -74.0, "zoom": 15, "height": 380 }
-
-// whatsapp
-{ "phone": "+123456", "defaultText": "Hi!", "buttonText": "Chat",
-  "availability": "Online now" }
-
-// timeline
-{ "items": [{ "period": "2020", "role": "Engineer",
-  "company": "Acme", "desc": "..." }] }
-
-// custom_html (fully bespoke — put full markup, NOT a full <html> doc)
-{ "html": "<div class='my-block'>...</div>" }
-`}
-                </div>
-              </section>
-
-              {/* 5. Custom CSS */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">5 · Custom CSS (animations &amp; flair)</h4>
-                <p className="text-[11px] text-slate-500 mb-2">
-                  Put animated/global CSS in <code className="text-slate-200">customCode.css</code>. Use the <code className="text-slate-200">body.tpl-{"<slug>"}</code> prefix OR bare <code className="text-slate-200">body</code>-prefixed selectors — the sanitizer rewrites them to the container class. <b className="text-rose-300">Every newline must be <code className="text-emerald-300">\n</code>, not a raw line break.</b>
-                </p>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-{`"customCode": {
-  "css": "body.tpl-my-tpl { background: #0D1117; }\\nbody.tpl-my-tpl .card:hover { transform: translateY(-4px); }\\nbody section h2 { color: #C9A227; }"
-}`}
-                </div>
-                <p className="text-[11px] text-slate-500 mt-2">
-                  In the raw JSON file, those are literal backslash-n sequences. In Monaco you can paste a compact single-line CSS string. The container class is <code className="text-slate-200">nexora-tpl-{"<slug>"}</code>.
-                </p>
-              </section>
-
-              {/* 6. Custom JS */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">6 · Custom JS</h4>
-                <p className="text-[11px] text-slate-500 mb-2">
-                  Optional interactivity in <code className="text-slate-200">customCode.js</code>. It runs after render. Use <code className="text-slate-200">document.querySelector</code> with the template's own classes/ids. Keep it dependency-free (IIFE wrapped automatically).
-                </p>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-{`"js": "var h=document.querySelector('.hamburger');h&&h.addEventListener('click',function(){document.querySelector('.menu').classList.toggle('open');});"`}
-                </div>
-              </section>
-
-              {/* 7. Full worked example */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">7 · Complete minimal example (copy-paste ready)</h4>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-{`{
-  "meta": {
-    "id": "acme-store",
-    "slug": "acme-store",
-    "title": "Acme Store",
-    "category": "business",
-    "description": "A clean business one-pager.",
-    "author": "Nexora AI",
-    "version": "1.0.0",
-    "tags": ["business", "clean"],
-    "popularity": 85,
-    "isNew": true,
-    "status": "published"
-  },
-  "theme": {
-    "mode": "dark",
-    "primaryColor": "#C9A227",
-    "secondaryColor": "#0B3B2E",
-    "accentColor": "#E7C9A9",
-    "backgroundColor": "#0B3B2E",
-    "textColor": "#F7F3EA",
-    "headingFont": "Cormorant Garamond",
-    "bodyFont": "Jost",
-    "borderRadius": "16px",
-    "buttonVariant": "pill",
-    "cardVariant": "glass",
-    "animations": true
-  },
-  "sections": [
-    {
-      "id": "navbar",
-      "type": "navbar",
-      "content": {
-        "links": [
-          { "label": "Services", "url": "#services" },
-          { "label": "Contact", "url": "#contact" }
-        ],
-        "ctaText": "Book Now",
-        "ctaLink": "#contact"
-      },
-      "visible": true
-    },
-    {
-      "id": "hero",
-      "type": "hero",
-      "title": "Welcome to Acme",
-      "subtitle": "Modern solutions for modern business.",
-      "badge": "New",
-      "content": {
-        "ctaText": "Get Started",
-        "ctaLink": "#contact",
-        "stats": [ { "label": "Clients", "value": "500+" } ]
-      },
-      "visible": true
-    },
-    {
-      "id": "services",
-      "type": "services",
-      "title": "Our Services",
-      "content": {
-        "items": [
-          { "title": "Consulting", "desc": "Expert advice.", "icon": "Sparkles" }
-        ]
-      },
-      "visible": true
-    },
-    {
-      "id": "contact",
-      "type": "contact",
-      "title": "Contact",
-      "content": {
-        "email": "hi@acme.com",
-        "phone": "+1 555 0100",
-        "address": "1 Main St"
-      },
-      "visible": true
-    },
-    { "id": "footer", "type": "footer", "title": "Acme Store", "visible": true }
-  ],
-  "seo": {
-    "metaTitle": "Acme Store",
-    "metaDescription": "Modern business solutions.",
-    "keywords": ["business", "store"]
-  },
-  "customCode": {
-    "html": "",
-    "css": "body nav { backdrop-filter: blur(12px); }\\nbody #hero h1 { color: #C9A227; }",
-    "js": ""
-  }
-}`}
-                </div>
-              </section>
-
-              {/* 8. Pro tips */}
-              <section>
-                <h4 className="text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-2">8 · Pro tips</h4>
-                <ul className="text-[11px] text-slate-400 space-y-1.5 list-disc pl-4">
-                  <li>Use unique <code className="text-slate-200">meta.slug</code> — it becomes the container class and URL slug.</li>
-                  <li>Reuse an exported template (<b>Download All</b>) as a starting point, then tweak the JSON.</li>
-                  <li>Validate with <b>Live Preview</b> in the editor before saving.</li>
-                  <li>For fully bespoke layouts, use <code className="text-slate-200">custom_html</code> sections with full markup in <code className="text-slate-200">content.html</code> — but keep <code className="text-slate-200">customCode.html</code> empty to avoid duplication.</li>
-                  <li>Prefer structured sections (<code className="text-slate-200">hero, services, gallery, testimonials, contact</code>) for editability; reserve <code className="text-slate-200">custom_html</code> for one-off creative blocks.</li>
-                  <li>Always include <code className="text-slate-200">@keyframes</code> inside <code className="text-slate-200">@media (prefers-reduced-motion: reduce)</code> no-op overrides for accessibility.</li>
-                </ul>
-              </section>
-            </div>
-
-            <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-end shrink-0 bg-slate-950/50">
-              <button onClick={() => setShowGuide(false)} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 border border-slate-700 hover:bg-slate-800">Close</button>
-              <button onClick={() => { setShowGuide(false); setShowForm(true); resetForm(); }} className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5">
-                <Plus size={13} /> Create a Template
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <ConfirmModal
         isOpen={adminConfirm.isOpen}
         onClose={() => setAdminConfirm((prev) => ({ ...prev, isOpen: false }))}
