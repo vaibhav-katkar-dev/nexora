@@ -3,20 +3,44 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
-  title: "Nexora Studio — Your Ideas, Beautifully Live",
+  title: "Nexora — Build & Publish Your Website in Seconds. No Code.",
   description:
-    "Create stunning portfolios, digital cards, landing pages and more in under 60 seconds. No design experience needed. Powered by AI.",
-  keywords: ["portfolio builder", "AI website builder", "digital card", "landing page"],
+    "Nexora is the fastest way to launch a professional website. Choose a username, pick a template, and publish your portfolio, restaurant menu, startup landing page or digital card — free, no signup required to start.",
+  keywords: [
+    "website builder",
+    "free website builder",
+    "portfolio website",
+    "no code website",
+    "publish website free",
+    "linktree alternative",
+    "digital card builder",
+    "restaurant menu website",
+    "startup landing page",
+    "resume website builder",
+    "link in bio website",
+  ],
+  authors: [{ name: "Nexora" }],
+  creator: "Nexora Studio",
+  metadataBase: new URL("https://nexora.site"),
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Nexora Studio — Your Ideas, Beautifully Live",
+    title: "Nexora — Build & Publish Your Website in Seconds",
     description:
-      "Create stunning portfolios, digital cards, landing pages and more in under 60 seconds. Powered by AI.",
+      "The fastest way to launch a professional website. Username → Template → Live. Free, no signup required to start.",
     type: "website",
+    url: "https://nexora.site",
+    siteName: "Nexora Studio",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nexora Studio",
-    description: "AI-powered digital presence platform",
+    title: "Nexora — Your Website Live in Seconds",
+    description: "Choose username, pick a template, publish. Free website builder with instant global hosting.",
+    creator: "@nexorastudio",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-snippet": -1 },
   },
 };
 

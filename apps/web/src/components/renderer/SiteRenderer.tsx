@@ -1864,6 +1864,108 @@ function BlogSection({ section, theme, selectedElementKey, interactive }: Sectio
   );
 }
 
+// ─── YouTube Embed Helper ──────────────────────────────────────────────────
+export function parseYouTubeEmbedUrl(url: string | undefined | null): string | null {
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.includes("youtube.com/embed/")) {
+    const videoId = trimmed.split("youtube.com/embed/")[1]?.split("?")[0];
+    return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : trimmed;
+  }
+
+  const match = trimmed.match(
+    /(?:youtube\.com\/(?:watch\?.*v=|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
+
+  if (match && match[1]) {
+    return `https://www.youtube.com/embed/${match[1]}?rel=0`;
+  }
+
+  return null;
+}
+
+function VideoSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const content = section.content || {};
+  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+
+  const rawUrl =
+    content.youtubeUrl ||
+    (section as any).youtubeUrl ||
+    content.videoUrl ||
+    (section as any).videoUrl ||
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+
+  const embedUrl = parseYouTubeEmbedUrl(rawUrl);
+
+  return (
+    <section
+      id={section.id}
+      data-section-id={section.id}
+      className="relative px-6 py-16 sm:py-24 max-w-5xl mx-auto flex flex-col items-center text-center"
+    >
+      {section.badge && (
+        <div
+          {...sel("badge")}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 border"
+          style={{
+            borderColor: `${theme.primaryColor}40`,
+            background: `${theme.primaryColor}15`,
+            color: theme.primaryColor,
+          }}
+        >
+          {section.badge}
+        </div>
+      )}
+
+      {section.title && (
+        <h2
+          {...sel("title")}
+          className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          {section.title}
+        </h2>
+      )}
+
+      {section.subtitle && (
+        <p {...sel("subtitle")} className="text-base sm:text-lg opacity-80 max-w-2xl mb-8">
+          {section.subtitle}
+        </p>
+      )}
+
+      <div
+        {...sel("youtubeUrl")}
+        className="w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-slate-700/60 bg-slate-950 relative group"
+      >
+        {embedUrl ? (
+          <iframe
+            src={embedUrl}
+            title={section.title || "YouTube Video"}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="w-full h-full border-0"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center p-8 text-slate-400 gap-3 bg-slate-900">
+            <Youtube size={48} className="text-red-500 animate-pulse" />
+            <p className="text-xs font-bold text-slate-200">
+              Paste any YouTube video or Shorts link in the Inspector panel to embed
+            </p>
+          </div>
+        )}
+      </div>
+
+      {content.caption && (
+        <p {...sel("caption")} className="text-xs opacity-60 mt-3 italic">
+          {content.caption}
+        </p>
+      )}
+    </section>
+  );
+}
+
 // Lightweight inline WhatsApp glyph (avoids extra icon dependency).
 function SvgWhatsApp({ className }: { className?: string }) {
   return (
@@ -1932,7 +2034,10 @@ case "links":
       return <MapsSection {...rendererProps} />;
     case "whatsapp":
       return <WhatsAppSection {...rendererProps} />;
-case "custom_html": {
+    case "video":
+    case "media":
+      return <VideoSection {...rendererProps} />;
+    case "custom_html": {
       const rawHtml = section.content?.html || "";
       // If the template ships its own semantic root (section/nav/footer/...),
       // render the raw HTML directly so its layout & full-bleed styling apply.

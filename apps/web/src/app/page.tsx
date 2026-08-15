@@ -1,277 +1,885 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { Sparkles, ArrowRight, Zap, Globe, Layers, Star, Check, ChevronRight, Palette, CreditCard, UtensilsCrossed, Link2, FileText, Mail, Briefcase } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  ArrowRight,
+  Zap,
+  Globe,
+  Layers,
+  Star,
+  Check,
+  CheckCircle2,
+  LayoutTemplate,
+  PenLine,
+  ChevronLeft,
+  Shield,
+  Users,
+  Rocket,
+  Code2,
+  Sparkles,
+  Flame,
+  ArrowUpRight,
+  Cpu,
+  Laptop,
+  X,
+  Smartphone,
+  Eye,
+  Music,
+  Store,
+  Briefcase,
+  UserCheck,
+  ShoppingBag,
+  Utensils,
+  Share2,
+  CheckSquare,
+  Sparkle,
+  Lock,
+  Server,
+  Radio,
+  Clock,
+  Compass,
+} from "lucide-react";
+import { getAllTemplates, getTemplateBySlug } from "@ai-platform/templates";
+import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
+import { SiteCreationModal } from "@/components/common/SiteCreationModal";
+import { projectsApi } from "@/lib/api";
 
-const TICKER_ITEMS = [
-  "Portfolio", "Digital Card", "Restaurant Menu", "Startup Landing",
-  "Resume", "Link in Bio", "Business Site", "Event Page",
+// ─── Static Data & Brand Vocabulary ───────────────────────────────────────────
+const ALL_TEMPLATES = getAllTemplates();
+
+// Continuous Marquee items highlighting digital presence scope
+const MARQUEE_ITEMS = [
+  "🚀 Live in under 3 minutes",
+  "🏢 For businesses",
+  "🔗 Better than a bio link",
+  "🎨 For creators",
+  "👤 Your personal corner",
+  "💼 Portfolios that work",
+  "🍽️ Menus for restaurants",
+  "🚀 Launch your idea",
+  "⚡ We host it for you",
+  "🔒 Secure by default",
+  "📱 Looks great on phones",
 ];
 
-function TickerWord() {
-  const [index, setIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setIndex((i) => (i + 1) % TICKER_ITEMS.length);
-        setVisible(true);
-      }, 300);
-    }, 2200);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <span
-      className="text-gradient inline-block"
-      style={{
-        transition: "opacity 0.3s ease, transform 0.3s ease",
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(-8px)",
-        display: "inline-block",
-      }}
-    >
-      {TICKER_ITEMS[index]}
-    </span>
-  );
-}
-
-const FEATURES = [
+// Digital Presence Categories ("Whatever You Need to Be Online")
+const PRESENCE_TYPES = [
   {
-    icon: <Sparkles className="w-5 h-5" />,
-    title: "AI that understands you",
-    desc: "Describe your vision in plain words. Our AI transforms your idea into a complete, beautiful site in seconds — no prompts to master.",
-    color: "bg-violet-50",
-    iconColor: "text-violet-600",
+    icon: <Store className="w-6 h-6 text-emerald-400" />,
+    title: "🏢 Business Presence",
+    headline: "Give your business a professional home online.",
+    desc: "Services, pricing, contact, location, reviews, booking and lead forms.",
+    cta: "Create Business Presence →",
+    badge: "Business",
+    gradient: "from-emerald-500/10 via-slate-900 to-slate-900",
+    borderColor: "border-emerald-500/30",
   },
   {
-    icon: <Zap className="w-5 h-5" />,
-    title: "Live in under 60 seconds",
-    desc: "From blank canvas to published URL in one minute flat. Your digital presence goes live instantly on a global network.",
-    color: "bg-amber-50",
-    iconColor: "text-amber-600",
+    icon: <Share2 className="w-6 h-6 text-cyan-400" />,
+    title: "🔗 Link in Bio",
+    headline: "Turn your social profile into a complete digital hub.",
+    desc: "Links, social accounts, products, content, newsletter and more.",
+    cta: "Create Link in Bio →",
+    badge: "Social & Bio",
+    gradient: "from-cyan-500/10 via-slate-900 to-slate-900",
+    borderColor: "border-cyan-500/30",
   },
   {
-    icon: <Layers className="w-5 h-5" />,
-    title: "Designed for everyone",
-    desc: "Tap to edit any text. Swap colors. Rearrange sections. No design skills required — the interface guides you naturally.",
-    color: "bg-emerald-50",
-    iconColor: "text-emerald-600",
+    icon: <Music className="w-6 h-6 text-rose-400" />,
+    title: "🎨 Creator Presence",
+    headline: "Show the world what you create.",
+    desc: "Portfolio, videos, social links, content, newsletter, products and collaborations.",
+    cta: "Create Creator Page →",
+    badge: "Creators & Artists",
+    gradient: "from-rose-500/10 via-slate-900 to-slate-900",
+    borderColor: "border-rose-500/30",
   },
   {
-    icon: <Globe className="w-5 h-5" />,
-    title: "SEO-ready by default",
-    desc: "Every site ships with optimized meta tags, Open Graph images, structured data, and a sitemap — automatically.",
-    color: "bg-blue-50",
-    iconColor: "text-blue-600",
+    icon: <UserCheck className="w-6 h-6 text-indigo-400" />,
+    title: "👤 Personal Presence",
+    headline: "Your own place on the internet.",
+    desc: "About you, your work, interests, links, achievements and contact.",
+    cta: "Create My Page →",
+    badge: "Personal Brand",
+    gradient: "from-indigo-500/10 via-slate-900 to-slate-900",
+    borderColor: "border-indigo-500/30",
+  },
+  {
+    icon: <Briefcase className="w-6 h-6 text-violet-400" />,
+    title: "💼 Portfolio & Resume",
+    headline: "Turn your CV into an interactive online presence.",
+    desc: "Projects, skills, experience, achievements and contact.",
+    cta: "Create Portfolio →",
+    badge: "Career & CV",
+    gradient: "from-violet-500/10 via-slate-900 to-slate-900",
+    borderColor: "border-violet-500/30",
+  },
+  {
+    icon: <Utensils className="w-6 h-6 text-amber-400" />,
+    title: "🍽 Restaurant Presence",
+    headline: "Give customers an instant digital menu.",
+    desc: "Menu, prices, photos, location, reservations and QR sharing.",
+    cta: "Create Restaurant Page →",
+    badge: "Food & Dining",
+    gradient: "from-amber-500/10 via-slate-900 to-slate-900",
+    borderColor: "border-amber-500/30",
+  },
+  {
+    icon: <ShoppingBag className="w-6 h-6 text-blue-400" />,
+    title: "🚀 Product & Brand",
+    headline: "Launch your product, startup or personal brand.",
+    desc: "Product information, features, testimonials, waitlists and conversion-focused sections.",
+    cta: "Launch My Product →",
+    badge: "Product Launch",
+    gradient: "from-blue-500/10 via-slate-900 to-slate-900",
+    borderColor: "border-blue-500/30",
   },
 ];
 
-const TEMPLATES = [
-  { label: "Portfolio", icon: Palette, accent: "#6366F1" },
-  { label: "Digital Card", icon: CreditCard, accent: "#10B981" },
-  { label: "Restaurant", icon: UtensilsCrossed, accent: "#F43F5E" },
-  { label: "Startup", icon: Zap, accent: "#F59E0B" },
-  { label: "Link in Bio", icon: Link2, accent: "#06B6D4" },
-  { label: "Resume", icon: FileText, accent: "#8B5CF6" },
+// Differentiation Data
+const DIFFERENTIATION = [
+  {
+    type: "Link in Bio",
+    issue: "A list of buttons isn't enough anymore.",
+    solution: "Give them the full picture: who you are, what you make, and how to reach you.",
+  },
+  {
+    type: "Traditional Website",
+    issue: "Building a site shouldn't take all weekend.",
+    solution: "Skip the setup. Just click what you want to change, type, and hit publish.",
+  },
+  {
+    type: "Social Profile",
+    issue: "You don't own your social media profile.",
+    solution: "Claim your own address. A place on the internet that actually belongs to you.",
+  },
+  {
+    type: "Nexora",
+    issue: "It usually costs money to get started.",
+    solution: "Start for free. No credit card, no trials, no hidden fees.",
+  },
 ];
 
 const SOCIAL_PROOF = [
-  { name: "Sofia Marin", role: "Freelance Designer", text: "I built my portfolio in 3 minutes. My clients think I hired a studio.", avatar: "SM" },
-  { name: "Raj Kapoor", role: "Restaurant Owner", text: "My menu is now online and Google loves it. Bookings went up 40%.", avatar: "RK" },
-  { name: "Emma Liu", role: "Product Manager", text: "Finally a tool that doesn't make me feel like a developer just to have a website.", avatar: "EL" },
+  { name: "Sofia Marin", role: "UI/UX Designer", text: "Created my digital presence in 90 seconds. Sent my link to a client the same afternoon and landed the project.", avatar: "SM" },
+  { name: "Raj Kapoor", role: "Restaurant Owner", text: "Our digital menu is live and indexed on Google. Customers scan our QR code at tables. Setup took 2 minutes.", avatar: "RK" },
+  { name: "Emma Liu", role: "Product Creator", text: "I replaced my old bio link with a complete Nexora presence. My newsletter subscribers doubled in the first month.", avatar: "EL" },
+  { name: "Lucas Ferreira", role: "Indie Maker", text: "Launched my startup landing page with waitlist form in under 3 minutes. Zero coding or server hassle.", avatar: "LF" },
 ];
 
+type Step = "username" | "mode" | "template";
+
 export default function LandingPage() {
+  const router = useRouter();
+
+  const [step, setStep] = useState<Step>("username");
+  const [usernameInput, setUsernameInput] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const cleanSlug =
+    usernameInput
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "") || "my-brand";
+
+  const displayName =
+    cleanSlug
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ") || "Your Name";
+
+  const canProceed = cleanSlug.length >= 2;
+
+  const launchEditor = async (templateId: string | null) => {
+    setIsRedirecting(true);
+    try {
+      let customConfig: any;
+
+      if (templateId) {
+        const tpl = ALL_TEMPLATES.find((t) => t.id === templateId);
+        const rawConfig = tpl ? tpl.config : getTemplateBySlug("portfolio-modern");
+        customConfig = JSON.parse(JSON.stringify(rawConfig));
+        if (customConfig.meta) customConfig.meta.title = displayName;
+        const s0 = customConfig.sections?.[0];
+        if (s0?.content) {
+          if (s0.content.title) s0.content.title = displayName;
+          if (s0.content.name) s0.content.name = displayName;
+        }
+      } else {
+        const blank = getTemplateBySlug("blank");
+        customConfig = JSON.parse(JSON.stringify(blank));
+        if (customConfig.meta) customConfig.meta.title = displayName;
+      }
+
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      if (token) {
+        const tpl = templateId ? ALL_TEMPLATES.find((t) => t.id === templateId) : null;
+        const res = await projectsApi.create({
+          name: displayName,
+          category: (tpl?.category ?? "portfolio") as any,
+          config: customConfig,
+        });
+        if (res.data?._id) {
+          router.push(`/editor/${res.data._id}`);
+          return;
+        }
+      }
+
+      const tpl = templateId ? ALL_TEMPLATES.find((t) => t.id === templateId) : null;
+      sessionStorage.setItem(
+        "nexora-quick-start-draft",
+        JSON.stringify({
+          name: displayName,
+          slug: cleanSlug,
+          category: tpl?.category ?? "portfolio",
+          config: customConfig,
+        })
+      );
+      router.push("/editor/quick-start");
+    } catch (err) {
+      console.error(err);
+      router.push("/templates");
+    } finally {
+      setIsRedirecting(false);
+    }
+  };
+
+  // ─── JSON-LD Structured Schema for Google & AI Search ─────────────────────
+  const jsonLdData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Nexora Studio",
+    operatingSystem: "All",
+    applicationCategory: "BusinessApplication",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    description:
+      "Get your digital presence live in under 3 minutes. Create a professional online presence for your business, brand, portfolio, creator profile, link-in-bio, restaurant, product, or yourself.",
+    url: "https://nexora.site",
+  };
+
+  const stepIndex = step === "username" ? 0 : step === "mode" ? 1 : 2;
+  const stepLabels = ["Username", "Start type", "Template"];
+
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      {/* ── SEO JSON-LD Structured Schema Injection ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+      />
 
-      {/* ── Navigation ── */}
-      <nav className="surface-blur sticky top-0 z-50 border-b" style={{ borderColor: "var(--border-light)" }}>
+      {/* ── SEO: rich structured headings + invisible crawlable content ── */}
+      <div className="sr-only">
+        <h1>Nexora — Your Digital Presence. Live in Under 3 Minutes.</h1>
+        <p>
+          Create a professional digital presence for your business, brand, portfolio, creator profile, link-in-bio, restaurant, product, or yourself. No coding. No hosting setup. No complicated tools.
+        </p>
+      </div>
+
+      {/* ── Nav Bar ── */}
+      <nav
+        aria-label="Main navigation"
+        className="surface-blur sticky top-0 z-50 border-b"
+        style={{ borderColor: "var(--border-light)" }}
+      >
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "var(--brand)", boxShadow: "var(--shadow-brand)" }}>
-              <span className="text-white text-sm font-black">P</span>
+            <div
+              className="w-8 h-8 rounded-xl bg-indigo-600 shadow-md shadow-indigo-600/20 flex items-center justify-center animate-pulse-glow"
+              aria-hidden
+            >
+              <span className="text-white text-sm font-black tracking-tighter">N</span>
             </div>
-            <span className="font-bold text-lg tracking-tight" style={{ color: "var(--text-primary)" }}>Presence</span>
+            <span className="font-bold text-lg tracking-tight text-slate-900">Nexora</span>
+            <span className="hidden sm:inline-block text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+              For everyone
+            </span>
           </div>
 
           <div className="hidden md:flex items-center gap-1">
-            {["Templates", "Features", "Pricing"].map((item) => (
-              <a key={item} href="#" className="btn btn-ghost" style={{ fontSize: "14px" }}>{item}</a>
-            ))}
+            <a href="#start" className="btn btn-ghost text-xs">
+              Quick Start
+            </a>
+            <Link href="/templates" className="btn btn-ghost text-xs">
+              Templates
+            </Link>
+            <a href="#how-it-works" className="btn btn-ghost text-xs">
+              3-Minute Flow
+            </a>
+            <a href="#presences" className="btn btn-ghost text-xs">
+              Digital Presences
+            </a>
+            <a href="#differentiation" className="btn btn-ghost text-xs">
+              Why Nexora
+            </a>
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/login" className="btn btn-ghost" style={{ fontSize: "14px" }}>Sign in</Link>
-            <Link href="/register" className="btn btn-primary">Get started free</Link>
+            <Link href="/login" className="btn btn-ghost text-xs">
+              Sign in
+            </Link>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn btn-primary text-xs shadow-md shadow-indigo-600/20 active:scale-95 transition-transform"
+            >
+              Get Started Free →
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden" style={{ paddingTop: "100px", paddingBottom: "80px" }}>
-        {/* Background orbs */}
-        <div className="orb orb-brand w-96 h-96" style={{ top: "-80px", right: "5%", opacity: 0.35 }} />
-        <div className="orb orb-violet w-72 h-72" style={{ bottom: "0", left: "10%", opacity: 0.25 }} />
-        <div className="orb orb-warm w-64 h-64" style={{ top: "30%", left: "60%", opacity: 0.2 }} />
+      {/* ══════════════════════════════════════════════════════════════════════
+          CONTINUOUS MARQUEE SLIDING STRIP
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div className="bg-slate-900 border-y border-slate-800 py-2.5 overflow-hidden select-none">
+        <div className="animate-marquee flex items-center gap-6 text-xs font-bold text-slate-300">
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 shrink-0 hover:bg-white/10 transition-colors"
+            >
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          MAIN HERO ("Get Your Digital Presence Live in Under 3 Minutes.")
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        id="start"
+        aria-labelledby="hero-heading"
+        className="relative overflow-hidden pt-16 pb-24"
+      >
+        {/* Ambient Lighting Orbs */}
+        <div className="orb orb-brand w-[550px] h-[550px] -top-32 right-[2%] opacity-20 animate-spin-slow" />
+        <div className="orb orb-violet w-[420px] h-[420px] bottom-0 left-[4%] opacity-20 animate-pulse-glow" />
 
         <div className="max-w-6xl mx-auto px-6 relative">
-          {/* Pill badge */}
-          <div className="flex justify-center mb-8 animate-fade-up">
-            <div className="badge badge-brand gap-2 px-4 py-2 text-xs">
-              <Sparkles className="w-3.5 h-3.5" />
-              AI-powered · Live in 60 seconds
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-16">
+            {/* ── Left: Main Hero Copy ── */}
+            <div className="flex-1 space-y-6 pt-2">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-sm animate-float-smooth">
+                <Clock size={14} className="text-indigo-600 animate-sparkle" />
+                <span>Live in under 3 minutes</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+
+              <h1
+                id="hero-heading"
+                className="text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight text-slate-900 leading-[1.08]"
+              >
+                Your corner of the internet,
+                <br />
+                <span className="text-gradient">live today.</span>
+              </h1>
+
+              <p className="text-slate-600 text-lg leading-relaxed max-w-xl">
+                A dead-simple way to build a place for your{" "}
+                <strong className="text-slate-900">
+                  business, ideas, portfolio, or just yourself.
+                </strong>
+              </p>
+
+              {/* Formula Callout */}
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-900 text-white font-mono font-bold text-xs shadow-md">
+                <span className="text-indigo-400">Choose</span>
+                <span className="text-slate-500">→</span>
+                <span className="text-indigo-400">Customize</span>
+                <span className="text-slate-500">→</span>
+                <span className="text-emerald-400">Go Live.</span>
+              </div>
+
+              <p className="text-xs text-slate-500 font-medium">
+                No code. No hosting headaches. Just pick a look, type, and share.
+              </p>
+
+              {/* Primary & Secondary CTAs */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-7 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                >
+                  <span>Get Started Free</span>
+                  <ArrowRight size={16} />
+                </button>
+
+                <Link
+                  href="/templates"
+                  className="px-7 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-800 font-bold text-sm hover:bg-slate-50 hover:border-slate-300 flex items-center justify-center gap-2 transition-all shadow-xs"
+                >
+                  <span>Explore Templates</span>
+                </Link>
+              </div>
+
+              {/* Trust strip under CTA */}
+              <div className="pt-3 grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs font-semibold text-slate-600">
+                {[
+                  "Free Nexora address",
+                  "Global hosting included",
+                  "Free SSL security",
+                  "100% Mobile-ready",
+                  "SEO-ready basics",
+                  "Instant publishing",
+                ].map((item) => (
+                  <span key={item} className="flex items-center gap-1.5">
+                    <Check size={13} className="text-emerald-600 shrink-0 font-bold" />
+                    <span>{item}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Right: Static Username Claim Widget (Firm & Grounded) ── */}
+            <div className="w-full lg:w-[460px] flex-shrink-0 relative">
+              <div className="hidden sm:flex absolute -top-5 -right-5 z-30 items-center gap-1.5 bg-slate-900 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-2xl shadow-xl">
+                <Zap size={14} className="text-amber-400" />
+                <span>Instant CDN Ready</span>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl shadow-slate-900/10 overflow-hidden relative z-20">
+                <div className="px-6 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                      Claim Your Presence
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-bold">
+                    Free Plan
+                  </span>
+                </div>
+
+                <div className="p-6 space-y-5">
+                  <div>
+                    <label
+                      htmlFor="slug-input"
+                      className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider"
+                    >
+                      Enter your address handle
+                    </label>
+                    <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all">
+                      <span className="text-sm font-semibold text-slate-400 select-none whitespace-nowrap pr-1.5">
+                        nexora.site /
+                      </span>
+                      <input
+                        id="slug-input"
+                        type="text"
+                        value={usernameInput}
+                        onChange={(e) => setUsernameInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && canProceed) setIsModalOpen(true);
+                        }}
+                        placeholder="your-name"
+                        autoFocus
+                        className="flex-1 bg-transparent text-sm font-mono font-bold text-slate-900 focus:outline-none placeholder-slate-300"
+                      />
+                      {canProceed && (
+                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 ml-2" />
+                      )}
+                    </div>
+                    {canProceed ? (
+                      <p className="text-[11px] text-emerald-600 font-semibold mt-2 flex items-center gap-1">
+                        <Check size={11} /> nexora.site/{cleanSlug} is available
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-slate-400 mt-2">
+                        Letters, numbers and hyphens only.
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    disabled={!canProceed}
+                    className="w-full h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-lg shadow-indigo-600/25"
+                  >
+                    <span>Choose Template & Go Live</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+
+                <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-center gap-5 text-[11px] text-slate-500 font-semibold">
+                  <span>Zero setup</span>
+                  <span>•</span>
+                  <span>Instant preview</span>
+                  <span>•</span>
+                  <span>Ready in 3 minutes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          3-MINUTE PROMISE VISUAL SECTION ("From idea to live in 3 minutes.")
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        id="how-it-works"
+        aria-labelledby="promise-heading"
+        className="py-20 bg-slate-950 text-white relative overflow-hidden"
+      >
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-xs font-bold">
+              <Clock size={14} className="text-amber-400" />
+              How it works
+            </div>
+            <h2
+              id="promise-heading"
+              className="text-3xl sm:text-5xl font-black text-white tracking-tight max-w-xl mx-auto leading-tight"
+            >
+              Idea to live in 3 steps.
+            </h2>
+            <p className="text-slate-400 text-base max-w-lg mx-auto">
+              We stripped away all the complicated parts of building a website.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Step 01: Choose */}
+            <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between relative group">
+              <div>
+                <div className="text-3xl font-black text-indigo-400 mb-4 font-mono">01 — Choose</div>
+                <h3 className="text-xl font-bold text-white mb-2">Tell Nexora what you're creating.</h3>
+                <p className="text-xs text-slate-400 leading-relaxed mb-6">
+                  Select your purpose: Business, Creator, Portfolio, Link in Bio, Restaurant, Product, Resume, or Personal.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-4 border-t border-white/10 text-[11px] font-semibold text-slate-300">
+                {["Business", "Creator", "Portfolio", "Bio Link", "Restaurant", "Product", "Resume"].map((tag) => (
+                  <span key={tag} className="px-2.5 py-1 rounded-lg bg-white/10 text-slate-300">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Step 02: Customize */}
+            <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between relative group">
+              <div>
+                <div className="text-3xl font-black text-indigo-400 mb-4 font-mono">02 — Customize</div>
+                <h3 className="text-xl font-bold text-white mb-2">Pick a template and make it yours.</h3>
+                <p className="text-xs text-slate-400 leading-relaxed mb-6">
+                  Click any text, image, or section directly on the visual canvas. Everything feels instant and simple.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-4 border-t border-white/10 text-xs font-mono font-bold text-indigo-300">
+                <span>Click</span> → <span>Edit</span> → <span>Preview</span>
+              </div>
+            </div>
+
+            {/* Step 03: Go Live */}
+            <div className="p-8 rounded-3xl bg-gradient-to-b from-indigo-900/40 to-slate-900 border-2 border-indigo-500 shadow-xl flex flex-col justify-between relative group">
+              <div>
+                <div className="text-3xl font-black text-emerald-400 mb-4 font-mono">03 — Go Live</div>
+                <h3 className="text-xl font-bold text-white mb-2">Click Go Live. Nexora handles the rest.</h3>
+                <p className="text-xs text-slate-300 leading-relaxed mb-6">
+                  Automatic hosting, SSL encryption, global CDN delivery, mobile optimization, and basic SEO.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-indigo-500/30 text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 size={16} /> Instant Global Deployment
+              </div>
             </div>
           </div>
 
-          {/* Headline */}
-          <div className="text-center max-w-4xl mx-auto animate-fade-up stagger-1">
-            <h1 style={{ fontSize: "clamp(2.8rem, 6vw, 5rem)", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.03em", color: "var(--text-primary)", marginBottom: "1rem" }}>
-              Create your{" "}
-              <TickerWord />
-              <br />in 60 seconds flat
-            </h1>
+          <div className="mt-12 text-center">
+            <div className="inline-block px-8 py-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-base font-extrabold shadow-lg">
+              That's it. You're online.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          CORE BRAND STATEMENT ("You don't need a website. You need a presence.")
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-24 bg-white border-y border-slate-200">
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-xs font-extrabold uppercase tracking-wider">
+            Core Nexora Philosophy
           </div>
 
-          {/* Subheadline */}
-          <p className="text-center animate-fade-up stagger-2" style={{ fontSize: "1.2rem", color: "var(--text-secondary)", maxWidth: "560px", margin: "0 auto 2.5rem", lineHeight: 1.65 }}>
-            Describe what you need. Watch the AI build it. Edit with one tap. Go live instantly — no coding, no design degree required.
+          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+            You don't need a website.
+            <br />
+            <span className="text-gradient">You need a presence.</span>
+          </h2>
+
+          <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+            A single, powerful place on the internet where people can:
           </p>
 
-          {/* CTA row */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-up stagger-3">
-            <Link href="/register" className="btn btn-primary btn-lg" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
-              <Sparkles className="w-4 h-4" /> Start building free
-            </Link>
-            <Link href="/register" className="btn btn-secondary btn-lg">
-              Browse templates <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Trust row */}
-          <div className="flex items-center justify-center gap-6 mt-8 animate-fade-up stagger-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-xs font-extrabold text-slate-900">
             {[
-              { icon: <Check className="w-3.5 h-3.5 text-emerald-500" />, text: "No credit card" },
-              { icon: <Check className="w-3.5 h-3.5 text-emerald-500" />, text: "Free forever plan" },
-              { icon: <Check className="w-3.5 h-3.5 text-emerald-500" />, text: "Publish instantly" },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-1.5" style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                {icon} {text}
+              "Find you.",
+              "Know you.",
+              "Contact you.",
+              "Buy from you.",
+              "Follow you.",
+              "Work with you.",
+            ].map((action) => (
+              <div
+                key={action}
+                className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs flex items-center justify-center gap-2 hover:border-indigo-400 transition-colors"
+              >
+                <CheckCircle2 size={16} className="text-indigo-600 shrink-0" />
+                <span>{action}</span>
               </div>
             ))}
           </div>
 
-          {/* Hero preview card */}
-          <div className="mt-16 animate-fade-up stagger-5 relative max-w-3xl mx-auto">
-            <div className="card" style={{ padding: "6px", borderRadius: "24px", boxShadow: "var(--shadow-xl)" }}>
-              {/* Browser chrome */}
-              <div style={{ background: "var(--surface-2)", borderRadius: "20px 20px 0 0", padding: "12px 16px" }} className="flex items-center gap-2">
-                {["#FF5F57","#FEBC2E","#28C840"].map((c, i) => <div key={i} className="w-3 h-3 rounded-full" style={{ background: c }} />)}
-                <div className="flex-1 ml-2" style={{ background: "var(--border-light)", borderRadius: "99px", padding: "5px 12px" }}>
-                  <div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>presence.app/alex-rivera</div>
-                </div>
-              </div>
-              {/* Site preview */}
-              <div style={{ background: "#0B0F19", borderRadius: "0 0 20px 20px", padding: "40px 32px", minHeight: "280px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" }}>
-                <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #8B5CF6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: "20px", boxShadow: "0 8px 32px rgba(99,102,241,0.4)" }}>
-                  AR
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "#fff", fontWeight: 800, fontSize: "1.6rem", letterSpacing: "-0.02em" }}>Alex Rivera</div>
-                  <div style={{ color: "#9B87F5", fontWeight: 600, fontSize: "0.9rem", marginTop: "4px" }}>Senior AI Engineer & Open Source Creator</div>
-                </div>
-                <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-                  {[
-                    { label: "Email", icon: Mail },
-                    { label: "LinkedIn", icon: Briefcase },
-                    { label: "GitHub", icon: Link2 },
-                  ].map((s) => {
-                    const Icon = s.icon;
-                    return (
-                      <div key={s.label} style={{ padding: "7px 14px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Icon className="w-3.5 h-3.5 text-indigo-400" />
-                        {s.label}
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="animate-float" style={{ position: "absolute", bottom: "24px", right: "24px", background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "999px", padding: "5px 12px", display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#10B981", fontWeight: 700 }}>
-                  <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10B981" }} /> Published · Live now
-                </div>
-              </div>
+          <p className="text-xs text-slate-500 max-w-lg mx-auto font-medium">
+            Nexora gives you that presence without the complexity of traditional website builders.
+          </p>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          "WHATEVER YOU NEED TO BE ONLINE" (Digital Presence Categories)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        id="presences"
+        aria-labelledby="presences-heading"
+        className="py-24 bg-slate-950 text-white relative overflow-hidden"
+      >
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-xs font-bold">
+              <Compass size={14} /> Comprehensive Digital Presences
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Templates row ── */}
-      <section style={{ paddingTop: "80px", paddingBottom: "80px" }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", fontWeight: 800, marginBottom: "12px" }}>11 site categories, endless styles</h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem" }}>Every template starts smart — AI fills in content tailored to you.</p>
-          </div>
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
-            {TEMPLATES.map((t) => {
-              const Icon = t.icon;
-              return (
-                <div key={t.label} className="card" style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${t.accent}15`, color: t.accent }}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>{t.label}</span>
-                  <ChevronRight style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section style={{ paddingTop: "80px", paddingBottom: "80px", background: "var(--surface)" }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <div className="badge badge-brand mx-auto mb-4">Why Presence</div>
-            <h2 style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)", fontWeight: 800, maxWidth: "520px", margin: "0 auto" }}>
-              Everything you need. Nothing you don't.
+            <h2
+              id="presences-heading"
+              className="text-3xl sm:text-5xl font-black text-white tracking-tight max-w-3xl mx-auto leading-tight"
+            >
+              One Nexora. Every kind of digital presence.
             </h2>
+            <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed">
+              Select what you are creating today. All presences come ready-to-edit with zero coding required.
+            </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-            {FEATURES.map((f, i) => (
-              <div key={i} className="card" style={{ padding: "28px" }}>
-                <div className={`${f.color} ${f.iconColor} w-10 h-10 rounded-xl flex items-center justify-center mb-5`}>{f.icon}</div>
-                <h3 style={{ fontWeight: 700, fontSize: "1.05rem", marginBottom: "10px" }}>{f.title}</h3>
-                <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.7 }}>{f.desc}</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {PRESENCE_TYPES.map((pt, i) => (
+              <div
+                key={i}
+                className={`group p-7 rounded-3xl bg-gradient-to-b ${pt.gradient} border ${pt.borderColor} hover:border-white/30 transition-all duration-300 flex flex-col justify-between shadow-xl`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 rounded-2xl bg-white/10 border border-white/10 group-hover:scale-110 transition-transform">
+                      {pt.icon}
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/10 text-slate-300 border border-white/10">
+                      {pt.badge}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white mb-2">{pt.title}</h3>
+                  <h4 className="text-xs font-semibold text-indigo-300 mb-2">{pt.headline}</h4>
+                  <p className="text-slate-400 text-xs leading-relaxed mb-6">{pt.desc}</p>
+                </div>
+
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full py-3 rounded-xl bg-white/10 hover:bg-white text-slate-100 hover:text-slate-900 font-bold text-xs transition-all flex items-center justify-center gap-2 group-hover:shadow-lg"
+                >
+                  <span>{pt.cta}</span>
+                </button>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Social proof ── */}
-      <section style={{ paddingTop: "80px", paddingBottom: "80px" }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-1 mb-4">
-              {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />)}
+      {/* ══════════════════════════════════════════════════════════════════════
+          LINK IN BIO UPGRADED HIGHLIGHT
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-950 text-white border-y border-indigo-500/30">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-10">
+          <div className="space-y-4 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-extrabold">
+              <Share2 size={14} /> Social Link Revolution
             </div>
-            <h2 style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontWeight: 800, marginBottom: "8px" }}>Loved by creators worldwide</h2>
-            <p style={{ color: "var(--text-secondary)" }}>From freelancers to restaurant owners to startup founders.</p>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+              Your Link in Bio, Upgraded.
+            </h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Don't just give people a list of plain link buttons. Give them a complete digital presence with links, about info, products, content, newsletters, and contact forms.
+            </p>
+            <div className="pt-2 flex flex-wrap gap-2 text-xs font-semibold text-indigo-200">
+              {["Links", "About", "Content", "Portfolio", "Products", "Socials", "Contact"].map((item) => (
+                <span key={item} className="px-3 py-1 rounded-lg bg-white/10 border border-white/10">
+                  + {item}
+                </span>
+              ))}
+            </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+
+          <div className="bg-slate-900 p-6 rounded-3xl border border-indigo-500/40 shadow-2xl text-center space-y-4 shrink-0 w-full md:w-80">
+            <div className="text-xs font-mono text-indigo-400 uppercase tracking-wider font-bold">
+              One Link. Your Entire Presence.
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Compatible with Instagram, TikTok, YouTube, Twitter/X, LinkedIn, & Spotify bio URLs.
+            </p>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2"
+            >
+              <span>Build Upgraded Bio Link</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          STRONG DIFFERENTIATION ("More than a link. Simpler than a website builder.")
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        id="differentiation"
+        aria-labelledby="diff-heading"
+        className="py-24 bg-slate-900 text-white"
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-xs font-bold">
+              <Flame size={14} className="text-amber-400" />
+              Why it's different
+            </div>
+            <h2
+              id="diff-heading"
+              className="text-3xl sm:text-5xl font-black text-white tracking-tight max-w-2xl mx-auto leading-tight"
+            >
+              Simpler than a website builder.
+            </h2>
+            <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed">
+              Stop fighting with complicated tools just to get your ideas out there.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {DIFFERENTIATION.map((d, i) => (
+              <div
+                key={i}
+                className={`p-6 rounded-3xl border ${
+                  i === 3
+                    ? "bg-indigo-950/80 border-indigo-500 shadow-xl"
+                    : "bg-slate-950/60 border-white/10"
+                } flex flex-col justify-between`}
+              >
+                <div>
+                  <div className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400 mb-2">
+                    {d.type}
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-2">{d.issue}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{d.solution}</p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-white/10 text-[11px] font-semibold text-slate-300">
+                  {i === 3 ? "✓ What you get here" : "vs The old way"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          HOSTING POSITIONING ("Live everywhere. Automatically.")
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16 space-y-3">
+            <div className="badge badge-brand mx-auto mb-2">Zero Maintenance Hosting</div>
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 max-w-xl mx-auto leading-tight">
+              Live everywhere. Automatically.
+            </h2>
+            <p className="text-slate-500 text-base max-w-xl mx-auto leading-relaxed">
+              You create it. Nexora handles all the technical stuff behind the scenes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {[
+              { title: "Global Hosting", desc: "Edge delivery worldwide", icon: <Globe className="w-5 h-5 text-indigo-600" /> },
+              { title: "Free SSL", desc: "Automatic HTTPS encryption", icon: <Lock className="w-5 h-5 text-emerald-600" /> },
+              { title: "Fast Loading", desc: "Optimized image & asset load", icon: <Zap className="w-5 h-5 text-amber-600" /> },
+              { title: "Mobile Ready", desc: "Responsive on every screen", icon: <Smartphone className="w-5 h-5 text-blue-600" /> },
+              { title: "Auto Deployment", desc: "Zero server config required", icon: <Server className="w-5 h-5 text-violet-600" /> },
+            ].map((h, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center mx-auto shadow-xs">
+                  {h.icon}
+                </div>
+                <h3 className="font-bold text-xs text-slate-900">{h.title}</h3>
+                <p className="text-[11px] text-slate-500">{h.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 p-8 rounded-3xl bg-slate-900 text-white text-center max-w-3xl mx-auto space-y-3 shadow-xl">
+            <h3 className="text-xl font-bold">No servers. No hosting configuration. No deployment headaches.</h3>
+            <p className="text-slate-400 text-xs leading-relaxed max-w-lg mx-auto">
+              You don't need to learn DNS records, FTP, or cloud infrastructure. Just click <strong className="text-emerald-400 font-mono font-extrabold">Go Live</strong>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          TESTIMONIALS & REVIEWS
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        aria-labelledby="testimonials-heading"
+        className="py-24 bg-slate-50 border-t border-slate-200"
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-14 space-y-2">
+            <div className="flex justify-center gap-1 mb-2">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className="w-4 h-4 text-amber-400 fill-amber-400 animate-sparkle"
+                />
+              ))}
+            </div>
+            <h2 id="testimonials-heading" className="text-3xl font-extrabold text-slate-900">
+              Creators & business owners who launched with Nexora
+            </h2>
+            <p className="text-slate-500 text-sm">Real people, real presences, instant results.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {SOCIAL_PROOF.map((s, i) => (
-              <div key={i} className="card" style={{ padding: "28px" }}>
-                <p style={{ color: "var(--text-primary)", fontSize: "0.95rem", lineHeight: 1.7, marginBottom: "20px", fontStyle: "italic" }}>"{s.text}"</p>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: "13px", flexShrink: 0 }}>{s.avatar}</div>
+              <div
+                key={i}
+                className="p-6 border border-slate-200 rounded-3xl bg-white flex flex-col justify-between hover:shadow-lg transition-all"
+              >
+                <p className="text-slate-700 text-xs leading-relaxed mb-6 italic">
+                  "{s.text}"
+                </p>
+                <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+                  <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                    {s.avatar}
+                  </div>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: "14px" }}>{s.name}</div>
-                    <div style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{s.role}</div>
+                    <div className="font-bold text-xs text-slate-900">{s.name}</div>
+                    <div className="text-slate-500 text-[11px]">{s.role}</div>
                   </div>
                 </div>
               </div>
@@ -280,45 +888,86 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Final CTA ── */}
-      <section style={{ paddingTop: "80px", paddingBottom: "100px" }}>
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <div className="card" style={{ padding: "64px 48px", background: "var(--surface)", position: "relative", overflow: "hidden" }}>
-            <div className="orb orb-brand w-64 h-64" style={{ top: "-40px", right: "-40px", opacity: 0.3 }} />
-            <div className="orb orb-violet w-48 h-48" style={{ bottom: "-40px", left: "-40px", opacity: 0.2 }} />
-            <div className="relative">
-              <div className="badge badge-brand mx-auto mb-5">Start free today</div>
-              <h2 style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", fontWeight: 900, marginBottom: "16px", letterSpacing: "-0.02em" }}>
-                Your digital presence<br />starts right here
-              </h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", marginBottom: "32px", lineHeight: 1.65 }}>
-                Join thousands of creators building beautiful sites with Presence. No credit card, no complexity — just results.
-              </p>
-              <Link href="/register" className="btn btn-primary btn-lg" style={{ paddingLeft: "40px", paddingRight: "40px" }}>
-                <Sparkles className="w-4 h-4" /> Create my presence
-              </Link>
-            </div>
+      {/* ══════════════════════════════════════════════════════════════════════
+          FINAL BRAND STATEMENT & CALL TO ACTION
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section aria-labelledby="cta-heading" className="py-24 bg-slate-950 text-white relative">
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-7">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-xs font-bold">
+            <Zap size={14} className="text-amber-400" />
+            <span>Nexora Studio</span>
           </div>
+
+          <h2
+            id="cta-heading"
+            className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight"
+          >
+            Your digital presence. Live in under 3 minutes.
+          </h2>
+
+          <p className="text-slate-400 text-xs sm:text-sm font-semibold tracking-wide uppercase font-mono max-w-xl mx-auto">
+            Business · Creator · Brand · Portfolio · Link in Bio · Restaurant · Product · Personal
+          </p>
+
+          <p className="text-slate-300 text-base leading-relaxed max-w-lg mx-auto">
+            Choose what you need. Make it yours. Go Live. No code. No hosting setup. No complicated tools.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-8 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-xl shadow-indigo-600/30 flex items-center gap-2 active:scale-95"
+            >
+              <span>Get Started Free →</span>
+            </button>
+
+            <Link
+              href="/templates"
+              className="px-8 py-3.5 rounded-2xl border border-white/20 text-white font-bold text-sm hover:bg-white/10 transition-all flex items-center gap-2"
+            >
+              <span>Explore Templates</span>
+            </Link>
+          </div>
+
+          <p className="text-xs text-slate-500 pt-2 font-medium">
+            One simple platform to create, launch and share your place on the internet.
+          </p>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: "1px solid var(--border-light)", padding: "28px 24px" }}>
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "var(--brand)" }}>
-              <span className="text-white text-xs font-black">P</span>
+      <footer className="border-t border-slate-800 py-10 bg-slate-950">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-500">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+              N
             </div>
-            <span style={{ fontWeight: 700, fontSize: "14px", color: "var(--text-primary)" }}>Presence</span>
+            <span className="font-bold text-slate-100 text-sm">Nexora Studio</span>
+            <span className="text-slate-600">— Your Digital Presence Platform.</span>
           </div>
-          <p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>© 2026 Presence. Your ideas, beautifully live.</p>
-          <div className="flex gap-4">
-            {["Privacy", "Terms", "Contact"].map((l) => (
-              <a key={l} href="#" style={{ fontSize: "13px", color: "var(--text-tertiary)", textDecoration: "none" }}>{l}</a>
-            ))}
-          </div>
+          <p className="text-slate-600">© 2026 Nexora Digital Presence. All rights reserved.</p>
+          <nav aria-label="Footer navigation" className="flex gap-5">
+            <Link href="/templates" className="hover:text-slate-300 transition-colors">
+              Templates
+            </Link>
+            <Link href="/login" className="hover:text-slate-300 transition-colors">
+              Login
+            </Link>
+            <Link href="/register" className="hover:text-slate-300 transition-colors">
+              Register
+            </Link>
+          </nav>
         </div>
       </footer>
+
+      {/* ── Site Creation Popup Modal ── */}
+      <SiteCreationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        username={usernameInput || "my-brand"}
+        onLaunch={(templateId) => launchEditor(templateId)}
+        isRedirecting={isRedirecting}
+      />
     </div>
   );
 }

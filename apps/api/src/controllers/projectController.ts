@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import { Project } from "../models/Project.js";
+import { Domain } from "../models/Domain.js";
+import { evaluateProjectQuality } from "../services/qualityChecker.js";
 import { buildStaticSite } from "../services/siteCompiler.js";
 import { SiteConfigSchema } from "@ai-platform/shared";
 import { z } from "zod";
@@ -85,20 +87,64 @@ export const listProjects = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-// GET /api/v1/projects/public/:slug — public view of project by slug
+// GET /api/v1/projects/public/:slug — public view of project by slug OR custom domain host
 export const getPublicProject = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const project = await Project.findOne({ slug: req.params.slug }).lean();
+    const identifier = req.params.slug?.toLowerCase().trim();
+    let project = await Project.findOne({ slug: identifier }).lean();
+
+    // If not found by slug, search if identifier matches a custom domain
+    if (!project) {
+      const domainDoc = await Domain.findOne({ normalizedDomain: identifier });
+      if (domainDoc) {
+        project = await Project.findOne({ _id: domainDoc.siteId }).lean();
+      }
+    }
+
     if (!project) {
       return res.status(404).json({
         success: false,
         error: { code: "NOT_FOUND", message: "Site not found" },
       });
     }
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    res.json({ success: true, data: project });
+
+    // Lookup primary domain for canonical URL computation
+    const primaryDomain = await Domain.findOne({ siteId: project._id, isPrimary: true }).lean();
+    const activeDomain = primaryDomain || (await Domain.findOne({ siteId: project._id, status: "active" }).lean());
+
+    const hostBase = process.env.CLIENT_URL || "https://nexora.site";
+    const canonicalUrl = activeDomain
+      ? `https://${activeDomain.normalizedDomain}/`
+      : `${hostBase.replace(/\/$/, "")}/${project.slug}`;
+
+    // Evaluate Quality & Abuse Status
+    const quality = evaluateProjectQuality(project as any);
+
+    const isIndexable =
+      project.status === "published" &&
+      !project.seo?.noIndex &&
+      quality.status === "legitimate";
+
+    // If accessed via slug URL but site has an active custom domain, provide redirect target
+    const shouldRedirect = activeDomain && identifier === project.slug;
+    const redirectTo = shouldRedirect ? `https://${activeDomain.normalizedDomain}/` : undefined;
+
+    const responsePayload = {
+      ...project,
+      seo: {
+        ...(project.seo || {}),
+        canonicalUrl,
+        noIndex: project.seo?.noIndex ?? false,
+      },
+      qualityStatus: quality.status,
+      qualityReason: quality.reason,
+      isIndexable,
+      robots: isIndexable ? "index,follow" : "noindex,nofollow",
+      redirectTo,
+    };
+
+    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+    res.json({ success: true, data: responsePayload });
   } catch (error: any) {
     res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });
   }

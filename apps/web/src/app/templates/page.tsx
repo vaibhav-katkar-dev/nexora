@@ -183,12 +183,26 @@ useEffect(() => {
     setIsCreating(true);
     try {
       const projName = name || templateConfig.meta.title || "My Digital Presence";
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+      if (!token) {
+        // Guest mode — jump straight into visual studio quick-start without forcing login
+        sessionStorage.setItem("nexora-quick-start-draft", JSON.stringify({
+          name: projName,
+          slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
+          category: templateConfig.meta.category || "portfolio",
+          config: templateConfig,
+        }));
+        router.push("/editor/quick-start");
+        return;
+      }
+
       const res = await projectsApi.create({
         name: projName,
         category: templateConfig.meta.category || "portfolio",
         config: templateConfig,
       });
-if (res.data?._id) {
+      if (res.data?._id) {
         toast.success("Project created from template!");
         // ★ Pre-cache the freshly created project (which carries the full
         // template config) so the editor can render it instantly without a
@@ -204,7 +218,15 @@ if (res.data?._id) {
         router.push(`/editor/${res.data._id}`);
       }
     } catch (err: any) {
-      toast.error("Failed to create project", err.message || "Please try again.");
+      // Fallback for network error — allow guest editing anyway
+      const projName = name || templateConfig.meta.title || "My Digital Presence";
+      sessionStorage.setItem("nexora-quick-start-draft", JSON.stringify({
+        name: projName,
+        slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
+        category: templateConfig.meta.category || "portfolio",
+        config: templateConfig,
+      }));
+      router.push("/editor/quick-start");
     } finally {
       setIsCreating(false);
     }

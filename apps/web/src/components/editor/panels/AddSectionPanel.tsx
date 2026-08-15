@@ -23,6 +23,7 @@ import {
   Users,
   Star,
   Image,
+  Youtube,
 } from "lucide-react";
 
 interface AddSectionPanelProps {
@@ -48,6 +49,7 @@ const SECTION_TEMPLATES = [
   { type: "maps", label: "Google Map", desc: "Embed a map via address or lat/long", icon: MapPin },
   { type: "whatsapp", label: "WhatsApp Button", desc: "Floating chat button with prefilled message", icon: MessageCircle },
   { type: "links", label: "Link in Bio", desc: "Button list for social media links", iconComp: Link2 },
+  { type: "video", label: "YouTube Video Embed", desc: "Responsive YouTube video player with custom link", iconComp: Youtube },
   { type: "digital_card", label: "Digital VCard", desc: "Digital business card layout", iconComp: CreditCard },
   { type: "custom_html", label: "Custom HTML Code Block", desc: "Insert custom HTML/CSS embed block", iconComp: Code2 },
 ];
@@ -281,6 +283,15 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
             "https://images.unsplash.com/photo-1433086966358-54859d0ed716?auto=format&fit=crop&w=800&q=80",
             "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
           ],
+        };
+
+      case "video":
+        return {
+          badge: "🎬 Featured Video",
+          title: "Watch Our Featured Reel",
+          subtitle: "Paste any YouTube video or Shorts URL in the Inspector panel to embed your stream live.",
+          youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          caption: "Streamed via YouTube HD Player",
         };
 
       default:

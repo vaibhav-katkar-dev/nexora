@@ -31,12 +31,22 @@ export default function PublicSitePage() {
       .getPublic(slug)
       .then((res) => {
         if (res?.data) {
+          if (
+            res.data.redirectTo &&
+            typeof window !== "undefined" &&
+            window.location.hostname !== new URL(res.data.redirectTo).hostname
+          ) {
+            window.location.replace(res.data.redirectTo);
+            return;
+          }
           setProject(res.data);
           injectSeoHeadTags({
             config: res.data.config,
             seo: res.data.seo,
             slug: slug,
             projectName: res.data.name,
+            robots: res.data.robots,
+            canonicalUrl: res.data.seo?.canonicalUrl,
           });
         } else {
           setError("Site not found");

@@ -24,8 +24,12 @@ import {
   Wand2,
   LayoutTemplate,
   QrCode,
+  Settings,
+  Pencil,
 } from "lucide-react";
 import { QrModal } from "@/components/common/QrModal";
+import { DomainSeoModal } from "@/components/dashboard/DomainSeoModal";
+import { ProjectSettingsPanel } from "@/components/dashboard/ProjectSettingsPanel";
 import { buildPublishedSiteUrl } from "@/lib/siteUrl";
 
 
@@ -59,6 +63,11 @@ export default function DashboardPage() {
     title: "",
     slug: "",
   });
+  const [domainSeoModalData, setDomainSeoModalData] = useState<{ isOpen: boolean; site: any }>({
+    isOpen: false,
+    site: null,
+  });
+  const [settingsPanelProject, setSettingsPanelProject] = useState<Project | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -197,11 +206,11 @@ export default function DashboardPage() {
         {/* ── Page Title Header ───────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
-              <FolderKanban className="text-indigo-600" size={28} /> My Projects Workspace
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              My Projects
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Manage, edit, publish, and duplicate all your digital presence sites in one place.
+            <p className="text-sm text-slate-500 mt-1">
+              Everything you&apos;ve built, right here.
             </p>
           </div>
 
@@ -226,43 +235,45 @@ export default function DashboardPage() {
           {/* AI Generator Card */}
           <Link
             href="/ai-builder"
-            className="md:col-span-2 bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 rounded-2xl p-7 text-white relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col justify-between"
+            className="md:col-span-2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-2xl p-7 text-white relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col justify-between"
           >
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-400 via-transparent to-transparent" />
+            <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none opacity-10"
+              style={{ background: "radial-gradient(circle at center, white 0%, transparent 70%)" }}
+            />
             <div className="relative z-10 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                <Sparkles size={12} /> AI Digital Architect
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/15 text-white border border-white/20">
+                <Sparkles size={12} /> Built with AI
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
-                Generate a Brand New Site with AI
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight">
+                Start a new site with AI
               </h2>
-              <p className="text-xs text-indigo-200/80 max-w-md leading-relaxed">
-                Describe your business or vision — portfolio, restaurant, startup — and AI builds layouts, color palettes, and copywriting instantly.
+              <p className="text-sm text-indigo-100/80 max-w-md leading-relaxed">
+                Tell us what your site is for — a portfolio, a restaurant, a startup — and AI writes the content, picks the layout and gets it ready to publish.
               </p>
             </div>
-            <div className="pt-4 flex items-center gap-2 text-xs font-bold text-indigo-300 group-hover:text-white transition-colors">
-              Open AI Architect Studio →
+            <div className="pt-4 flex items-center gap-2 text-sm font-semibold text-indigo-200 group-hover:text-white transition-colors">
+              Try AI builder →
             </div>
           </Link>
 
           {/* Start From Blank Card */}
           <div
             onClick={handleCreateBlank}
-            className="bg-white border border-slate-200 rounded-2xl p-7 flex flex-col justify-between hover:border-indigo-400/60 hover:shadow-md transition-all cursor-pointer group"
+            className="bg-white border border-slate-200 rounded-2xl p-7 flex flex-col justify-between hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group"
           >
             <div className="space-y-2.5">
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <Plus size={22} />
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Plus size={20} />
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                Start From Blank
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                Start from scratch
               </h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Build from scratch with a clean canvas, empty sections, and custom design settings.
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Blank canvas, your rules. Add sections as you go.
               </p>
             </div>
-            <div className="pt-4 flex items-center text-xs font-bold text-indigo-600">
-              {isCreating ? "Creating blank site…" : "Create blank site →"}
+            <div className="pt-4 text-sm font-semibold text-indigo-600">
+              {isCreating ? "Creating…" : "Open blank editor →"}
             </div>
           </div>
         </section>
@@ -276,10 +287,10 @@ export default function DashboardPage() {
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search projects by name or category..."
+                placeholder="Find a project…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all"
               />
             </div>
 
@@ -319,143 +330,120 @@ export default function DashboardPage() {
 
           {/* Project Cards Grid */}
           {filteredProjects.length === 0 ? (
-            <div className="bg-white border border-dashed border-slate-300 rounded-2xl py-16 px-6 flex flex-col items-center gap-3 text-center">
-              <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
-                <Globe size={24} className="text-slate-400" />
+            <div className="bg-white border border-dashed border-slate-200 rounded-2xl py-16 px-6 flex flex-col items-center gap-3 text-center">
+              <div className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center">
+                <Globe size={22} className="text-slate-400" />
               </div>
-              <p className="text-sm font-bold text-slate-800">
+              <p className="text-base font-semibold text-slate-800">
                 {searchQuery
-                  ? "No projects match your search"
+                  ? `Nothing found for "${searchQuery}"`
                   : projectTab === "all"
-                  ? "No projects created yet"
+                  ? "You haven't built anything yet"
                   : `No ${projectTab} projects`}
               </p>
-              <p className="text-xs text-slate-400 max-w-sm">
+              <p className="text-sm text-slate-400 max-w-xs">
                 {projectTab === "all"
-                  ? "Pick a handcrafted template or use AI Architect to build your first site in 60 seconds."
-                  : `You currently have no projects in ${projectTab} status.`}
+                  ? "Pick a template to get started, or let AI build one from your description."
+                  : `Switch to "All" to see your other projects.`}
               </p>
               <div className="flex items-center gap-2 pt-2">
                 <Link
                   href="/templates"
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-xs"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
                 >
-                  Browse Templates
+                  Browse templates
                 </Link>
                 <Link
                   href="/ai-builder"
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-50"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50"
                 >
-                  Use AI Builder
+                  Use AI builder
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredProjects.map((proj) => {
                 const isPublished = proj.status === "published";
+                const liveUrl = buildPublishedSiteUrl(proj.slug);
+
                 return (
                   <div
                     key={proj._id}
-                    className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs hover:shadow-md hover:border-indigo-300/80 transition-all flex flex-col justify-between group"
+                    className="relative bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-slate-300 hover:shadow-md transition-all duration-200 flex flex-col group"
                   >
-                    <div>
-                      {/* Status + Category Header */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                          {proj.category.replace("_", " ")}
-                        </span>
-                        <span
-                          className={`flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                            isPublished
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                              : "bg-amber-50 text-amber-700 border border-amber-100"
-                          }`}
+                    {/* Status accent bar */}
+                    <div className={`h-1 w-full ${isPublished ? "bg-emerald-400" : "bg-amber-300"}`} />
+
+                    <div className="p-4 flex flex-col gap-3 flex-1">
+                      {/* Header row */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                            {proj.name}
+                          </h3>
+                          <p className="text-[11px] text-slate-400 mt-0.5 capitalize">
+                            {proj.category.replace(/_/g, " ")}
+                          </p>
+                        </div>
+
+                        {/* Settings icon → opens panel */}
+                        <button
+                          onClick={() => setSettingsPanelProject(proj)}
+                          title="Project settings"
+                          className="p-1.5 rounded-lg text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors shrink-0"
                         >
-                          {isPublished ? <CheckCircle2 size={10} /> : <Clock size={10} />}
-                          {isPublished ? "Published" : "Draft"}
-                        </span>
+                          <Settings size={14} />
+                        </button>
                       </div>
 
-                      {/* Name */}
-                      <h3 className="font-extrabold text-sm text-slate-900 mb-1 group-hover:text-indigo-600 transition-colors line-clamp-1">
-                        {proj.name}
-                      </h3>
-                      <p className="text-[11px] text-slate-400">
-                        Updated {new Date(proj.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </p>
+                      {/* Status + date row */}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            isPublished
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-amber-50 text-amber-600"
+                          }`}
+                        >
+                          {isPublished ? <CheckCircle2 size={9} /> : <Clock size={9} />}
+                          {isPublished ? "Live" : "Draft"}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {new Date(proj.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Actions Row */}
-                    <div className="flex items-center gap-1.5 pt-4 border-t border-slate-100 mt-4">
+                    {/* Footer actions */}
+                    <div className="flex items-stretch border-t border-slate-100">
                       <Link
                         href={`/editor/${proj._id}`}
-                        className="flex-1 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 text-center transition-colors shadow-xs"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors"
                       >
+                        <Pencil size={12} />
                         Edit
                       </Link>
-                      <Link
-                        href={`/publish/${proj._id}`}
-                        className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-                        title="Publish site"
-                      >
-                        <Send size={13} />
-                      </Link>
-                      {isPublished && proj.slug && (
-                        <>
-                          <a
-                            href={buildPublishedSiteUrl(proj.slug)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-300 transition-colors"
-                            title="View live published site"
-                          >
-                            <ExternalLink size={13} />
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const liveUrl = buildPublishedSiteUrl(proj.slug);
-                              navigator.clipboard.writeText(liveUrl);
-                              toast.success("Live URL Copied!", liveUrl);
-                            }}
-                            className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-                            title="Copy live site link"
-                          >
-                            <Copy size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const liveUrl = buildPublishedSiteUrl(proj.slug);
-                              setQrModalData({
-                                isOpen: true,
-                                url: liveUrl,
-                                title: proj.name,
-                                slug: proj.slug,
-                              });
-                            }}
-                            className="p-1.5 rounded-xl border border-slate-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100/70 hover:border-indigo-300 transition-colors"
-                            title="Generate & Download QR Code"
-                          >
-                            <QrCode size={13} />
-                          </button>
-                        </>
+
+                      {isPublished && proj.slug ? (
+                        <a
+                          href={liveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors border-l border-slate-100"
+                        >
+                          <ExternalLink size={12} />
+                          View Live
+                        </a>
+                      ) : (
+                        <Link
+                          href={`/publish/${proj._id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors border-l border-slate-100"
+                        >
+                          <Send size={12} />
+                          Publish
+                        </Link>
                       )}
-                      <button
-                        onClick={() => handleDuplicateProject(proj._id)}
-                        className="p-1.5 rounded-xl border border-slate-200 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
-                        title="Duplicate project"
-                      >
-                        <FolderKanban size={13} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProject(proj._id)}
-                        className="p-1.5 rounded-xl border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors"
-                        title="Delete project"
-                      >
-                        <Trash2 size={13} />
-                      </button>
                     </div>
                   </div>
                 );
@@ -471,6 +459,28 @@ export default function DashboardPage() {
         url={qrModalData.url}
         title={qrModalData.title}
         slug={qrModalData.slug}
+      />
+
+      <DomainSeoModal
+        isOpen={domainSeoModalData.isOpen}
+        onClose={() => setDomainSeoModalData({ isOpen: false, site: null })}
+        site={domainSeoModalData.site}
+        onSiteUpdated={fetchData}
+      />
+
+      <ProjectSettingsPanel
+        project={settingsPanelProject}
+        onClose={() => setSettingsPanelProject(null)}
+        onDuplicate={handleDuplicateProject}
+        onDelete={handleDeleteProject}
+        onOpenDomainSeo={(proj) => setDomainSeoModalData({ isOpen: true, site: proj })}
+        onOpenQr={(proj, url) =>
+          setQrModalData({ isOpen: true, url, title: proj.name, slug: proj.slug })
+        }
+        onCopyLink={(url) => {
+          navigator.clipboard.writeText(url);
+          toast.success("Link copied!", url);
+        }}
       />
     </div>
   );

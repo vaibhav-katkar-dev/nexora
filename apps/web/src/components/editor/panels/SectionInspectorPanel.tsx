@@ -720,6 +720,49 @@ const removeArrayItem = (key: string, index: number) => {
           </div>
         )}
 
+        {/* ── VIDEO / YOUTUBE SECTION SPECIAL PANEL ──────────────────── */}
+        {(section.type === "video" || section.type === "media") && (
+          <div className="pt-3 border-t border-slate-800 space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-red-400">▶</span> YouTube Video Settings
+            </h3>
+
+            <div className="p-3 rounded-xl bg-red-950/20 border border-red-800/30 text-[11px] text-red-300 font-medium flex items-start gap-2">
+              <span className="text-base leading-none shrink-0">🎬</span>
+              <span>Paste any YouTube video link, Shorts URL, or youtu.be share link below. Nexora will embed it automatically as a responsive player.</span>
+            </div>
+
+            <div data-field-path="youtubeUrl">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                YouTube Video URL
+              </label>
+              <input
+                type="url"
+                value={content.youtubeUrl || ""}
+                onChange={(e) => handleFieldChange("youtubeUrl", e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all font-mono"
+              />
+              <p className="text-[10px] text-slate-500 mt-1.5">
+                Supports: youtube.com/watch?v= · youtube.com/shorts/ · youtu.be/ · Full embed URLs
+              </p>
+            </div>
+
+            <div data-field-path="caption">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                Video Caption (optional)
+              </label>
+              <input
+                type="text"
+                value={content.caption || ""}
+                onChange={(e) => handleFieldChange("caption", e.target.value)}
+                placeholder="e.g. Watch our product demo"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              />
+            </div>
+          </div>
+        )}
+
         {/* ── NAVBAR SPECIAL PANEL ─────────────────────────────── */}
         {section.type === "navbar" && (
           <div className="pt-3 border-t border-slate-800 space-y-4">

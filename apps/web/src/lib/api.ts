@@ -207,6 +207,32 @@ export const projectsApi = {
     apiFetch<{ data: any[] }>(`/projects/${id}/deployments`),
 };
 
+// ─── Custom Domains ────────────────────────────────────────────────────────
+export const domainsApi = {
+  list: (siteId?: string) =>
+    apiFetch<{ data: any[] }>(`/domains${siteId ? `?siteId=${siteId}` : ""}`),
+
+  add: (body: { domain: string; siteId: string }) =>
+    apiFetch<{ data: any }>("/domains", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  get: (id: string) => apiFetch<{ data: any }>(`/domains/${id}`),
+
+  verify: (id: string) =>
+    apiFetch<{ data: any; message: string }>(`/domains/${id}/verify`, {
+      method: "POST",
+    }),
+
+  setPrimary: (id: string) =>
+    apiFetch<{ data: any; message: string }>(`/domains/${id}/primary`, {
+      method: "POST",
+    }),
+
+  delete: (id: string) => apiFetch(`/domains/${id}`, { method: "DELETE" }),
+};
+
 // ─── AI Generation ─────────────────────────────────────────────────────────
 export const aiApi = {
   generate: (body: { prompt: string; categoryHint?: string; model?: string }) =>

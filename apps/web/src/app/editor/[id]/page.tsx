@@ -19,9 +19,10 @@ import { AddSectionPanel } from "@/components/editor/panels/AddSectionPanel";
 import { CodeEditorPanel } from "@/components/editor/panels/CodeEditorPanel";
 import { CanvasPreview } from "@/components/editor/CanvasPreview";
 import { PublishModal } from "@/components/editor/PublishModal";
+import { QuickStartAuthModal } from "@/components/editor/QuickStartAuthModal";
 import { ImagePickerModal } from "@/components/editor/ImagePickerModal";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles, Globe, ArrowRight } from "lucide-react";
 
 export default function EditorPage() {
   const params = useParams();
@@ -49,6 +50,8 @@ export default function EditorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [developerMode, setDeveloperMode] = useState(false);
   const [showSlugModal, setShowSlugModal] = useState(false);
+  const [showQuickStartAuthModal, setShowQuickStartAuthModal] = useState(false);
+  const [isGuestQuickStart, setIsGuestQuickStart] = useState(false);
   const [currentSlug, setCurrentSlug] = useState("");
 
   // Image Picker state
@@ -65,12 +68,36 @@ export default function EditorPage() {
   const toastRef = useRef(toast);
   useEffect(() => { toastRef.current = toast; });
 
-// Load project data on mount — only re-run when the project ID changes.
+  // Load project data on mount — only re-run when the project ID changes.
   // IMPORTANT: toast must NOT be in the dep array; it's not stable and would
   // cause loadProject to re-fire after every add/update, wiping local state.
   useEffect(() => {
     async function fetchProject() {
       const id = params.id as string;
+
+      // ★ Quick-start guest mode path
+      if (id === "quick-start") {
+        try {
+          const draftRaw = sessionStorage.getItem("nexora-quick-start-draft");
+          if (draftRaw) {
+            const draft = JSON.parse(draftRaw);
+            loadProject({
+              _id: "quick-start",
+              name: draft.name || "My Digital Presence",
+              slug: draft.slug || "my-site",
+              category: draft.category || "portfolio",
+              config: draft.config,
+              published: false,
+            });
+            setCurrentSlug(draft.slug || "my-site");
+            setIsGuestQuickStart(true);
+            setIsLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.warn("[QuickStart Draft load error]:", e);
+        }
+      }
 
       // ★ Instant path: when the user just created a project from a template on
       // the gallery page, the freshly created project (with its full template
@@ -121,6 +148,28 @@ export default function EditorPage() {
       setActiveTab("sections");
     }
   }, [activeTab, developerMode]);
+
+  // ★ Auto-sync guest draft changes to sessionStorage continuously
+  useEffect(() => {
+    if (isGuestQuickStart && config) {
+      try {
+        const existingRaw = sessionStorage.getItem("nexora-quick-start-draft");
+        const existing = existingRaw ? JSON.parse(existingRaw) : {};
+        sessionStorage.setItem(
+          "nexora-quick-start-draft",
+          JSON.stringify({
+            ...existing,
+            name: projectName || existing.name || "My Digital Presence",
+            slug: currentSlug || existing.slug || "my-site",
+            category: config.meta?.category || existing.category || "portfolio",
+            config,
+          })
+        );
+      } catch {
+        /* ignore storage quota exceptions */
+      }
+    }
+  }, [config, isGuestQuickStart, projectName, currentSlug]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -302,9 +351,34 @@ export default function EditorPage() {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 text-white overflow-hidden font-sans">
+      {/* Quick Start Guest Banner */}
+      {isGuestQuickStart && (
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-b border-indigo-500/30 px-4 py-2 flex items-center justify-between text-xs text-white z-40">
+          <div className="flex items-center gap-2">
+            <Globe size={14} className="text-indigo-400" />
+            <span>
+              <strong>Quick Start Studio</strong> — Editing live draft for <strong className="text-indigo-300 font-mono">/{currentSlug}</strong>
+            </span>
+          </div>
+          <button
+            onClick={() => setShowQuickStartAuthModal(true)}
+            className="px-3.5 py-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all shadow-md shadow-indigo-600/30 active:scale-95 flex items-center gap-1.5"
+          >
+            <span>Claim /{currentSlug} & Publish</span>
+            <ArrowRight size={13} />
+          </button>
+        </div>
+      )}
+
       {/* Top Navigation & Action Header */}
       <EditorHeader
-        onPublishClick={() => setShowSlugModal(true)}
+        onPublishClick={() => {
+          if (isGuestQuickStart || projectId === "quick-start") {
+            setShowQuickStartAuthModal(true);
+          } else {
+            setShowSlugModal(true);
+          }
+        }}
         developerMode={developerMode}
         onToggleDeveloperMode={() => setDeveloperMode(!developerMode)}
       />
@@ -502,6 +576,20 @@ export default function EditorPage() {
           initialSlug={currentSlug}
           onConfirm={handlePublishWithSlug}
           onClose={() => setShowSlugModal(false)}
+        />
+      )}
+
+      {/* Quick Start Lock In & Auth Claim Modal */}
+      {showQuickStartAuthModal && (
+        <QuickStartAuthModal
+          draftSlug={currentSlug || "my-site"}
+          draftConfig={config}
+          onSuccess={(newProjId) => {
+            setShowQuickStartAuthModal(false);
+            setIsGuestQuickStart(false);
+            router.replace(`/editor/${newProjId}`);
+          }}
+          onClose={() => setShowQuickStartAuthModal(false)}
         />
       )}
 

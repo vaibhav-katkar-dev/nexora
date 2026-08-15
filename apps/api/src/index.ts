@@ -115,8 +115,13 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+import domainRoutes from "./routes/domainRoutes.js";
+import sitemapRoutes from "./routes/sitemapRoutes.js";
+
 // Route Registrations
+app.use("/", sitemapRoutes);                     // Mount /sitemap.xml, /sitemaps/*.xml, /robots.txt
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/domains", domainRoutes);        // Custom domain endpoints
 app.use("/api/v1/projects", projectRoutes);
 app.use("/api/v1/projects", publishRoutes);   // publish & deployments nested under projects
 app.use("/api/v1/ai", aiRoutes);

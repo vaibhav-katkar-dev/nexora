@@ -161,7 +161,7 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
       ) : showPreview ? (
         <PreviewErrorBoundary fallback={fallback}>
           <div
-            className="pointer-events-none will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+            className="template-thumbnail-viewport pointer-events-none will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.025]"
             style={{
               position: "absolute",
               top: 0,

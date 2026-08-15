@@ -7,20 +7,25 @@ export interface SeoMetadataOptions {
     metaDescription?: string;
     ogImage?: string;
     keywords?: string[];
+    favicon?: string;
+    canonicalUrl?: string;
+    noIndex?: boolean;
   };
   config?: SiteConfigJSON | null;
   slug?: string;
   projectName?: string;
+  robots?: string;
+  canonicalUrl?: string;
 }
 
 /**
  * Generates structured Schema.org JSON-LD microdata for Google search rich snippets based on site category.
  */
 export function generateJsonLdSchema(options: SeoMetadataOptions): Record<string, any> {
-  const { config, seo, slug, projectName } = options;
+  const { config, seo, slug, projectName, canonicalUrl } = options;
   const title = seo?.metaTitle || config?.meta?.title || projectName || "Digital Presence";
   const description = seo?.metaDescription || config?.meta?.description || "Built with Nexora AI Platform";
-  const url = slug ? buildPublishedSiteUrl(slug) : typeof window !== "undefined" ? window.location.href : "";
+  const url = canonicalUrl || (seo?.canonicalUrl) || (slug ? buildPublishedSiteUrl(slug) : typeof window !== "undefined" ? window.location.href : "");
   const category = config?.meta?.category || "custom";
 
   const baseSchema = {
@@ -90,7 +95,7 @@ export function generateJsonLdSchema(options: SeoMetadataOptions): Record<string
 }
 
 /**
- * Dynamically updates document <head> with SEO title, meta description, Open Graph, Twitter Cards, Canonical links & JSON-LD schema.
+ * Dynamically updates document <head> with SEO title, meta description, Open Graph, Twitter Cards, Canonical links, Favicon & JSON-LD schema.
  */
 export function injectSeoHeadTags(options: SeoMetadataOptions): void {
   if (typeof document === "undefined") return;
@@ -100,8 +105,13 @@ export function injectSeoHeadTags(options: SeoMetadataOptions): void {
   const title = seo?.metaTitle || config?.meta?.title || projectName || "Digital Presence";
   const description = seo?.metaDescription || config?.meta?.description || "Created with Nexora Platform";
   const keywords = (seo?.keywords && seo.keywords.length > 0 ? seo.keywords : config?.meta?.tags || []).join(", ");
-  const ogImage = seo?.ogImage || (config?.meta as any)?.ogImage || "https://nexora.app/og-default.png";
-  const url = slug ? buildPublishedSiteUrl(slug) : window.location.href;
+  const ogImage = seo?.ogImage || (config?.meta as any)?.ogImage || "https://nexora.site/og-default.png";
+  
+  const computedCanonical = options.canonicalUrl || seo?.canonicalUrl || (slug ? buildPublishedSiteUrl(slug) : window.location.href);
+
+  const robotsDirective =
+    options.robots ||
+    (seo?.noIndex ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
 
   // 1. Page Title
   document.title = title;
@@ -120,13 +130,13 @@ export function injectSeoHeadTags(options: SeoMetadataOptions): void {
   // 2. Standard SEO Meta Tags
   setMetaTag("meta[name='description']", "name", "description", description);
   if (keywords) setMetaTag("meta[name='keywords']", "name", "keywords", keywords);
-  setMetaTag("meta[name='robots']", "name", "robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
+  setMetaTag("meta[name='robots']", "name", "robots", robotsDirective);
 
   // 3. Open Graph Tags
   setMetaTag("meta[property='og:title']", "property", "og:title", title);
   setMetaTag("meta[property='og:description']", "property", "og:description", description);
   setMetaTag("meta[property='og:type']", "property", "og:type", "website");
-  setMetaTag("meta[property='og:url']", "property", "og:url", url);
+  setMetaTag("meta[property='og:url']", "property", "og:url", computedCanonical);
   setMetaTag("meta[property='og:site_name']", "property", "og:site_name", "Nexora Digital Presence");
   if (ogImage) setMetaTag("meta[property='og:image']", "property", "og:image", ogImage);
 
@@ -143,10 +153,21 @@ export function injectSeoHeadTags(options: SeoMetadataOptions): void {
     canonical.setAttribute("rel", "canonical");
     document.head.appendChild(canonical);
   }
-  canonical.setAttribute("href", url);
+  canonical.setAttribute("href", computedCanonical);
 
-  // 6. JSON-LD Schema.org Microdata Script
-  const jsonLdData = generateJsonLdSchema(options);
+  // 6. Favicon Link (if customized)
+  if (seo?.favicon) {
+    let favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.setAttribute("rel", "icon");
+      document.head.appendChild(favicon);
+    }
+    favicon.setAttribute("href", seo.favicon);
+  }
+
+  // 7. JSON-LD Schema.org Microdata Script
+  const jsonLdData = generateJsonLdSchema({ ...options, canonicalUrl: computedCanonical });
   let jsonLdScript = document.getElementById("nexora-jsonld-schema") as HTMLScriptElement | null;
   if (!jsonLdScript) {
     jsonLdScript = document.createElement("script");

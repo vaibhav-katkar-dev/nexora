@@ -17,7 +17,12 @@ export interface IProjectDocument extends Document {
     metaDescription: string;
     ogImage?: string;
     keywords?: string[];
+    favicon?: string;
+    canonicalUrl?: string;
+    noIndex?: boolean;
   };
+  qualityStatus: "legitimate" | "thin" | "blocked";
+  qualityReason?: string;
   status: "draft" | "published";
   publishedAt?: Date;
   publishedHtml?: string;
@@ -42,12 +47,25 @@ const ProjectSchema = new Schema<IProjectDocument>(
       metaDescription: { type: String, default: "" },
       ogImage: { type: String, default: "" },
       keywords: [{ type: String }],
+      favicon: { type: String, default: "" },
+      canonicalUrl: { type: String, default: "" },
+      noIndex: { type: Boolean, default: false },
     },
+    qualityStatus: {
+      type: String,
+      enum: ["legitimate", "thin", "blocked"],
+      default: "legitimate",
+      index: true,
+    },
+    qualityReason: { type: String, default: "" },
     status: { type: String, enum: ["draft", "published"], default: "draft", index: true },
     publishedAt: { type: Date },
     publishedHtml: { type: String, default: "" },
   },
   { timestamps: true }
 );
+
+// Compound indexes for sitemap and public queries
+ProjectSchema.index({ status: 1, "seo.noIndex": 1, qualityStatus: 1 });
 
 export const Project = model<IProjectDocument>("Project", ProjectSchema);
