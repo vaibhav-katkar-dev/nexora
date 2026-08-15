@@ -67,6 +67,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* prevent horizontal scroll on Android */
 }
 
 body {
@@ -76,6 +77,8 @@ body {
   font-size: 14px;
   line-height: 1.5;
   overflow-x: hidden;
+  /* Android: remove tap flash on interactive elements */
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::selection {
@@ -101,6 +104,9 @@ body {
   transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
   white-space: nowrap;
   user-select: none;
+  /* Android: remove 300ms tap delay */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary {
@@ -139,6 +145,14 @@ body {
   padding: 13px 24px;
   font-size: 15px;
   border-radius: 12px;
+}
+
+/* Android: shrink large buttons so they don't overflow 360px screens */
+@media (max-width: 480px) {
+  .btn-lg {
+    padding: 11px 18px;
+    font-size: 14px;
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -492,4 +506,42 @@ body {
   animation: cardSwapPulse 5s ease-in-out infinite;
 }
 
+/* ══════════════════════════════════════════════
+   ANDROID / MOBILE SAFE-AREA & TOUCH UTILITIES
+══════════════════════════════════════════════ */
+
+/* Safe area inset for bottom (notched / gesture Android phones) */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Ensure all buttons and links have proper touch targets (≥ 44px) */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text size adjustment on Android orientation change */
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Mobile drawer slide-up animation */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Smooth open from top for mobile nav drawer */
+@keyframes slideDown {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.animate-slide-down {
+  animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
 

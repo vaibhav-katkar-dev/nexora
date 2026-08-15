@@ -30,6 +30,7 @@ import {
 import { QrModal } from "@/components/common/QrModal";
 import { DomainSeoModal } from "@/components/dashboard/DomainSeoModal";
 import { ProjectSettingsPanel } from "@/components/dashboard/ProjectSettingsPanel";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { buildPublishedSiteUrl } from "@/lib/siteUrl";
 
 
@@ -69,6 +70,12 @@ export default function DashboardPage() {
   });
   const [settingsPanelProject, setSettingsPanelProject] = useState<Project | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [deleteConfirmState, setDeleteConfirmState] = useState<{ isOpen: boolean; projectId: string; projectName: string }>({
+    isOpen: false,
+    projectId: "",
+    projectName: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -155,14 +162,28 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteProject = async (id: string) => {
-    if (!confirm("Delete this project permanently?")) return;
+  const handleDeleteProject = (id: string) => {
+    const proj = projects.find((p) => p._id === id);
+    setDeleteConfirmState({
+      isOpen: true,
+      projectId: id,
+      projectName: proj?.name || "this project",
+    });
+  };
+
+  const confirmDeleteProject = async () => {
+    const id = deleteConfirmState.projectId;
+    if (!id) return;
+    setIsDeleting(true);
     try {
       await projectsApi.delete(id);
       setProjects((prev) => prev.filter((p) => p._id !== id));
       toast.success("Project deleted");
+      setDeleteConfirmState({ isOpen: false, projectId: "", projectName: "" });
     } catch (err: any) {
       toast.error("Failed to delete project", err.message || "Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -206,7 +227,7 @@ export default function DashboardPage() {
         {/* ── Page Title Header ───────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
               My Projects
             </h1>
             <p className="text-sm text-slate-500 mt-1">
@@ -214,16 +235,17 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link
               href="/templates"
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-1.5 shadow-xs"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-1.5 shadow-xs"
             >
-              <LayoutTemplate size={14} className="text-indigo-600" /> Browse Templates
+              <LayoutTemplate size={14} className="text-indigo-600" />
+              <span className="hidden sm:inline">Browse </span>Templates
             </Link>
             <Link
               href="/ai-builder"
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5 shadow-sm"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center justify-center gap-1.5 shadow-sm"
             >
               <Wand2 size={14} /> AI Builder
             </Link>
@@ -231,23 +253,23 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Quick Action Cards Banner ───────────────────────────────────── */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
           {/* AI Generator Card */}
           <Link
             href="/ai-builder"
-            className="md:col-span-2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-2xl p-7 text-white relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col justify-between"
+            className="sm:col-span-2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-2xl p-5 sm:p-7 text-white relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col justify-between"
           >
             <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none opacity-10"
               style={{ background: "radial-gradient(circle at center, white 0%, transparent 70%)" }}
             />
-            <div className="relative z-10 space-y-3">
+            <div className="relative z-10 space-y-2.5 sm:space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/15 text-white border border-white/20">
                 <Sparkles size={12} /> Built with AI
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-tight">
                 Start a new site with AI
               </h2>
-              <p className="text-sm text-indigo-100/80 max-w-md leading-relaxed">
+              <p className="text-sm text-indigo-100/80 max-w-md leading-relaxed line-clamp-3 sm:line-clamp-none">
                 Tell us what your site is for — a portfolio, a restaurant, a startup — and AI writes the content, picks the layout and gets it ready to publish.
               </p>
             </div>
@@ -259,7 +281,7 @@ export default function DashboardPage() {
           {/* Start From Blank Card */}
           <div
             onClick={handleCreateBlank}
-            className="bg-white border border-slate-200 rounded-2xl p-7 flex flex-col justify-between hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group"
+            className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 flex flex-col justify-between hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group"
           >
             <div className="space-y-2.5">
               <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -281,9 +303,9 @@ export default function DashboardPage() {
         {/* ── My Projects Section ─────────────────────────────────────────── */}
         <section className="space-y-5">
           {/* Controls Bar: Search + Filter Tabs */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200/80 p-3 sm:p-4 rounded-2xl shadow-xs">
             {/* Search Input */}
-            <div className="relative flex-1 max-w-sm">
+            <div className="relative flex-1 min-w-0">
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
@@ -295,11 +317,11 @@ export default function DashboardPage() {
             </div>
 
             {/* Tab switcher */}
-            <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1 shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 rounded-xl p-1 shrink-0">
               {([
                 { key: "all", label: "All", count: projects.length, icon: LayoutGrid },
                 { key: "draft", label: "Drafts", count: draftCount, icon: Clock },
-                { key: "published", label: "Published", count: publishedCount, icon: CheckCircle2 },
+                { key: "published", label: "Live", count: publishedCount, icon: CheckCircle2 },
               ] as { key: ProjectTab; label: string; count: number; icon: any }[]).map((tab) => {
                 const TabIcon = tab.icon;
                 const isActive = projectTab === tab.key;
@@ -307,13 +329,13 @@ export default function DashboardPage() {
                   <button
                     key={tab.key}
                     onClick={() => setProjectTab(tab.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                       isActive
                         ? "bg-white text-slate-900 shadow-xs font-bold"
                         : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
-                    <TabIcon size={12} />
+                    <TabIcon size={12} className="hidden sm:inline" />
                     {tab.label}
                     <span
                       className={`ml-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
@@ -481,6 +503,18 @@ export default function DashboardPage() {
           navigator.clipboard.writeText(url);
           toast.success("Link copied!", url);
         }}
+      />
+
+      <ConfirmModal
+        isOpen={deleteConfirmState.isOpen}
+        onClose={() => setDeleteConfirmState({ isOpen: false, projectId: "", projectName: "" })}
+        onConfirm={confirmDeleteProject}
+        title="Delete Project?"
+        message={`Are you sure you want to permanently delete "${deleteConfirmState.projectName}"? This action cannot be undone.`}
+        confirmText="Delete Project"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
       />
     </div>
   );

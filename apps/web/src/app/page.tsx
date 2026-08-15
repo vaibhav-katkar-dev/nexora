@@ -24,6 +24,7 @@ import {
   Cpu,
   Laptop,
   X,
+  Menu,
   Smartphone,
   Eye,
   Music,
@@ -175,6 +176,7 @@ export default function LandingPage() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [dbTemplates, setDbTemplates] = useState<any[]>([]);
 
@@ -311,50 +313,72 @@ export default function LandingPage() {
         className="surface-blur sticky top-0 z-50 border-b"
         style={{ borderColor: "var(--border-light)" }}
       >
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <div
               className="w-8 h-8 rounded-xl bg-indigo-600 shadow-md shadow-indigo-600/20 flex items-center justify-center animate-pulse-glow"
               aria-hidden
             >
               <span className="text-white text-sm font-black tracking-tighter">N</span>
             </div>
-            <span className="font-bold text-lg tracking-tight text-slate-900">Nexora</span>
+            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900">Nexora</span>
             <span className="hidden sm:inline-block text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
               For everyone
             </span>
           </div>
 
+          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-1">
-            <a href="#start" className="btn btn-ghost text-xs">
-              Quick Start
-            </a>
-            <Link href="/templates" className="btn btn-ghost text-xs">
-              Templates
-            </Link>
-            <a href="#how-it-works" className="btn btn-ghost text-xs">
-              3-Minute Flow
-            </a>
-            <a href="#presences" className="btn btn-ghost text-xs">
-              Digital Presences
-            </a>
-            <a href="#differentiation" className="btn btn-ghost text-xs">
-              Why Nexora
-            </a>
+            <a href="#start" className="btn btn-ghost text-xs">Quick Start</a>
+            <Link href="/templates" className="btn btn-ghost text-xs">Templates</Link>
+            <a href="#how-it-works" className="btn btn-ghost text-xs">3-Min Flow</a>
+            <a href="#presences" className="btn btn-ghost text-xs">Presences</a>
+            <a href="#differentiation" className="btn btn-ghost text-xs">Why Nexora</a>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="btn btn-ghost text-xs">
+          {/* Right CTAs */}
+          <div className="flex items-center gap-2">
+            <Link href="/login" className="btn btn-ghost text-xs hidden sm:inline-flex">
               Sign in
             </Link>
             <button
               onClick={() => setIsModalOpen(true)}
               className="btn btn-primary text-xs shadow-md shadow-indigo-600/20 active:scale-95 transition-transform"
             >
-              Get Started Free →
+              <span className="hidden sm:inline">Get Started </span>Free
+              <span className="hidden sm:inline"> →</span>
+            </button>
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors"
+              aria-label="Toggle navigation"
+            >
+              {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
+
+        {/* Mobile Nav Drawer */}
+        {mobileNavOpen && (
+          <>
+            <div
+              className="fixed inset-0 top-14 bg-slate-950/30 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setMobileNavOpen(false)}
+            />
+            <div className="absolute top-14 left-0 right-0 bg-white border-b border-slate-200 p-3 flex flex-col gap-1 z-50 animate-slide-down shadow-xl md:hidden safe-bottom">
+              <a href="#start" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Quick Start</a>
+              <Link href="/templates" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Templates</Link>
+              <a href="#how-it-works" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">3-Minute Flow</a>
+              <a href="#presences" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Digital Presences</a>
+              <a href="#differentiation" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Why Nexora</a>
+              <div className="border-t border-slate-100 mt-1 pt-2 flex flex-col gap-1.5">
+                <Link href="/login" onClick={() => setMobileNavOpen(false)} className="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors">Sign in</Link>
+                <button onClick={() => { setMobileNavOpen(false); setIsModalOpen(true); }} className="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">Get Started Free →</button>
+              </div>
+            </div>
+          </>
+        )}
       </nav>
 
       {/* ══════════════════════════════════════════════════════════════════════
@@ -379,16 +403,16 @@ export default function LandingPage() {
       <section
         id="start"
         aria-labelledby="hero-heading"
-        className="relative overflow-hidden pt-16 pb-24"
+        className="relative overflow-hidden pt-10 sm:pt-16 pb-14 sm:pb-24"
       >
         {/* Ambient Lighting Orbs */}
         <div className="orb orb-brand w-[550px] h-[550px] -top-32 right-[2%] opacity-20 animate-spin-slow" />
         <div className="orb orb-violet w-[420px] h-[420px] bottom-0 left-[4%] opacity-20 animate-pulse-glow" />
 
-        <div className="max-w-6xl mx-auto px-6 relative">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 sm:gap-12 lg:gap-16">
             {/* ── Left: Main Hero Copy ── */}
-            <div className="flex-1 space-y-6 pt-2">
+            <div className="flex-1 space-y-5 sm:space-y-6 pt-2">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-sm animate-float-smooth">
                 <Clock size={14} className="text-indigo-600 animate-sparkle" />
                 <span>Live in under 3 minutes</span>
@@ -397,7 +421,7 @@ export default function LandingPage() {
 
               <h1
                 id="hero-heading"
-                className="text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight text-slate-900 leading-[1.08]"
+                className="text-3xl sm:text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight text-slate-900 leading-[1.08]"
               >
                 Your corner of the internet,
                 <br />
@@ -460,7 +484,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* ── Right: Static Username Claim Widget (Firm & Grounded) ── */}
+            {/* ── Right: Static Username Claim Widget ── */}
             <div className="w-full lg:w-[460px] flex-shrink-0 relative">
               <div className="hidden sm:flex absolute -top-5 -right-5 z-30 items-center gap-1.5 bg-slate-900 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-2xl shadow-xl">
                 <Zap size={14} className="text-amber-400" />
@@ -468,7 +492,7 @@ export default function LandingPage() {
               </div>
 
               <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl shadow-slate-900/10 overflow-hidden relative z-20">
-                <div className="px-6 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
@@ -480,7 +504,7 @@ export default function LandingPage() {
                   </span>
                 </div>
 
-                <div className="p-6 space-y-5">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
                   <div>
                     <label
                       htmlFor="slug-input"

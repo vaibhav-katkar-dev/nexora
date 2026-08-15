@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { domainsApi, projectsApi, mediaApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import {
   Globe,
   Shield,
@@ -60,6 +61,12 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
   const [ogImage, setOgImage] = useState("");
   const [favicon, setFavicon] = useState("");
   const [allowIndexing, setAllowIndexing] = useState(true);
+  const [txtCopied, setTxtCopied] = useState(false);
+  const [deleteDomainConfirm, setDeleteDomainConfirm] = useState<{ isOpen: boolean; id: string; name: string }>({
+    isOpen: false,
+    id: "",
+    name: "",
+  });
   const [savingSeo, setSavingSeo] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -134,11 +141,21 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
   };
 
   // Delete Domain handler
-  const handleDeleteDomain = async (id: string, domainName: string) => {
-    if (!confirm(`Are you sure you want to disconnect ${domainName}?`)) return;
+  const handleDeleteDomain = (id: string, domainName: string) => {
+    setDeleteDomainConfirm({
+      isOpen: true,
+      id,
+      name: domainName,
+    });
+  };
+
+  const confirmDeleteDomain = async () => {
+    const { id } = deleteDomainConfirm;
+    if (!id) return;
     try {
       await domainsApi.delete(id);
       toast.success("Domain removed");
+      setDeleteDomainConfirm({ isOpen: false, id: "", name: "" });
       fetchDomains();
     } catch (err: any) {
       toast.error("Failed to remove domain", err.message);
@@ -590,6 +607,16 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
           )}
         </div>
       </div>
+      <ConfirmModal
+        isOpen={deleteDomainConfirm.isOpen}
+        onClose={() => setDeleteDomainConfirm({ isOpen: false, id: "", name: "" })}
+        onConfirm={confirmDeleteDomain}
+        title="Disconnect Domain?"
+        message={`Are you sure you want to disconnect "${deleteDomainConfirm.name}" from this site?`}
+        confirmText="Disconnect Domain"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

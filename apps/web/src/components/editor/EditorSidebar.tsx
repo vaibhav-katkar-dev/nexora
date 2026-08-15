@@ -49,7 +49,7 @@ export function EditorSidebar({
   ];
 
   return (
-    <aside className="w-full md:w-16 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:h-14 max-md:z-50 bg-slate-950/95 border-t md:border-t-0 md:border-r border-slate-800/90 backdrop-blur flex flex-row md:flex-col items-center justify-around md:justify-start py-1.5 md:py-3 px-2 md:px-0 gap-1 md:gap-2 flex-shrink-0 select-none max-md:order-last">
+    <aside className="w-full md:w-16 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:h-14 max-md:z-50 bg-slate-950/95 border-t md:border-t-0 md:border-r border-slate-800/90 backdrop-blur flex flex-row md:flex-col items-center max-md:justify-start md:justify-start py-1.5 md:py-3 px-2 md:px-0 gap-1.5 md:gap-2 flex-shrink-0 select-none max-md:order-last max-md:overflow-x-auto max-md:no-scrollbar max-md:px-3 safe-bottom">
       {primaryTabs.map((t) => {
         const Icon = t.icon;
         const isActive = activeTab === t.id;
@@ -58,7 +58,7 @@ export function EditorSidebar({
           <button
             key={t.id}
             onClick={() => onTabChange(t.id)}
-            className={`relative group h-10 md:h-12 w-full md:w-12 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1 text-[11px] md:text-[10px] font-semibold transition-all ${
+            className={`relative group h-10 md:h-12 w-auto md:w-12 max-md:min-w-[62px] shrink-0 px-2 md:px-0 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 text-[11px] md:text-[10px] font-semibold transition-all ${
               isActive
                 ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-md shadow-indigo-600/10"
                 : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
@@ -76,7 +76,7 @@ export function EditorSidebar({
 
       <button
         onClick={() => setShowAdvanced((value) => !value)}
-        className={`h-10 md:h-12 w-full md:w-12 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1 text-[11px] md:text-[10px] font-semibold transition-all border ${
+        className={`h-10 md:h-12 w-auto md:w-12 max-md:min-w-[56px] shrink-0 px-2 md:px-0 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 text-[11px] md:text-[10px] font-semibold transition-all border ${
           showAdvanced
             ? "bg-slate-900 text-white border-slate-700"
             : "text-slate-400 hover:text-white hover:bg-slate-900 border-transparent"
@@ -96,7 +96,7 @@ export function EditorSidebar({
             <button
               key={t.id}
               onClick={() => onTabChange(t.id)}
-              className={`relative group h-10 md:h-12 w-full md:w-12 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1 text-[11px] md:text-[10px] font-semibold transition-all ${
+              className={`relative group h-10 md:h-12 w-auto md:w-12 max-md:min-w-[62px] shrink-0 px-2 md:px-0 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 text-[11px] md:text-[10px] font-semibold transition-all ${
                 isActive
                   ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-md shadow-indigo-600/10"
                   : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"

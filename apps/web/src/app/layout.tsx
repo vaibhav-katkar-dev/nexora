@@ -1,6 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#0F172A",
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "Nexora — Build & Publish Your Website in Seconds. No Code.",

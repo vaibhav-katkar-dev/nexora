@@ -54,9 +54,21 @@ export function Navbar({
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   const navItems = [
     { label: "My Projects", href: "/dashboard", icon: FolderKanban },
-    { label: "Template Gallery", href: "/templates", icon: LayoutTemplate },
+    { label: "Templates", href: "/templates", icon: LayoutTemplate },
     { label: "AI Architect", href: "/ai-builder", icon: Sparkles, action: onOpenAiModal },
   ];
 
@@ -78,15 +90,15 @@ export function Navbar({
   const userName = user?.name || user?.email?.split("@")[0] || "User";
 
   return (
-    <header className="sticky top-0 z-50 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between shadow-sm">
+    <header className="sticky top-0 z-50 h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between shadow-sm">
 
       {/* ── Brand + Desktop Nav ── */}
-      <div className="flex items-center gap-6">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group shrink-0">
+      <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+        <Link href="/dashboard" className="flex items-center gap-2 group shrink-0">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-extrabold text-base shadow-sm group-hover:bg-indigo-700 transition-colors">
             N
           </div>
-          <span className="font-extrabold text-slate-900 tracking-tight text-base hidden sm:inline">
+          <span className="font-extrabold text-slate-900 tracking-tight text-sm sm:text-base hidden sm:inline">
             Nexora <span className="text-indigo-600 font-semibold">Studio</span>
           </span>
         </Link>
@@ -133,7 +145,7 @@ export function Navbar({
       </div>
 
       {/* ── Right: Search + Bell + User ── */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
         {/* Integrated Search Bar */}
         {onSearchChange && (
@@ -151,26 +163,26 @@ export function Navbar({
 
         {/* Notifications */}
         <button
-          className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 relative transition-colors"
+          className="min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 relative transition-colors"
           title="Notifications"
         >
-          <Bell size={17} />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 ring-2 ring-white" />
+          <Bell size={16} />
+          <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-indigo-500 ring-2 ring-white" />
         </button>
 
         {/* User Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
+            className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all min-h-[36px]"
           >
-            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center border border-indigo-200 shrink-0">
+            <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center border border-indigo-200 shrink-0">
               {userInitial}
             </div>
-            <span className="text-xs font-semibold text-slate-800 hidden sm:inline max-w-[100px] truncate">
+            <span className="text-xs font-semibold text-slate-800 hidden sm:inline max-w-[80px] truncate">
               {userName}
             </span>
-            <ChevronDown size={13} className={`text-slate-400 hidden sm:inline transition-transform ${userDropdownOpen ? "rotate-180" : ""}`} />
+            <ChevronDown size={12} className={`text-slate-400 hidden sm:inline transition-transform ${userDropdownOpen ? "rotate-180" : ""}`} />
           </button>
 
           {userDropdownOpen && (
@@ -194,7 +206,7 @@ export function Navbar({
                       setUserDropdownOpen(false);
                       onOpenAdminModal();
                     }}
-                    className="w-full text-left flex items-center gap-2 px-4 py-2 text-amber-700 hover:bg-amber-50 font-semibold"
+                    className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-amber-700 hover:bg-amber-50 font-semibold"
                   >
                     <Shield size={13} /> Admin Template Manager
                   </button>
@@ -205,7 +217,7 @@ export function Navbar({
               <div className="py-1">
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold"
+                  className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-rose-600 hover:bg-rose-50 font-semibold"
                 >
                   <LogOut size={13} /> Sign Out
                 </button>
@@ -217,64 +229,70 @@ export function Navbar({
         {/* Mobile Menu Toggle */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 lg:hidden"
+          className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 lg:hidden active:bg-slate-200 transition-colors"
           aria-label="Toggle menu"
         >
-          {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* ── Mobile Drawer ── */}
+      {/* ── Mobile Drawer & Backdrop ── */}
       {mobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-white border-b border-slate-200 p-3 shadow-xl lg:hidden flex flex-col gap-1 z-50 animate-fade-in">
-          {navItems.map((item) => {
-            const IconComp = item.icon;
-            const isActiveMobile = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-            if (item.action) {
+        <>
+          <div
+            className="fixed inset-0 top-14 sm:top-16 bg-slate-950/40 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="absolute top-14 sm:top-16 left-0 right-0 max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-b border-slate-200/80 p-3 shadow-2xl lg:hidden flex flex-col gap-1 z-50 animate-slide-down safe-bottom">
+            {navItems.map((item) => {
+              const IconComp = item.icon;
+              const isActiveMobile = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+              if (item.action) {
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => { setMobileMenuOpen(false); item.action?.(); }}
+                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold w-full text-left transition-colors active:scale-[0.99] ${
+                      isActiveMobile
+                        ? "bg-indigo-50 text-indigo-600"
+                        : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                    }`}
+                  >
+                    <IconComp size={18} /> {item.label}
+                  </button>
+                );
+              }
               return (
-                <button
+                <Link
                   key={item.label}
-                  onClick={() => { setMobileMenuOpen(false); item.action?.(); }}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold w-full text-left transition-colors ${
+                  href={item.href || "#"}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-colors active:scale-[0.99] ${
                     isActiveMobile
                       ? "bg-indigo-50 text-indigo-600"
                       : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
                   }`}
                 >
-                  <IconComp size={16} /> {item.label}
-                </button>
+                  <IconComp size={18} /> {item.label}
+                </Link>
               );
-            }
-            return (
-              <Link
-                key={item.label}
-                href={item.href || "#"}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                  isActiveMobile
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
-                }`}
-              >
-                <IconComp size={16} /> {item.label}
-              </Link>
-            );
-          })}
+            })}
 
-          {/* Mobile search */}
-          {onSearchChange && (
-            <div className="relative mt-1 px-1">
-              <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search templates..."
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400"
-              />
-            </div>
-          )}
-        </div>
+            {/* Mobile search */}
+            {onSearchChange && (
+              <div className="relative mt-1 px-1">
+                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search templates..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:bg-white"
+                />
+              </div>
+            )}
+          </div>
+        </>
       )}
     </header>
   );

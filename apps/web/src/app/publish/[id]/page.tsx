@@ -6,6 +6,7 @@ import Link from "next/link";
 import { projectsApi } from "@/lib/api";
 import { Navbar } from "@/components/navigation/Navbar";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
+import { useToast } from "@/components/ui/Toast";
 import { getPublishedBaseLabel, buildPublishedSiteUrl } from "@/lib/siteUrl";
 import {
   Globe,
@@ -39,6 +40,7 @@ const RESERVED_SLUGS = [
 export default function PublishWizardPage() {
   const params = useParams();
   const router = useRouter();
+  const toast = useToast();
   const projectId = params?.id as string;
 
   const [project, setProject] = useState<any>(null);
@@ -142,7 +144,7 @@ export default function PublishWizardPage() {
         setPublishedUrl(buildPublishedSiteUrl(slug));
       }
     } catch (err: any) {
-      alert(err.message || "Failed to publish website. Please try again.");
+      toast.error("Publish Failed", err.message || "Failed to publish website. Please try again.");
     } finally {
       setIsPublishing(false);
     }

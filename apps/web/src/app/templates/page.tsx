@@ -256,9 +256,9 @@ export default function TemplateGalleryPage() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* ── Gallery Header (understated — templates are the focus) ──────── */}
-        <div className="flex flex-col gap-3 pb-2">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
+        {/* ── Gallery Header ──────── */}
+        <div className="flex flex-col gap-2 sm:gap-3 pb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
             Templates
           </h1>
           <p className="text-sm text-slate-500 leading-relaxed max-w-2xl">

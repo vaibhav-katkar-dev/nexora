@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { templatesApi, authApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import { validateTemplateJSON, checkTemplateCompatibility, TemplateCompatibilityReport } from "@ai-platform/templates";
@@ -249,7 +250,20 @@ const [formErrors, setFormErrors] = useState<string[]>([]);
 
   const pages = Math.max(1, Math.ceil(total / limit));
 
-  // ── Form handlers ────────────────────────────────────────────────────────
+  const [adminConfirm, setAdminConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    variant?: "danger" | "warning" | "info";
+    onConfirm: () => Promise<void>;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: async () => {},
+  });
+  const [adminConfirmLoading, setAdminConfirmLoading] = useState(false);
   const resetForm = () => {
     setForm(EMPTY_FORM);
     setFormErrors([]);
@@ -470,15 +484,24 @@ const setFormField = (key: keyof FormState, value: any) => {
   };
 
   // ── Soft delete / restore / permanent ────────────────────────────────────
-  const handleDelete = async (id: string) => {
-    if (!confirm("Soft-delete this template? It can be restored later.")) return;
-    try {
-      await templatesApi.remove(id);
-      toast.success("Template soft-deleted");
-      fetchTemplates();
-    } catch (err: any) {
-      toast.error("Delete failed", err.message || "Please try again.");
-    }
+  const handleDelete = (id: string) => {
+    const tpl = templates.find((t) => t._id === id);
+    setAdminConfirm({
+      isOpen: true,
+      title: "Soft Delete Template?",
+      message: `Are you sure you want to soft-delete "${tpl?.name || "this template"}"? It can be restored later from Trash.`,
+      confirmText: "Soft Delete",
+      variant: "warning",
+      onConfirm: async () => {
+        try {
+          await templatesApi.remove(id);
+          toast.success("Template soft-deleted");
+          fetchTemplates();
+        } catch (err: any) {
+          toast.error("Delete failed", err.message || "Please try again.");
+        }
+      },
+    });
   };
 
   const handleRestore = async (id: string) => {
@@ -492,35 +515,52 @@ const setFormField = (key: keyof FormState, value: any) => {
     }
   };
 
-  const handlePermanentDelete = async (id: string) => {
-    if (!confirm("PERMANENTLY delete this template? This CANNOT be undone.")) return;
-    try {
-      await templatesApi.permanentDelete(id);
-      toast.success("Template permanently deleted");
-      fetchTrash();
-    } catch (err: any) {
-      toast.error("Permanent delete failed", err.message || "Please try again.");
-    }
+  const handlePermanentDelete = (id: string) => {
+    const tpl = trash.find((t) => t._id === id);
+    setAdminConfirm({
+      isOpen: true,
+      title: "Permanently Delete Template?",
+      message: `Are you sure you want to PERMANENTLY delete "${tpl?.name || "this template"}"? This action CANNOT be undone.`,
+      confirmText: "Permanently Delete",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await templatesApi.permanentDelete(id);
+          toast.success("Template permanently deleted");
+          fetchTrash();
+        } catch (err: any) {
+          toast.error("Permanent delete failed", err.message || "Please try again.");
+        }
+      },
+    });
   };
 
   // ── Empty trash (permanent wipe of ALL soft-deleted templates) ──────────
   const [emptyingTrash, setEmptyingTrash] = useState(false);
 
-  const handleEmptyTrash = async () => {
+  const handleEmptyTrash = () => {
     if (trash.length === 0) return;
-    if (!confirm(`PERMANENTLY delete ALL ${trash.length} templates in trash? This CANNOT be undone.`)) return;
-    setEmptyingTrash(true);
-    try {
-      const res = await templatesApi.emptyTrash();
-      toast.success(`Trash emptied`, `${res.data?.deleted ?? trash.length} template(s) permanently deleted.`);
-      fetchTrash();
-      clearSelection();
-      fetchTemplates();
-    } catch (err: any) {
-      toast.error("Empty trash failed", err.message || "Please try again.");
-    } finally {
-      setEmptyingTrash(false);
-    }
+    setAdminConfirm({
+      isOpen: true,
+      title: "Empty Trash?",
+      message: `Are you sure you want to PERMANENTLY delete ALL ${trash.length} templates in trash? This action CANNOT be undone.`,
+      confirmText: "Empty Trash",
+      variant: "danger",
+      onConfirm: async () => {
+        setEmptyingTrash(true);
+        try {
+          const res = await templatesApi.emptyTrash();
+          toast.success(`Trash emptied`, `${res.data?.deleted ?? trash.length} template(s) permanently deleted.`);
+          fetchTrash();
+          clearSelection();
+          fetchTemplates();
+        } catch (err: any) {
+          toast.error("Empty trash failed", err.message || "Please try again.");
+        } finally {
+          setEmptyingTrash(false);
+        }
+      },
+    });
   };
 
   // ── Preview (read-only, temp state) ──────────────────────────────────────
@@ -571,15 +611,23 @@ const setFormField = (key: keyof FormState, value: any) => {
     }
   };
 
-  const handleSeed = async () => {
-    if (!confirm("Seed the 11 preset templates into the database? Existing ones will be skipped.")) return;
-    try {
-await templatesApi.seed();
-      toast.success("Preset templates seeded");
-      fetchTemplates();
-    } catch (err: any) {
-      toast.error("Seed failed", err.message || "Please try again.");
-    }
+  const handleSeed = () => {
+    setAdminConfirm({
+      isOpen: true,
+      title: "Seed Preset Templates?",
+      message: "Seed the 11 preset templates into the database? Existing ones will be skipped.",
+      confirmText: "Seed Templates",
+      variant: "info",
+      onConfirm: async () => {
+        try {
+          await templatesApi.seed();
+          toast.success("Preset templates seeded");
+          fetchTemplates();
+        } catch (err: any) {
+          toast.error("Seed failed", err.message || "Please try again.");
+        }
+      },
+    });
   };
 
 // ── Download all templates (export as .json file) ───────────────────────
@@ -639,21 +687,29 @@ await templatesApi.seed();
     setSelectedIds(new Set());
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
-    if (!confirm(`Soft-delete ${ids.length} selected template(s)? They can be restored later from Trash.`)) return;
-    setBulkDeleting(true);
-    try {
-      const res = await templatesApi.bulkDelete(ids);
-      toast.success(`Deleted ${res.data?.deleted || ids.length} template(s)`, "Moved to Trash — restorable.");
-      setSelectedIds(new Set());
-      fetchTemplates();
-    } catch (err: any) {
-      toast.error("Bulk delete failed", err.message || "Please try again.");
-    } finally {
-      setBulkDeleting(false);
-    }
+    setAdminConfirm({
+      isOpen: true,
+      title: "Bulk Soft Delete?",
+      message: `Soft-delete ${ids.length} selected template(s)? They can be restored later from Trash.`,
+      confirmText: `Delete ${ids.length} Templates`,
+      variant: "warning",
+      onConfirm: async () => {
+        setBulkDeleting(true);
+        try {
+          const res = await templatesApi.bulkDelete(ids);
+          toast.success(`Deleted ${res.data?.deleted || ids.length} template(s)`, "Moved to Trash — restorable.");
+          setSelectedIds(new Set());
+          fetchTemplates();
+        } catch (err: any) {
+          toast.error("Bulk delete failed", err.message || "Please try again.");
+        } finally {
+          setBulkDeleting(false);
+        }
+      },
+    });
   };
 
   // ── Derived sorted list is server-side; client just renders ─────────────
@@ -1791,6 +1847,25 @@ await templatesApi.seed();
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={adminConfirm.isOpen}
+        onClose={() => setAdminConfirm((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={async () => {
+          setAdminConfirmLoading(true);
+          try {
+            await adminConfirm.onConfirm();
+            setAdminConfirm((prev) => ({ ...prev, isOpen: false }));
+          } finally {
+            setAdminConfirmLoading(false);
+          }
+        }}
+        title={adminConfirm.title}
+        message={adminConfirm.message}
+        confirmText={adminConfirm.confirmText || "Confirm"}
+        cancelText="Cancel"
+        variant={adminConfirm.variant || "danger"}
+        isLoading={adminConfirmLoading}
+      />
     </div>
   );
 }

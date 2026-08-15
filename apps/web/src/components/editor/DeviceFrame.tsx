@@ -34,10 +34,10 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
   // ── Desktop: modern browser window ─────────────────────────────────────
   if (viewport === "desktop") {
     return (
-      <div className="w-full h-full flex flex-col items-stretch justify-stretch p-1 sm:p-2 lg:p-3 overflow-hidden">
+      <div className="w-full h-full flex flex-col items-stretch justify-stretch p-1 sm:p-2 lg:p-3 overflow-hidden min-h-[400px]">
         <div className="w-full h-full min-h-0 flex flex-col rounded-[1.25rem] border border-slate-700/80 bg-slate-900/70 shadow-2xl overflow-hidden">
           {/* Browser title bar */}
-          <div className="w-full flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/80 bg-slate-800/90">
+          <div className="w-full flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/80 bg-slate-800/90 shrink-0">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
               <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
@@ -67,16 +67,16 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
   // ── Tablet: realistic tablet shell ─────────────────────────────────────
   if (viewport === "tablet") {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-3 sm:p-4">
-        <div className="bg-slate-900/90 rounded-[2.4rem] p-2.5 shadow-2xl border border-slate-700">
-          <div className="bg-slate-950 rounded-[1.9rem] p-2">
-            <div className="relative bg-black rounded-[1.5rem] overflow-hidden">
+      <div className="flex flex-col items-center justify-center p-2 sm:p-4 my-auto max-w-full">
+        <div className="bg-slate-900/90 rounded-[2.4rem] p-2 sm:p-2.5 shadow-2xl border border-slate-700 max-w-full">
+          <div className="bg-slate-950 rounded-[1.9rem] p-1.5 sm:p-2 max-w-full">
+            <div className="relative bg-black rounded-[1.5rem] overflow-hidden max-w-full">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 w-28 h-6 flex items-center justify-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-slate-800 ring-1 ring-slate-700" />
                 <span className="w-10 h-1.5 rounded-full bg-slate-800" />
               </div>
 
-              <div className="relative z-10 h-9 flex items-center justify-between px-6 pt-1 text-white text-[10px] font-semibold">
+              <div className="relative z-10 h-8 flex items-center justify-between px-6 pt-1 text-white text-[10px] font-semibold">
                 <span>9:41</span>
                 <div className="flex items-center gap-1">
                   <span className="w-4 h-2.5 border border-white/90 rounded-[2px] flex items-end p-[1.5px]">
@@ -90,7 +90,7 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
 
               <div
                 ref={scrollRef as React.RefObject<HTMLDivElement>}
-                className="w-[768px] max-w-[calc(100vw-3rem)] h-[min(900px,calc(100vh-220px))] min-h-[520px] overflow-y-auto overflow-x-hidden flex flex-col"
+                className="w-[768px] max-w-[calc(100vw-2.5rem)] h-[min(850px,calc(100vh-170px))] min-h-[380px] sm:min-h-[500px] overflow-y-auto overflow-x-hidden flex flex-col"
               >
                 {children}
               </div>
@@ -105,32 +105,32 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
 
   // ── Mobile: authentic Android phone ────────────────────────────────────
   return (
-    <div className="h-full flex flex-col items-center justify-center p-3 sm:p-4">
-      <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.6rem] p-[10px] shadow-2xl border border-slate-700">
-        <div className="absolute -left-[3px] top-24 w-[3px] h-12 rounded-l bg-slate-700" />
-        <div className="absolute -left-[3px] top-40 w-[3px] h-16 rounded-l bg-slate-700" />
-        <div className="absolute -right-[3px] top-28 w-[3px] h-20 rounded-r bg-slate-700" />
+    <div className="flex flex-col items-center justify-center p-2 sm:p-4 my-auto max-w-full">
+      <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.4rem] sm:rounded-[2.6rem] p-[8px] sm:p-[10px] shadow-2xl border border-slate-700 max-w-full">
+        <div className="absolute -left-[3px] top-20 sm:top-24 w-[3px] h-10 sm:h-12 rounded-l bg-slate-700" />
+        <div className="absolute -left-[3px] top-34 sm:top-40 w-[3px] h-12 sm:h-16 rounded-l bg-slate-700" />
+        <div className="absolute -right-[3px] top-24 sm:top-28 w-[3px] h-16 sm:h-20 rounded-r bg-slate-700" />
 
-        <div className="bg-black rounded-[2rem] overflow-hidden relative">
-          <div className="absolute top-2.5 left-5 z-30 w-3 h-3 rounded-full bg-slate-800 ring-1 ring-slate-700" />
+        <div className="bg-black rounded-[1.8rem] sm:rounded-[2rem] overflow-hidden relative max-w-full">
+          <div className="absolute top-2 left-4 sm:left-5 z-30 w-3 h-3 rounded-full bg-slate-800 ring-1 ring-slate-700" />
 
-          <div className="relative z-20 h-7 flex items-center justify-between px-5 pt-1 text-white">
-            <span className="text-[11px] font-semibold tracking-wide">9:41</span>
+          <div className="relative z-20 h-7 flex items-center justify-between px-4 sm:px-5 pt-1 text-white">
+            <span className="text-[10px] sm:text-[11px] font-semibold tracking-wide">9:41</span>
             <div className="flex items-center gap-1.5">
-              <svg width="15" height="11" viewBox="0 0 15 11" className="fill-white">
+              <svg width="14" height="10" viewBox="0 0 15 11" className="fill-white">
                 <rect x="0" y="7" width="2.5" height="4" rx="0.5" />
                 <rect x="4" y="5" width="2.5" height="6" rx="0.5" />
                 <rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5" />
                 <rect x="12" y="0" width="2.5" height="11" rx="0.5" />
               </svg>
-              <svg width="15" height="11" viewBox="0 0 15 11" className="fill-white">
+              <svg width="14" height="10" viewBox="0 0 15 11" className="fill-white">
                 <path d="M7.5 9.5 L9.5 7.5 C8.9 6.9 8.2 6.6 7.5 6.6 C6.8 6.6 6.1 6.9 5.5 7.5 Z" />
                 <ellipse cx="7.5" cy="4.6" rx="5" ry="3.2" />
                 <ellipse cx="7.5" cy="7.6" rx="2.2" ry="1.4" />
               </svg>
               <div className="flex items-center gap-[2px]">
-                <div className="w-5 h-2.5 border border-white/80 rounded-[3px] flex items-center p-[1.5px]">
-                  <div className="w-3.5 h-full bg-white rounded-[1px]" />
+                <div className="w-4 sm:w-5 h-2.5 border border-white/80 rounded-[3px] flex items-center p-[1.5px]">
+                  <div className="w-2.5 sm:w-3.5 h-full bg-white rounded-[1px]" />
                 </div>
                 <div className="w-[2px] h-1.5 bg-white/80 rounded-r-sm" />
               </div>
@@ -139,16 +139,16 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
 
           <div
             ref={scrollRef as React.RefObject<HTMLDivElement>}
-            className="w-[360px] max-w-[calc(100vw-2rem)] h-[min(800px,calc(100vh-230px))] min-h-[560px] overflow-y-auto overflow-x-hidden flex flex-col"
+            className="w-[360px] max-w-[calc(100vw-2.5rem)] h-[min(750px,calc(100vh-170px))] min-h-[340px] sm:min-h-[500px] overflow-y-auto overflow-x-hidden flex flex-col"
           >
             {children}
           </div>
 
-          <div className="relative z-20 h-9 flex items-end justify-center pb-2 gap-16 bg-black">
-            <span className="w-4 h-4 rounded-full border-2 border-white/80" />
-            <span className="w-4 h-4 rounded-[3px] border-2 border-white/80" />
-            <span className="w-3.5 h-3.5 rounded-full border-2 border-white/80 flex items-center justify-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
+          <div className="relative z-20 h-8 sm:h-9 flex items-center justify-center pb-1 gap-12 sm:gap-16 bg-black">
+            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-white/80" />
+            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-[3px] border-2 border-white/80" />
+            <span className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-white/80 flex items-center justify-center">
+              <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white/80" />
             </span>
           </div>
         </div>
