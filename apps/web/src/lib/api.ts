@@ -8,15 +8,26 @@ let refreshQueue: Array<(token: string | null) => void> = [];
 
 async function performTokenRefresh(): Promise<string | null> {
   try {
+    const storedRefreshToken =
+      typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null;
+
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: "POST",
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(storedRefreshToken ? { "x-refresh-token": storedRefreshToken } : {}),
+      },
+      body: storedRefreshToken ? JSON.stringify({ refreshToken: storedRefreshToken }) : undefined,
     });
     if (!res.ok) return null;
     const data = await res.json();
     const newToken = data?.data?.accessToken;
+    const newRefreshToken = data?.data?.refreshToken;
+
     if (newToken) {
       localStorage.setItem("accessToken", newToken);
+      if (newRefreshToken) localStorage.setItem("refreshToken", newRefreshToken);
       return newToken;
     }
     return null;
@@ -104,13 +115,13 @@ async function apiFetch<T>(
 // ─── Auth ─────────────────────────────────────────────────────────────────
 export const authApi = {
   register: (body: { name: string; email: string; password: string }) =>
-    apiFetch<{ data: { accessToken: string; user: any } }>("/auth/register", {
+    apiFetch<{ data: { accessToken: string; refreshToken?: string; user: any } }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
   login: (body: { email: string; password: string }) =>
-    apiFetch<{ data: { accessToken: string; user: any } }>("/auth/login", {
+    apiFetch<{ data: { accessToken: string; refreshToken?: string; user: any } }>("/auth/login", {
       method: "POST",
       body: JSON.stringify(body),
     }),
@@ -118,7 +129,7 @@ export const authApi = {
   logout: () => apiFetch("/auth/logout", { method: "POST" }),
 
   refresh: () =>
-    apiFetch<{ data: { accessToken: string } }>("/auth/refresh", {
+    apiFetch<{ data: { accessToken: string; refreshToken?: string } }>("/auth/refresh", {
       method: "POST",
     }),
 

@@ -20,6 +20,9 @@ export default function LoginPage() {
     try {
       const res = await authApi.login(form);
       localStorage.setItem("accessToken", res.data.accessToken);
+      if (res.data.refreshToken) {
+        localStorage.setItem("refreshToken", res.data.refreshToken);
+      }
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/dashboard");
     } catch (err: any) {

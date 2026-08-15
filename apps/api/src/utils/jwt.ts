@@ -20,11 +20,11 @@ export const comparePassword = async (password: string, hash: string): Promise<b
 };
 
 export const generateAccessToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, JWT_ACCESS_SECRET, { expiresIn: "15m" });
+  return jwt.sign(payload, JWT_ACCESS_SECRET, { expiresIn: "30d" });
 };
 
 export const generateRefreshToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: "90d" });
 };
 
 export const verifyAccessToken = (token: string): JwtPayload => {
@@ -39,8 +39,8 @@ export const setRefreshCookie = (res: Response, token: string): void => {
   res.cookie("refreshToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: "lax",
+    maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days long term persistent login
   });
 };
 
@@ -48,7 +48,7 @@ export const clearRefreshCookie = (res: Response): void => {
   res.cookie("refreshToken", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax",
     expires: new Date(0),
   });
 };
