@@ -33,7 +33,9 @@ When generating a template configuration, output ONLY a strictly valid SiteConfi
 2. No JSON Comments: Comments (// or /* */) are forbidden in JSON.
 3. Strict Double Quotes: All keys and string values must be double-quoted ("key": "value").
 4. No Trailing Commas: Objects and arrays must NOT end with trailing commas.
-5. CSS Scoping: Write selectors with body.tpl-<slug> or bare body prefix. They will be auto-scoped to .nexora-tpl-<slug>.
+5. CSS Scoping: Write selectors with body.tpl-<slug>. They will be auto-scoped to .nexora-tpl-<slug> by the renderer.
+6. JS Scoping (CRITICAL): In customCode.js, ALWAYS use document.querySelector('.nexora-tpl-<slug>') with a DOT prefix to select the container. NEVER use 'body.tpl-<slug>' — body never receives the template class. Wrong selector = null root = all sections stuck at opacity:0.
+7. JS Scroll Animations: Always wrap in IIFE. Always include an else branch that restores opacity:1 if IntersectionObserver is unavailable or fails.
 
 ---
 
@@ -66,8 +68,8 @@ When generating a template configuration, output ONLY a strictly valid SiteConfi
   "accentColor": "#F59E0B",
   "backgroundColor": "#090D16", // Bright hex like #FBF7EE auto-switches cards & text to light mode
   "textColor": "#F8FAFC",
-  "headingFont": "Outfit | Inter | Roboto | Poppins | Playfair Display | Space Grotesk | Plus Jakarta Sans | Cormorant Garamond",
-  "bodyFont": "Inter | Roboto | Jost",
+  "headingFont": "ANY Google Font name e.g. Outfit, Inter, Space Grotesk, Syne, Fredoka, Bricolage Grotesque, Cabinet Grotesk, Playfair Display, Cormorant Garamond — the renderer dynamically loads it",
+  "bodyFont": "ANY Google Font name e.g. Inter, Roboto, Jost, DM Sans, Nunito, Lato",
   "borderRadius": "12px | 16px | 24px | 9999px",
   "buttonVariant": "rounded | pill | square | gradient",
   "cardVariant": "glass | border | solid",
@@ -92,7 +94,11 @@ The visual editor matches elements to state using data-element-key:
    { "id": "card-1", "type": "digital_card", "variant": "vcard", "title": "Marcus Sterling", "subtitle": "Managing Director", "badge": "💳 Digital Card", "content": { "avatar": "https://...", "bio": "...", "location": "San Francisco, CA", "ctaText": "Book Meeting", "ctaLink": "https://cal.com", "socials": { "email": "a@b.com", "phone": "+123456", "linkedin": "https://...", "twitter": "https://..." }, "customLinks": [{ "label": "Portfolio", "url": "https://...", "badge": "New", "icon": "ExternalLink" }] } }
 
 2. hero (Hero Banner & Stats):
-   { "id": "hero-1", "type": "hero", "variant": "centered", "title": "...", "subtitle": "...", "badge": "...", "content": { "ctaText": "...", "ctaLink": "#...", "secondaryCtaText": "...", "secondaryCtaLink": "#...", "avatarUrl": "https://...", "stats": [{ "label": "Clients", "value": "500+" }] } }
+   { "id": "hero-1", "type": "hero", "variant": "centered", "title": "...", "subtitle": "...", "badge": "...", "content": { "ctaText": "...", "ctaLink": "#...", "secondaryCtaText": "...", "secondaryCtaLink": "#...", "avatarUrl": "https://...", "image": "https://...", "imageUrl": "https://...", "bgImage": "https://...", "stats": [{ "label": "Clients", "value": "500+" }] } }
+   NOTE: avatarUrl, image, imageUrl, bgImage are all equivalent — any one will display the hero image.
+
+2b. cta (CTA Banner with optional image/polaroid):
+   { "id": "cta-1", "type": "cta", "title": "...", "subtitle": "...", "badge": "...", "content": { "ctaText": "...", "ctaLink": "#...", "secondaryCtaText": "...", "secondaryCtaLink": "#...", "image": "https://...", "imageUrl": "https://...", "bgImage": "https://...", "caption": "optional photo caption", "bio": "optional description text", "description": "alias for bio" } }
 
 3. links (Link in Bio Aggregator):
    { "id": "links-1", "type": "links", "title": "@KaiVibes", "subtitle": "Creator", "content": { "links": [{ "label": "🎵 Listen to New Single", "url": "https://...", "badge": "New", "icon": "Globe" }] } }
