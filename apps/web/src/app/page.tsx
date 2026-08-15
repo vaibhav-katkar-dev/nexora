@@ -41,13 +41,9 @@ import {
   Clock,
   Compass,
 } from "lucide-react";
-import { getAllTemplates, getTemplateBySlug } from "@ai-platform/templates";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import { SiteCreationModal } from "@/components/common/SiteCreationModal";
-import { projectsApi } from "@/lib/api";
-
-// ─── Static Data & Brand Vocabulary ───────────────────────────────────────────
-const ALL_TEMPLATES = getAllTemplates();
+import { projectsApi, templatesApi } from "@/lib/api";
 
 // Continuous Marquee items highlighting digital presence scope
 const MARQUEE_ITEMS = [
@@ -180,6 +176,17 @@ export default function LandingPage() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [dbTemplates, setDbTemplates] = useState<any[]>([]);
+
+  useEffect(() => {
+    templatesApi.list()
+      .then((res) => {
+        const data = res?.data || [];
+        if (Array.isArray(data)) setDbTemplates(data);
+      })
+      .catch(() => {});
+  }, []);
+
   const cleanSlug =
     usernameInput
       .toLowerCase()
@@ -200,10 +207,12 @@ export default function LandingPage() {
     setIsRedirecting(true);
     try {
       let customConfig: any;
+      const tpl = templateId
+        ? dbTemplates.find((t) => (t._id === templateId || t.slug === templateId || t.id === templateId))
+        : null;
 
-      if (templateId) {
-        const tpl = ALL_TEMPLATES.find((t) => t.id === templateId);
-        const rawConfig = tpl ? tpl.config : getTemplateBySlug("portfolio-modern");
+      if (tpl) {
+        const rawConfig = tpl.defaultConfig || tpl.config || {};
         customConfig = JSON.parse(JSON.stringify(rawConfig));
         if (customConfig.meta) customConfig.meta.title = displayName;
         const s0 = customConfig.sections?.[0];
@@ -212,15 +221,25 @@ export default function LandingPage() {
           if (s0.content.name) s0.content.name = displayName;
         }
       } else {
-        const blank = getTemplateBySlug("blank");
-        customConfig = JSON.parse(JSON.stringify(blank));
-        if (customConfig.meta) customConfig.meta.title = displayName;
+        customConfig = {
+          meta: { title: displayName, category: "portfolio", description: "Digital Presence" },
+          theme: { primaryColor: "#4F46E5", backgroundColor: "#0F172A", textColor: "#F8FAFC", fontFamily: "Inter", borderRadius: "16px" },
+          sections: [
+            {
+              id: "hero-1",
+              type: "hero",
+              title: displayName,
+              subtitle: "Welcome to my official digital presence.",
+              badge: "✦ Digital Presence",
+              content: { ctaText: "Get Started", ctaLink: "#contact" }
+            }
+          ]
+        };
       }
 
       const token =
         typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
       if (token) {
-        const tpl = templateId ? ALL_TEMPLATES.find((t) => t.id === templateId) : null;
         const res = await projectsApi.create({
           name: displayName,
           category: (tpl?.category ?? "portfolio") as any,
@@ -232,7 +251,6 @@ export default function LandingPage() {
         }
       }
 
-      const tpl = templateId ? ALL_TEMPLATES.find((t) => t.id === templateId) : null;
       sessionStorage.setItem(
         "nexora-quick-start-draft",
         JSON.stringify({

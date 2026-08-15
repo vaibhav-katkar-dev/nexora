@@ -26,7 +26,6 @@ import {
   Eye,
   ExternalLink,
 } from "lucide-react";
-import { getAllTemplates, getTemplateBySlug } from "@ai-platform/templates";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import { templatesApi } from "@/lib/api";
 
@@ -61,20 +60,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   blank: "#94A3B8",
 };
 
-const CATEGORIES = [
-  { id: "all", label: "All Templates" },
-  { id: "portfolio", label: "Portfolio" },
-  { id: "resume", label: "Resume / CV" },
-  { id: "digital_card", label: "Digital Card" },
-  { id: "restaurant_menu", label: "Restaurant" },
-  { id: "business", label: "Business" },
-  { id: "startup_landing", label: "Startup" },
-  { id: "product_landing", label: "Product" },
-  { id: "personal", label: "Personal" },
-  { id: "event", label: "Event" },
-  { id: "link_in_bio", label: "Link in Bio" },
-];
-
 export interface SiteCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -93,26 +78,24 @@ export function SiteCreationModal({
   const [modalStep, setModalStep] = useState<"mode" | "template">("mode");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
-    "portfolio-modern"
-  );
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
-  // Templates state initialized with local preset fallback
-  const [allTemplates, setAllTemplates] = useState<any[]>(() => getAllTemplates());
+  // Templates state drawn strictly from backend API
+  const [allTemplates, setAllTemplates] = useState<any[]>([]);
   const [templatesFetched, setTemplatesFetched] = useState(false);
 
-  // Lightweight single fetch to backend templates API
+  // Fetch from backend templates API
   useEffect(() => {
-    if (!templatesFetched) {
+    if (!templatesFetched && isOpen) {
       templatesApi.list()
         .then((res) => {
           const data = res?.data || [];
           if (Array.isArray(data) && data.length > 0) {
             const mapped = data
-              .filter((t: any) => t)
+              .filter((t: any) => t && t.defaultConfig)
               .map((t: any) => {
                 const slug = t.slug || t.defaultConfig?.meta?.slug || t._id || t.id || "template";
-                const config = t.defaultConfig || t.config || getTemplateBySlug(slug);
+                const config = t.defaultConfig || t.config;
                 return {
                   id: t._id || t.slug || t.id,
                   slug,
@@ -126,19 +109,20 @@ export function SiteCreationModal({
                 };
               });
 
+            setAllTemplates(mapped);
             if (mapped.length > 0) {
-              setAllTemplates(mapped);
+              setSelectedTemplateId(mapped[0].id);
             }
           }
         })
         .catch((err) => {
-          console.warn("[SiteCreationModal] Backend templates fetch fallback to presets:", err);
+          console.warn("[SiteCreationModal] Backend templates fetch error:", err);
         })
         .finally(() => {
           setTemplatesFetched(true);
         });
     }
-  }, [templatesFetched]);
+  }, [templatesFetched, isOpen]);
 
   // Reset internal step when modal opens/closes
   useEffect(() => {
@@ -188,6 +172,19 @@ export function SiteCreationModal({
       counts[t.category] = (counts[t.category] || 0) + 1;
     });
     return counts;
+  }, [allTemplates]);
+
+  // Dynamically compute category filter tabs from database templates
+  const dynamicCategories = useMemo(() => {
+    const cats = new Set<string>();
+    allTemplates.forEach((t: any) => {
+      if (t.category) cats.add(t.category);
+    });
+    const dynamicList = Array.from(cats).map((catId) => ({
+      id: catId,
+      label: catId.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+    }));
+    return [{ id: "all", label: "All Templates" }, ...dynamicList];
   }, [allTemplates]);
 
   if (!isOpen) return null;
@@ -398,7 +395,7 @@ export function SiteCreationModal({
 
               {/* ── Category Filter Pills ── */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-1 no-scrollbar -mx-6 px-6">
-                {CATEGORIES.map((cat) => {
+                {dynamicCategories.map((cat) => {
                   const Icon = CATEGORY_ICONS[cat.id] || LayoutTemplate;
                   const count = categoryCounts[cat.id] || 0;
                   const isActive = selectedCategory === cat.id;

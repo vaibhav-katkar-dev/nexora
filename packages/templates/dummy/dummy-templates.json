@@ -1,0 +1,87 @@
+[
+  {
+    "_id": "6a7958443d9d88727541faa2",
+    "name": "Stronger Studio — Personal Fitness Coach",
+    "slug": "stronger-studio-fitness-coach",
+    "category": "business",
+    "description": "A bold fitness coach template with programs, testimonials, pricing, a location map and direct WhatsApp conversion. Fully responsive with a collapsible icon-based mobile navbar.",
+    "thumbnailUrl": "/templates/business.png",
+    "tags": ["Fitness", "Coach", "Gym", "Bold", "Dark", "WhatsApp", "Responsive", "Map"],
+    "defaultConfig": {
+      "meta": {
+        "id": "stronger-studio-fitness-coach",
+        "slug": "stronger-studio-fitness-coach",
+        "title": "Stronger Studio — Personal Fitness Coach",
+        "description": "A bold fitness coach template with programs, testimonials, pricing, a location map and direct WhatsApp conversion.",
+        "category": "business",
+        "author": "Nexora Design Studio",
+        "version": "1.1.0",
+        "tags": ["Fitness", "Coach", "Gym", "Bold", "Dark", "WhatsApp", "Responsive", "Map"],
+        "popularity": 95,
+        "isNew": true,
+        "status": "published"
+      },
+      "theme": {
+        "primaryColor": "#E85D3F",
+        "secondaryColor": "#171717",
+        "accentColor": "#F6C453",
+        "backgroundColor": "#111111",
+        "textColor": "#F7F7F2",
+        "fontFamily": "Inter",
+        "headingFont": "Archivo Black",
+        "bodyFont": "Inter",
+        "borderRadius": "12px",
+        "buttonVariant": "solid",
+        "cardVariant": "flat",
+        "shadow": "lg",
+        "mode": "dark",
+        "spacingScale": "comfortable",
+        "animations": true
+      },
+      "sections": [
+        {
+          "id": "navbar",
+          "type": "navbar",
+          "variant": "solid",
+          "content": {
+            "links": [
+              { "label": "Programs", "url": "#services" },
+              { "label": "Results", "url": "#testimonials" },
+              { "label": "Pricing", "url": "#pricing" },
+              { "label": "Location", "url": "#location" },
+              { "label": "Contact", "url": "#contact" }
+            ],
+            "ctaText": "WhatsApp Coach",
+            "ctaLink": "https://wa.me/919876543210"
+          },
+          "visible": true
+        },
+        {
+          "id": "hero",
+          "type": "hero",
+          "variant": "split",
+          "title": "Stronger is built, not wished for.",
+          "subtitle": "Personal training and practical strength programming for people who want sustainable results without the intimidation.",
+          "badge": "⚡ First consultation on WhatsApp",
+          "content": {
+            "ctaText": "Chat on WhatsApp",
+            "ctaLink": "https://wa.me/919876543210",
+            "secondaryCtaText": "See Programs",
+            "secondaryCtaLink": "#services",
+            "avatarUrl": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80",
+            "stats": [
+              { "label": "Clients Coached", "value": "800+" },
+              { "label": "Years Coaching", "value": "9" },
+              { "label": "Avg. Rating", "value": "4.9★" }
+            ]
+          },
+          "visible": true
+        }
+      ]
+    },
+    "version": "1.1.0",
+    "author": "Nexora Design Studio",
+    "isPublic": true,
+    "status": "published"
+  }
+]

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { projectsApi, authApi, templatesApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { SiteConfigJSON } from "@ai-platform/shared";
-import { getAllTemplates, validateTemplateJSON } from "@ai-platform/templates";
+import { validateTemplateJSON } from "@ai-platform/templates";
 import { Navbar } from "@/components/navigation/Navbar";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
@@ -23,11 +23,11 @@ import {
   CalendarDays,
   Link2,
   File,
-Eye,
+  Eye,
   Check,
   AlertTriangle,
   X,
-Loader2,
+  Loader2,
   Shield,
   Search,
 } from "lucide-react";
@@ -49,20 +49,6 @@ const CATEGORY_ICON_COMPONENTS: Record<string, React.ElementType> = {
   blank: File,
 };
 
-const TEMPLATE_CATEGORIES = [
-  { id: "all", label: "All Templates" },
-  { id: "portfolio", label: "Portfolio" },
-  { id: "resume", label: "Resume" },
-  { id: "digital_card", label: "Digital Card" },
-  { id: "restaurant_menu", label: "Restaurant" },
-  { id: "business", label: "Business" },
-  { id: "product_landing", label: "Product Landing" },
-  { id: "startup_landing", label: "Startup Landing" },
-  { id: "personal", label: "Personal" },
-  { id: "event", label: "Event" },
-  { id: "link_in_bio", label: "Link in Bio" },
-];
-
 export default function TemplateGalleryPage() {
   const router = useRouter();
   const toast = useToast();
@@ -72,7 +58,7 @@ export default function TemplateGalleryPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
 
-  // Templates drawn from the backend DB; falls back to bundled presets.
+  // Templates drawn strictly from backend DB as single source of truth
   const [templates, setTemplates] = useState<Array<{
     id: string;
     name: string;
@@ -85,7 +71,6 @@ export default function TemplateGalleryPage() {
     config: SiteConfigJSON;
   }>>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
-  const [templatesSource, setTemplatesSource] = useState<"db" | "preset" | "fallback">("db");
 
   // Modals
   const [previewTemplate, setPreviewTemplate] = useState<any | null>(null);
@@ -95,15 +80,13 @@ export default function TemplateGalleryPage() {
   const [newTemplateJSON, setNewTemplateJSON] = useState<string>("");
   const [jsonValidationResult, setJsonValidationResult] = useState<{ valid?: boolean; errors?: string[] } | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
     authApi.me().then((res) => {
       if (res.data) setUser(res.data.user || res.data);
     }).catch(() => {});
   }, []);
 
   // ── Fetch templates from the backend DB (single source of truth) ────────
-  // Falls back to bundled presets only when the DB is empty or the API is
-  // unreachable, so admin-created templates always appear in the gallery.
   useEffect(() => {
     let cancelled = false;
 
@@ -139,25 +122,14 @@ useEffect(() => {
           const mapped = data
             .filter((t: any) => t && t.defaultConfig)
             .map(mapBackendTemplate);
-          if (mapped.length > 0) {
-            setTemplates(mapped);
-            setTemplatesSource("db");
-            setTemplatesLoading(false);
-            return;
-          }
-        }
-        // DB empty → fall back to bundled presets.
-        if (!cancelled) {
-          setTemplates(getAllTemplates());
-          setTemplatesSource("preset");
-          setTemplatesLoading(false);
+          setTemplates(mapped);
+        } else {
+          setTemplates([]);
         }
       } catch (err: any) {
-        // API unavailable → fall back to bundled presets.
-        if (cancelled) return;
-        setTemplates(getAllTemplates());
-        setTemplatesSource("fallback");
-        setTemplatesLoading(false);
+        if (!cancelled) setTemplates([]);
+      } finally {
+        if (!cancelled) setTemplatesLoading(false);
       }
     };
 
@@ -168,6 +140,19 @@ useEffect(() => {
   }, []);
 
   const allTemplates = templates;
+
+  // Compute category buttons dynamically from database templates
+  const templateCategories = useMemo(() => {
+    const cats = new Set<string>();
+    templates.forEach((t) => {
+      if (t.category) cats.add(t.category);
+    });
+    const dynamicList = Array.from(cats).map((catId) => ({
+      id: catId,
+      label: catId.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+    }));
+    return [{ id: "all", label: "All Templates" }, ...dynamicList];
+  }, [templates]);
 
   const filteredTemplates = allTemplates.filter((t) => {
     const matchesCategory = selectedCategory === "all" || t.category === selectedCategory;
@@ -284,7 +269,7 @@ useEffect(() => {
         {/* ── Category Filter Pills & Search ───────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {TEMPLATE_CATEGORIES.map((cat) => {
+            {templateCategories.map((cat) => {
               const isActive = selectedCategory === cat.id;
               return (
                 <button

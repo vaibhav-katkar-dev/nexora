@@ -168,29 +168,14 @@ export const listTemplates = async (req: Request, res: Response) => {
   try {
     const { category } = req.query;
     const filter: any = { isPublic: true, status: "published", deletedAt: null };
-    if (category) filter.category = category;
+    if (category && category !== "all") filter.category = category;
 
     // Public listing includes defaultConfig so the gallery can render live
     // previews from the saved template configuration (read-only, no auth).
-    let templates = await Template.find(filter)
+    const templates = await Template.find(filter)
       .sort({ featuredOrder: 1, createdAt: -1 })
       .select(ADMIN_LIST_PROJECTION)
       .lean();
-
-    if (templates.length === 0) {
-      const presets = getAllTemplates();
-      const mappedPresets = presets.map((p, index) => ({
-        _id: `preset_${p.category}`,
-        name: p.config.meta.title || p.name,
-        category: p.category,
-        thumbnailUrl: `/templates/${p.category}.png`,
-        defaultConfig: p.config,
-        isPublic: true,
-        status: "published",
-        featuredOrder: index + 1,
-      }));
-      return res.json({ success: true, data: mappedPresets, meta: { total: mappedPresets.length, isPreset: true } });
-    }
 
     res.json({ success: true, data: templates, meta: { total: templates.length } });
   } catch (error: any) {

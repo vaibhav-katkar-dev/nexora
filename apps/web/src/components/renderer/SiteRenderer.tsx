@@ -2141,13 +2141,31 @@ export function SiteRenderer({
       }
     }
 
-const combinedJs = [cc?.js || "", ...inlineScripts].filter(Boolean).join("\n;\n");
-    if (!combinedJs.trim()) return;
+    const validSnippets: string[] = [];
+    const rawSnippets = [cc?.js || "", ...inlineScripts].filter(Boolean);
+
+    for (const snippet of rawSnippets) {
+      try {
+        // Validate JS syntax before injecting to prevent DOM appendChild SyntaxError
+        new Function(snippet);
+        validSnippets.push(snippet);
+      } catch (err: any) {
+        console.warn("[Nexora Custom JS Syntax Error in custom code]:", err?.message);
+      }
+    }
+
+    if (validSnippets.length === 0) {
+      const prev = document.querySelector("script[data-nexora-custom]");
+      if (prev) prev.remove();
+      return;
+    }
+
+    const combinedJs = validSnippets.join("\n;\n");
 
     const timer = setTimeout(() => {
       try {
         const prev = document.querySelector("script[data-nexora-custom]");
-if (prev) prev.remove();
+        if (prev) prev.remove();
         const script = document.createElement("script");
         script.setAttribute("data-nexora-custom", "true");
         script.textContent = `(function(){\ntry{\n${combinedJs}\n}catch(e){console.warn("[Nexora Custom JS]:", e.message);}\n})();`;
