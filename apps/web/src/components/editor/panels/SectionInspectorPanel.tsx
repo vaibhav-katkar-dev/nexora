@@ -18,6 +18,7 @@ import {
   Palette,
   RotateCcw,
   MessageCircle,
+  Globe,
 } from "lucide-react";
 
 // ─── Per-Element Custom Color -------------------------------------------------
@@ -477,6 +478,236 @@ const removeArrayItem = (key: string, index: number) => {
           )}
         </div>
 
+        {/* ── ABOUT SPECIAL PANEL ────────────────────────────────────────── */}
+        {section.type === "about" && (
+          <div className="pt-3 border-t border-slate-800 space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-indigo-400">◈</span> About & Experience Info
+            </h3>
+
+            {/* Bio */}
+            <div data-field-path="bio" className="space-y-1">
+              <label className={labelClass}>Biography / About Description</label>
+              <textarea
+                rows={4}
+                value={content.bio || ""}
+                onChange={(e) => handleFieldChange("bio", e.target.value)}
+                placeholder="Tell visitors about your journey, background, or company story..."
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+
+            {/* Highlights List */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className={labelClass}>Key Highlights (Bullet Points)</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = content.highlights || [];
+                    handleFieldChange("highlights", [...current, "New key highlight"]);
+                  }}
+                  className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-950/60 border border-indigo-800/40 px-2 py-0.5 rounded-md flex items-center gap-1"
+                >
+                  <Plus size={11} /> Add Item
+                </button>
+              </div>
+
+              {(content.highlights || []).map((h: string, idx: number) => (
+                <div key={idx} className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={h}
+                    onChange={(e) => {
+                      const updated = [...(content.highlights || [])];
+                      updated[idx] = e.target.value;
+                      handleFieldChange("highlights", updated);
+                    }}
+                    placeholder="e.g. 5+ Years Experience"
+                    className={inputClass}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = (content.highlights || []).filter((_: any, i: number) => i !== idx);
+                      handleFieldChange("highlights", updated);
+                    }}
+                    className="text-slate-500 hover:text-rose-400 p-1"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Skills & Expertise */}
+            <div className="space-y-1.5">
+              <label className={labelClass}>Skills / Tech Stack (Comma Separated)</label>
+              <input
+                type="text"
+                value={Array.isArray(content.skills) ? content.skills.join(", ") : content.skills || ""}
+                onChange={(e) => {
+                  const items = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+                  handleFieldChange("skills", items);
+                }}
+                placeholder="e.g. React, Next.js, Node.js, UI/UX Design, TypeScript"
+                className={inputClass}
+              />
+              <p className="text-[10px] text-slate-500">Separated by commas.</p>
+            </div>
+
+            {/* Social Profiles for About Section */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                <Globe size={13} className="text-indigo-400" />
+                <span>Social Profiles & Usernames</span>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-normal">
+                Enter your usernames (e.g. @vaibhavdev) or full URLs.
+              </p>
+
+              <div className="space-y-2">
+                {[
+                  { key: "instagram", label: "Instagram", ph: "@username or URL" },
+                  { key: "github", label: "GitHub", ph: "username or URL" },
+                  { key: "linkedin", label: "LinkedIn", ph: "username or profile URL" },
+                  { key: "twitter", label: "Twitter / X", ph: "@handle or URL" },
+                  { key: "youtube", label: "YouTube", ph: "@channel or URL" },
+                  { key: "facebook", label: "Facebook", ph: "username or URL" },
+                ].map((p) => (
+                  <div key={p.key} className="space-y-0.5">
+                    <label className="text-[10px] font-semibold text-slate-400 block">{p.label}</label>
+                    <input
+                      type="text"
+                      value={(content.socials || {})[p.key] || content[p.key] || ""}
+                      onChange={(e) => {
+                        const socials = content.socials || {};
+                        handleFieldChange("socials", { ...socials, [p.key]: e.target.value });
+                      }}
+                      placeholder={p.ph}
+                      className={inputClass}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── HERO SPECIAL PANEL ─────────────────────────────────────────── */}
+        {section.type === "hero" && (
+          <div className="pt-3 border-t border-slate-800 space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-indigo-400">◈</span> Call-to-Actions & Socials
+            </h3>
+
+            <div className="space-y-2">
+              <label className={labelClass}>Primary CTA Button</label>
+              <input
+                type="text"
+                value={content.ctaText || ""}
+                onChange={(e) => handleFieldChange("ctaText", e.target.value)}
+                placeholder="Button text (e.g. Get Started)"
+                className={inputClass}
+              />
+              <input
+                type="text"
+                value={content.ctaLink || ""}
+                onChange={(e) => handleFieldChange("ctaLink", e.target.value)}
+                placeholder="Button link (e.g. #contact or https://...)"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className={labelClass}>Secondary CTA Button</label>
+              <input
+                type="text"
+                value={content.secondaryCtaText || ""}
+                onChange={(e) => handleFieldChange("secondaryCtaText", e.target.value)}
+                placeholder="Secondary button text (e.g. Learn More)"
+                className={inputClass}
+              />
+              <input
+                type="text"
+                value={content.secondaryCtaLink || ""}
+                onChange={(e) => handleFieldChange("secondaryCtaLink", e.target.value)}
+                placeholder="Secondary button link"
+                className={inputClass}
+              />
+            </div>
+
+            {/* Social Profiles in Hero */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                <Globe size={13} className="text-indigo-400" />
+                <span>Social Profiles & Links</span>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { key: "instagram", label: "Instagram", ph: "@username or URL" },
+                  { key: "github", label: "GitHub", ph: "username or URL" },
+                  { key: "linkedin", label: "LinkedIn", ph: "username or profile URL" },
+                  { key: "twitter", label: "Twitter / X", ph: "@handle or URL" },
+                ].map((p) => (
+                  <div key={p.key} className="space-y-0.5">
+                    <label className="text-[10px] font-semibold text-slate-400 block">{p.label}</label>
+                    <input
+                      type="text"
+                      value={(content.socials || {})[p.key] || content[p.key] || ""}
+                      onChange={(e) => {
+                        const socials = content.socials || {};
+                        handleFieldChange("socials", { ...socials, [p.key]: e.target.value });
+                      }}
+                      placeholder={p.ph}
+                      className={inputClass}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── FOOTER SPECIAL PANEL ───────────────────────────────────────── */}
+        {section.type === "footer" && (
+          <div className="pt-3 border-t border-slate-800 space-y-4">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-indigo-400">◈</span> Footer Social Profiles
+            </h3>
+
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                <Globe size={13} className="text-indigo-400" />
+                <span>Footer Social Links</span>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { key: "instagram", label: "Instagram", ph: "@username or URL" },
+                  { key: "github", label: "GitHub", ph: "username or URL" },
+                  { key: "linkedin", label: "LinkedIn", ph: "username or profile URL" },
+                  { key: "twitter", label: "Twitter / X", ph: "@handle or URL" },
+                  { key: "youtube", label: "YouTube", ph: "@channel or URL" },
+                ].map((p) => (
+                  <div key={p.key} className="space-y-0.5">
+                    <label className="text-[10px] font-semibold text-slate-400 block">{p.label}</label>
+                    <input
+                      type="text"
+                      value={(content.socials || {})[p.key] || content[p.key] || ""}
+                      onChange={(e) => {
+                        const socials = content.socials || {};
+                        handleFieldChange("socials", { ...socials, [p.key]: e.target.value });
+                      }}
+                      placeholder={p.ph}
+                      className={inputClass}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── DIGITAL CARD SPECIAL PANEL ─────────────────────────────── */}
         {section.type === "digital_card" && (
           <div className="pt-3 border-t border-slate-800 space-y-4">
@@ -534,11 +765,17 @@ const removeArrayItem = (key: string, index: number) => {
 
             {/* Socials */}
             <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Quick Socials (Pill Buttons)</label>
-              {["email","phone","linkedin","twitter","github","instagram"].map((s) => (
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Social Profiles & Usernames</label>
+              {["instagram", "github", "linkedin", "twitter", "youtube", "email", "phone"].map((s) => (
                 <div key={s} data-field-path={`socials.${s}`}>
                   <span className="text-[10px] text-slate-500 capitalize block mb-0.5">{s}</span>
-                  <input type="text" value={(content.socials || {})[s] || ""} onChange={(e) => handleFieldChange("socials", { ...(content.socials || {}), [s]: e.target.value })} placeholder={s === "email" ? "you@email.com" : s === "phone" ? "+1 234 567 890" : `https://${s}.com/...`} className={inputClass} />
+                  <input
+                    type="text"
+                    value={(content.socials || {})[s] || ""}
+                    onChange={(e) => handleFieldChange("socials", { ...(content.socials || {}), [s]: e.target.value })}
+                    placeholder={s === "email" ? "you@email.com" : s === "phone" ? "+1 234 567 890" : `@username or link`}
+                    className={inputClass}
+                  />
                 </div>
               ))}
             </div>
@@ -760,6 +997,431 @@ const removeArrayItem = (key: string, index: number) => {
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
               />
             </div>
+          </div>
+        )}
+
+        {/* ── CONTACT & INTERACTIVE FORM SPECIAL PANEL ─────────────────── */}
+        {section.type === "contact" && (
+          <div className="pt-3 border-t border-slate-800 space-y-5">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-extrabold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                <span className="text-indigo-400">◈</span> Contact & Form Settings
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  const formConfig = content.formConfig || {};
+                  const isEnabled = formConfig.enabled !== false;
+                  handleFieldChange("formConfig", { ...formConfig, enabled: !isEnabled });
+                }}
+                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ${
+                  content.formConfig?.enabled !== false
+                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                    : "bg-slate-800 text-slate-400 border-slate-700"
+                }`}
+              >
+                {content.formConfig?.enabled !== false ? "Form: Enabled" : "Form: Disabled"}
+              </button>
+            </div>
+
+            {/* 1. PUBLIC DISPLAY INFO (What visitors see on the card/sidebar) */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                <Globe size={13} className="text-indigo-400" />
+                <span>1. Public Contact Display Info</span>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-normal">
+                Direct channels displayed beside the form for visitors to call, email, or find you.
+              </p>
+
+              <div data-field-path="email" className="space-y-1">
+                <label className={labelClass}>Display Email</label>
+                <input
+                  type="email"
+                  value={content.email || ""}
+                  onChange={(e) => handleFieldChange("email", e.target.value)}
+                  placeholder="contact@yourbusiness.com"
+                  className={inputClass}
+                />
+              </div>
+
+              <div data-field-path="phone" className="space-y-1">
+                <label className={labelClass}>Display Phone (Call)</label>
+                <input
+                  type="text"
+                  value={content.phone || ""}
+                  onChange={(e) => handleFieldChange("phone", e.target.value)}
+                  placeholder="+1 (555) 234-5678"
+                  className={inputClass}
+                />
+              </div>
+
+              <div data-field-path="address" className="space-y-1">
+                <label className={labelClass}>Display Office / Address</label>
+                <input
+                  type="text"
+                  value={content.address || ""}
+                  onChange={(e) => handleFieldChange("address", e.target.value)}
+                  placeholder="123 Market St, San Francisco, CA"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {/* 2. FORM FIELDS & COMPULSORY / OPTIONAL CONTROLS */}
+            {content.formConfig?.enabled !== false && (
+              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                    <Sparkles size={13} className="text-indigo-400" />
+                    <span>2. Form Fields & Requirements</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono">Visitor Form</span>
+                </div>
+                <p className="text-[10px] text-slate-500 leading-normal">
+                  Customize which fields appear and whether each field is Compulsory (Required) or Optional.
+                </p>
+
+                {/* Standard Field: Name */}
+                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-200">Full Name</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const formConfig = content.formConfig || {};
+                        const currentReq = formConfig.nameRequired !== false;
+                        handleFieldChange("formConfig", { ...formConfig, nameRequired: !currentReq });
+                      }}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md border transition-all ${
+                        content.formConfig?.nameRequired !== false
+                          ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                          : "bg-slate-800 text-slate-400 border-slate-700"
+                      }`}
+                    >
+                      {content.formConfig?.nameRequired !== false ? "* Compulsory" : "Optional"}
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={content.formConfig?.namePlaceholder || ""}
+                    onChange={(e) => {
+                      const formConfig = content.formConfig || {};
+                      handleFieldChange("formConfig", { ...formConfig, namePlaceholder: e.target.value });
+                    }}
+                    placeholder="Placeholder (Default: Your Name)"
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Standard Field: Email */}
+                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-200">Email Address</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const formConfig = content.formConfig || {};
+                        const currentReq = formConfig.emailRequired !== false;
+                        handleFieldChange("formConfig", { ...formConfig, emailRequired: !currentReq });
+                      }}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md border transition-all ${
+                        content.formConfig?.emailRequired !== false
+                          ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                          : "bg-slate-800 text-slate-400 border-slate-700"
+                      }`}
+                    >
+                      {content.formConfig?.emailRequired !== false ? "* Compulsory" : "Optional"}
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={content.formConfig?.emailPlaceholder || ""}
+                    onChange={(e) => {
+                      const formConfig = content.formConfig || {};
+                      handleFieldChange("formConfig", { ...formConfig, emailPlaceholder: e.target.value });
+                    }}
+                    placeholder="Placeholder (Default: Your Email)"
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Standard Field: Phone Number */}
+                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="phoneEnabledToggle"
+                        checked={content.formConfig?.phoneEnabled !== false}
+                        onChange={(e) => {
+                          const formConfig = content.formConfig || {};
+                          handleFieldChange("formConfig", { ...formConfig, phoneEnabled: e.target.checked });
+                        }}
+                        className="rounded accent-indigo-500"
+                      />
+                      <label htmlFor="phoneEnabledToggle" className="text-xs font-bold text-slate-200 cursor-pointer">
+                        Phone Number Field
+                      </label>
+                    </div>
+
+                    {content.formConfig?.phoneEnabled !== false && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const formConfig = content.formConfig || {};
+                          const currentReq = !!formConfig.phoneRequired;
+                          handleFieldChange("formConfig", { ...formConfig, phoneRequired: !currentReq });
+                        }}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-md border transition-all ${
+                          content.formConfig?.phoneRequired
+                            ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                            : "bg-slate-800 text-slate-400 border-slate-700"
+                        }`}
+                      >
+                        {content.formConfig?.phoneRequired ? "* Compulsory" : "Optional"}
+                      </button>
+                    )}
+                  </div>
+                  {content.formConfig?.phoneEnabled !== false && (
+                    <input
+                      type="text"
+                      value={content.formConfig?.phonePlaceholder || ""}
+                      onChange={(e) => {
+                        const formConfig = content.formConfig || {};
+                        handleFieldChange("formConfig", { ...formConfig, phonePlaceholder: e.target.value });
+                      }}
+                      placeholder="Placeholder (e.g. Phone Number / WhatsApp)"
+                      className={inputClass}
+                    />
+                  )}
+                </div>
+
+                {/* Standard Field: Message */}
+                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="messageEnabledToggle"
+                        checked={content.formConfig?.messageEnabled !== false}
+                        onChange={(e) => {
+                          const formConfig = content.formConfig || {};
+                          handleFieldChange("formConfig", { ...formConfig, messageEnabled: e.target.checked });
+                        }}
+                        className="rounded accent-indigo-500"
+                      />
+                      <label htmlFor="messageEnabledToggle" className="text-xs font-bold text-slate-200 cursor-pointer">
+                        Message / Notes Box
+                      </label>
+                    </div>
+
+                    {content.formConfig?.messageEnabled !== false && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const formConfig = content.formConfig || {};
+                          const currentReq = formConfig.messageRequired !== false;
+                          handleFieldChange("formConfig", { ...formConfig, messageRequired: !currentReq });
+                        }}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-md border transition-all ${
+                          content.formConfig?.messageRequired !== false
+                            ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                            : "bg-slate-800 text-slate-400 border-slate-700"
+                        }`}
+                      >
+                        {content.formConfig?.messageRequired !== false ? "* Compulsory" : "Optional"}
+                      </button>
+                    )}
+                  </div>
+                  {content.formConfig?.messageEnabled !== false && (
+                    <input
+                      type="text"
+                      value={content.formConfig?.messagePlaceholder || ""}
+                      onChange={(e) => {
+                        const formConfig = content.formConfig || {};
+                        handleFieldChange("formConfig", { ...formConfig, messagePlaceholder: e.target.value });
+                      }}
+                      placeholder="Placeholder (Default: Your Message...)"
+                      className={inputClass}
+                    />
+                  )}
+                </div>
+
+                {/* Custom Fields List & Adder */}
+                <div className="pt-2 border-t border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-400">
+                      Extra Custom Fields ({(content.formConfig?.fields || []).length})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const formConfig = content.formConfig || {};
+                        const currentFields = formConfig.fields || [];
+                        const newId = `field_${Date.now()}`;
+                        handleFieldChange("formConfig", {
+                          ...formConfig,
+                          fields: [
+                            ...currentFields,
+                            { id: newId, name: `custom_${currentFields.length + 1}`, label: "Company / Subject", type: "text", required: false },
+                          ],
+                        });
+                      }}
+                      className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-950/60 border border-indigo-800/40 px-2 py-0.5 rounded-md flex items-center gap-1"
+                    >
+                      <Plus size={11} /> Add Field
+                    </button>
+                  </div>
+
+                  {(content.formConfig?.fields || []).map((f: any, idx: number) => (
+                    <div key={f.id || idx} className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2 relative">
+                      <div className="flex items-center justify-between">
+                        <input
+                          type="text"
+                          value={f.label || ""}
+                          onChange={(e) => {
+                            const formConfig = content.formConfig || {};
+                            const updated = [...(formConfig.fields || [])];
+                            updated[idx] = { ...updated[idx], label: e.target.value, name: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "_") || f.name };
+                            handleFieldChange("formConfig", { ...formConfig, fields: updated });
+                          }}
+                          placeholder="Field Label (e.g. Company)"
+                          className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white flex-1 mr-2"
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const formConfig = content.formConfig || {};
+                              const updated = [...(formConfig.fields || [])];
+                              updated[idx] = { ...updated[idx], required: !f.required };
+                              handleFieldChange("formConfig", { ...formConfig, fields: updated });
+                            }}
+                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                              f.required ? "bg-rose-500/15 text-rose-300 border-rose-500/30" : "bg-slate-800 text-slate-400 border-slate-700"
+                            }`}
+                          >
+                            {f.required ? "* Compulsory" : "Optional"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const formConfig = content.formConfig || {};
+                              const updated = (formConfig.fields || []).filter((_: any, i: number) => i !== idx);
+                              handleFieldChange("formConfig", { ...formConfig, fields: updated });
+                            }}
+                            className="text-slate-500 hover:text-rose-400 p-1"
+                            title="Remove field"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 3. SUBMISSION DESTINATION & WHATSAPP ACTION */}
+            {content.formConfig?.enabled !== false && (
+              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                  <MessageCircle size={13} className="text-emerald-400" />
+                  <span>3. Submission Actions & WhatsApp Forwarding</span>
+                </div>
+
+                {/* Primary WhatsApp / Phone Sync */}
+                <div data-field-path="formConfig.whatsappNumber" className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-800/30 space-y-1.5">
+                  <label className="block text-[11px] font-bold text-emerald-400">
+                    WhatsApp Number to Receive Inquiries
+                  </label>
+                  <input
+                    type="text"
+                    value={content.formConfig?.whatsappNumber || content.phone || ""}
+                    onChange={(e) => {
+                      const formConfig = content.formConfig || {};
+                      handleFieldChange("formConfig", { ...formConfig, whatsappNumber: e.target.value });
+                    }}
+                    placeholder="e.g. +1 (555) 123-4567 or 919876543210"
+                    className="w-full bg-slate-950 border border-emerald-800/50 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 font-mono"
+                  />
+                  <p className="text-[10px] text-emerald-300/70">
+                    ⚡ Auto-synced with site phone. When visitors submit, their message directly opens in your WhatsApp!
+                  </p>
+                </div>
+
+                {/* Submit Button Text */}
+                <div data-field-path="formConfig.submitButtonText" className="space-y-1">
+                  <label className={labelClass}>Submit Button Text</label>
+                  <input
+                    type="text"
+                    value={content.formConfig?.submitButtonText || content.buttonText || "Send Message"}
+                    onChange={(e) => {
+                      const formConfig = content.formConfig || {};
+                      handleFieldChange("formConfig", { ...formConfig, submitButtonText: e.target.value });
+                    }}
+                    placeholder="e.g. Send Message, Book Appointment, Get Quote"
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Collapsible Advanced Form Options for Power Users */}
+                <details className="pt-2 border-t border-slate-800 group">
+                  <summary className="text-[11px] font-bold text-slate-400 hover:text-slate-200 cursor-pointer flex items-center justify-between py-1 transition-colors select-none">
+                    <span>⚙️ Advanced Form & Routing Settings</span>
+                    <span className="text-slate-500 group-open:rotate-180 transition-transform">▾</span>
+                  </summary>
+                  <div className="pt-3 space-y-3">
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-400">Delivery Destination</label>
+                      <select
+                        value={content.formConfig?.destination || "both"}
+                        onChange={(e) => {
+                          const formConfig = content.formConfig || {};
+                          handleFieldChange("formConfig", { ...formConfig, destination: e.target.value });
+                        }}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      >
+                        <option value="both">📥 Dashboard Inbox + 📱 Forward to WhatsApp (Recommended)</option>
+                        <option value="whatsapp">📱 Forward to WhatsApp Only</option>
+                        <option value="inbox">📥 Dashboard Inbox Only</option>
+                      </select>
+                    </div>
+
+                    <div data-field-path="formConfig.successMessage" className="space-y-1">
+                      <label className={labelClass}>Custom Thank-You Message</label>
+                      <textarea
+                        rows={2}
+                        value={content.formConfig?.successMessage || "Thank you! Your message has been received."}
+                        onChange={(e) => {
+                          const formConfig = content.formConfig || {};
+                          handleFieldChange("formConfig", { ...formConfig, successMessage: e.target.value });
+                        }}
+                        placeholder="Message shown after message submission..."
+                        className={`${inputClass} resize-none`}
+                      />
+                    </div>
+
+                    <div data-field-path="formConfig.redirectUrl" className="space-y-1">
+                      <label className={labelClass}>Custom Redirect URL (Optional)</label>
+                      <input
+                        type="url"
+                        value={content.formConfig?.redirectUrl || ""}
+                        onChange={(e) => {
+                          const formConfig = content.formConfig || {};
+                          handleFieldChange("formConfig", { ...formConfig, redirectUrl: e.target.value });
+                        }}
+                        placeholder="https://example.com/thank-you"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                </details>
+              </div>
+            )}
           </div>
         )}
 

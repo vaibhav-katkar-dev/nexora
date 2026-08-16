@@ -346,3 +346,120 @@ export interface ApiErrorResponse {
   };
 }
 
+export const FormFieldConfigSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  label: z.string(),
+  type: z.enum(["text", "email", "tel", "textarea", "select"]).default("text"),
+  placeholder: z.string().optional(),
+  required: z.boolean().default(false),
+  enabled: z.boolean().default(true),
+  options: z.array(z.string()).optional(),
+});
+
+export type FormFieldConfig = z.infer<typeof FormFieldConfigSchema>;
+
+export const FormConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  formTitle: z.string().optional(),
+  formSubtitle: z.string().optional(),
+  submitButtonText: z.string().default("Send Message"),
+  destination: z.enum(["inbox", "whatsapp", "both"]).default("both"),
+  whatsappNumber: z.string().optional(),
+  whatsappMessageTemplate: z.string().optional(),
+  notificationEmail: z.string().optional(),
+  successMessage: z.string().default("Thank you! Your message has been received."),
+  redirectUrl: z.string().optional(),
+  // Standard field customization
+  nameRequired: z.boolean().default(true),
+  namePlaceholder: z.string().optional(),
+  emailRequired: z.boolean().default(true),
+  emailPlaceholder: z.string().optional(),
+  phoneEnabled: z.boolean().default(true),
+  phoneRequired: z.boolean().default(false),
+  phonePlaceholder: z.string().optional(),
+  messageEnabled: z.boolean().default(true),
+  messageRequired: z.boolean().default(true),
+  messagePlaceholder: z.string().optional(),
+  fields: z.array(FormFieldConfigSchema).optional(),
+});
+
+export type FormConfig = z.infer<typeof FormConfigSchema>;
+
+export interface FormSubmissionPayload {
+  name?: string;
+  email?: string;
+  phone?: string;
+  message?: string;
+  customData?: Record<string, any>;
+  formId?: string;
+  referrer?: string;
+  honeypot?: string;
+}
+
+export interface FormResponseItem {
+  _id: string;
+  projectId: string;
+  projectSlug: string;
+  projectName: string;
+  userId: string;
+  formId?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+  customData?: Record<string, any>;
+  isRead: boolean;
+  isStarred: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  ipHash?: string;
+  userAgent?: string;
+  referrer?: string;
+}
+
+// ==========================================
+// Analytics Schemas & Types
+// ==========================================
+
+export const AnalyticsEventPayloadSchema = z.object({
+  siteIdOrSlug: z.string(),
+  eventType: z.enum(["pageview", "click", "form_submit", "duration"]),
+  path: z.string().optional(),
+  referrer: z.string().optional(),
+  deviceType: z.enum(["desktop", "mobile", "tablet"]).optional(),
+  durationSeconds: z.number().optional(),
+  target: z.string().optional(),
+  sessionId: z.string().optional(),
+});
+
+export type AnalyticsEventPayload = z.infer<typeof AnalyticsEventPayloadSchema>;
+
+export interface SiteAnalyticsSummary {
+  projectId: string;
+  projectName?: string;
+  projectSlug?: string;
+  period: "7d" | "30d" | "all";
+  totalViews: number;
+  uniqueVisitors: number;
+  totalClicks: number;
+  totalSubmissions: number;
+  avgDurationSeconds: number;
+  bounceRatePercent: number;
+  deviceBreakdown: {
+    mobile: number;
+    desktop: number;
+    tablet: number;
+  };
+  topReferrers: Array<{ source: string; count: number; percentage: number }>;
+  topActions: Array<{ target: string; count: number }>;
+  dailyTrend: Array<{
+    date: string;
+    views: number;
+    uniqueVisitors: number;
+    clicks: number;
+    submissions: number;
+  }>;
+}
+
+

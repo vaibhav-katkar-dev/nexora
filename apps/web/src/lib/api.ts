@@ -406,3 +406,120 @@ export const mediaApi = {
   delete: (id: string) => apiFetch(`/media/${id}`, { method: "DELETE" }),
 };
 
+// ─── Form Submissions & Leads ───────────────────────────────────────────────
+export const formsApi = {
+  submit: (slugOrId: string, payload: { name: string; email: string; phone?: string; message?: string; customData?: Record<string, any>; formId?: string; referrer?: string; honeypot?: string }) =>
+    apiFetch<{ success: boolean; message: string; data: { id: string; whatsappUrl: string | null; redirectUrl: string | null; successMessage: string } }>(
+      `/forms/submit/${encodeURIComponent(slugOrId)}`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+      false
+    ),
+
+  getResponses: (params?: { projectId?: string; isRead?: boolean; isStarred?: boolean; search?: string; page?: number; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.projectId) qs.set("projectId", params.projectId);
+    if (params?.isRead !== undefined) qs.set("isRead", String(params.isRead));
+    if (params?.isStarred !== undefined) qs.set("isStarred", String(params.isStarred));
+    if (params?.search) qs.set("search", params.search);
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.limit) qs.set("limit", String(params.limit));
+
+    return apiFetch<{ data: any[]; meta: { total: number; unreadCount: number; totalAll: number; page: number; limit: number; totalPages: number } }>(
+      `/forms/responses${qs.toString() ? `?${qs.toString()}` : ""}`
+    );
+  },
+
+  updateResponse: (id: string, update: { isRead?: boolean; isStarred?: boolean }) =>
+    apiFetch<{ data: any }>(`/forms/responses/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(update),
+    }),
+
+  deleteResponse: (id: string) =>
+    apiFetch<{ success: boolean }>(`/forms/responses/${id}`, {
+      method: "DELETE",
+    }),
+
+  getExportUrl: (projectId?: string) => {
+    const qs = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    return `${API_BASE}/forms/responses/export${qs}`;
+  },
+};
+
+// ─── Site Analytics ────────────────────────────────────────────────────────
+export const analyticsApi = {
+  collect: (payload: { siteIdOrSlug: string; eventType: "pageview" | "click" | "form_submit" | "duration"; referrer?: string; deviceType?: "desktop" | "mobile" | "tablet"; durationSeconds?: number; target?: string }) => {
+    const url = `${API_BASE}/analytics/collect`;
+    const body = JSON.stringify(payload);
+
+    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+      const blob = new Blob([body], { type: "application/json" });
+      const sent = navigator.sendBeacon(url, blob);
+      if (sent) return Promise.resolve();
+    }
+
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => {});
+  },
+
+  getDashboardSummary: (days = 30) =>
+    apiFetch<{
+      data: {
+        projectId: string;
+        projectName: string;
+        projectSlug: string;
+        period: "7d" | "30d" | "all";
+        totalViews: number;
+        uniqueVisitors: number;
+        totalClicks: number;
+        totalSubmissions: number;
+        avgDurationSeconds: number;
+        bounceRatePercent: number;
+        deviceBreakdown: { mobile: number; desktop: number; tablet: number };
+        topReferrers: Array<{ source: string; count: number; percentage: number }>;
+        topActions: Array<{ target: string; count: number }>;
+        dailyTrend: Array<{
+          date: string;
+          views: number;
+          uniqueVisitors: number;
+          clicks: number;
+          submissions: number;
+        }>;
+      };
+    }>(`/analytics/dashboard-summary?days=${days}`),
+
+  getProjectAnalytics: (projectId: string, days = 30) =>
+    apiFetch<{
+      data: {
+        projectId: string;
+        projectName: string;
+        projectSlug: string;
+        period: "7d" | "30d" | "all";
+        totalViews: number;
+        uniqueVisitors: number;
+        totalClicks: number;
+        totalSubmissions: number;
+        avgDurationSeconds: number;
+        bounceRatePercent: number;
+        deviceBreakdown: { mobile: number; desktop: number; tablet: number };
+        topReferrers: Array<{ source: string; count: number; percentage: number }>;
+        topActions: Array<{ target: string; count: number }>;
+        dailyTrend: Array<{
+          date: string;
+          views: number;
+          uniqueVisitors: number;
+          clicks: number;
+          submissions: number;
+        }>;
+      };
+    }>(`/analytics/project/${projectId}?days=${days}`),
+};
+
+

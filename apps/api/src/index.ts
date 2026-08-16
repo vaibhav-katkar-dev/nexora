@@ -117,6 +117,8 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
 
 import domainRoutes from "./routes/domainRoutes.js";
 import sitemapRoutes from "./routes/sitemapRoutes.js";
+import formRoutes from "./routes/formRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 // Route Registrations
 app.use("/", sitemapRoutes);                     // Mount /sitemap.xml, /sitemaps/*.xml, /robots.txt
@@ -124,6 +126,8 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/domains", domainRoutes);        // Custom domain endpoints
 app.use("/api/v1/projects", projectRoutes);
 app.use("/api/v1/projects", publishRoutes);   // publish & deployments nested under projects
+app.use("/api/v1/forms", formRoutes);            // Form submissions & leads management
+app.use("/api/v1/analytics", analyticsRoutes);  // Site traffic & engagement analytics
 app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/media", mediaRoutes);
 app.use("/api/v1/templates", templateRoutes);

@@ -8,21 +8,24 @@ import { useEditorStore } from "@/store/editorStore";
 import { useToast } from "@/components/ui/Toast";
 import { buildPublishedSiteUrl } from "@/lib/siteUrl";
 
+import dynamic from "next/dynamic";
 import { EditorHeader } from "@/components/editor/EditorHeader";
 import { EditorSidebar, SidebarTab } from "@/components/editor/EditorSidebar";
 import { SectionListPanel } from "@/components/editor/panels/SectionListPanel";
 import { SectionInspectorPanel } from "@/components/editor/panels/SectionInspectorPanel";
 import { ThemeInspectorPanel } from "@/components/editor/panels/ThemeInspectorPanel";
-import { SeoInspectorPanel } from "@/components/editor/panels/SeoInspectorPanel";
-import { AiCopilotPanel } from "@/components/editor/panels/AiCopilotPanel";
 import { AddSectionPanel } from "@/components/editor/panels/AddSectionPanel";
-import { CodeEditorPanel } from "@/components/editor/panels/CodeEditorPanel";
 import { CanvasPreview } from "@/components/editor/CanvasPreview";
-import { PublishModal } from "@/components/editor/PublishModal";
-import { QuickStartAuthModal } from "@/components/editor/QuickStartAuthModal";
-import { ImagePickerModal } from "@/components/editor/ImagePickerModal";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { Loader2, Sparkles, Globe, ArrowRight } from "lucide-react";
+
+// Lazy-load heavy panels and modals to keep initial bundle size lightweight
+const SeoInspectorPanel = dynamic(() => import("@/components/editor/panels/SeoInspectorPanel").then(mod => mod.SeoInspectorPanel), { ssr: false });
+const AiCopilotPanel = dynamic(() => import("@/components/editor/panels/AiCopilotPanel").then(mod => mod.AiCopilotPanel), { ssr: false });
+const CodeEditorPanel = dynamic(() => import("@/components/editor/panels/CodeEditorPanel").then(mod => mod.CodeEditorPanel), { ssr: false });
+const PublishModal = dynamic(() => import("@/components/editor/PublishModal").then(mod => mod.PublishModal), { ssr: false });
+const QuickStartAuthModal = dynamic(() => import("@/components/editor/QuickStartAuthModal").then(mod => mod.QuickStartAuthModal), { ssr: false });
+const ImagePickerModal = dynamic(() => import("@/components/editor/ImagePickerModal").then(mod => mod.ImagePickerModal), { ssr: false });
 
 export default function EditorPage() {
   const params = useParams();

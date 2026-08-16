@@ -11,6 +11,7 @@ import {
   Sparkles,
   Zap,
   CheckCircle2,
+  CheckCircle,
   Mail,
   Phone,
   MapPin,
@@ -39,8 +40,12 @@ import {
   Copy,
   Trash2,
   Camera,
+  Loader2,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import { useEditorStore } from "@/store/editorStore";
+import { formsApi } from "@/lib/api";
 
 // Icon mapping helper
 const ICON_MAP: Record<string, any> = {
@@ -78,6 +83,29 @@ function getIconComponent(name: any, fallback: any = Sparkles) {
     return ICON_MAP[name];
   }
   return fallback;
+}
+
+/** Determine if the current theme is dark-mode based on the theme config object */
+function getIsDarkTheme(theme: any): boolean {
+  if (!theme) return true;
+  const mode = theme.mode || theme.variant || theme.colorMode || "";
+  if (typeof mode === "string") {
+    const m = mode.toLowerCase();
+    if (m === "light" || m === "pastel") return false;
+  }
+  // Check background color heuristic – if bg is explicitly a light color
+  const bg = theme.backgroundColor || theme.background || "";
+  if (typeof bg === "string" && bg.startsWith("#")) {
+    const hex = bg.replace("#", "");
+    if (hex.length >= 6) {
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance < 0.5;
+    }
+  }
+  return true; // default to dark
 }
 
 function isEditableLeafText(key: string): boolean {
@@ -404,44 +432,128 @@ export function isColorDark(colorStr?: string): boolean | null {
   return null;
 }
 
-export function getIsDarkTheme(theme: SiteConfigJSON["theme"]): boolean {
-  if (theme.backgroundColor) {
-    const bgIsDark = isColorDark(theme.backgroundColor);
-    if (bgIsDark !== null) return bgIsDark;
-  }
-  return theme.mode === "dark" || theme.mode === "glassmorphism";
-}
-
-function buildCssVariables(
-  theme: SiteConfigJSON["theme"],
-  interactive?: boolean
-): CSSProperties {
-  const isDark = getIsDarkTheme(theme);
-
+/** Build a CSSProperties object with CSS custom properties derived from the theme config.
+ *  These custom properties (--primary, --font-heading, --radius, etc.) are consumed by
+ *  template CSS and inline styles throughout the renderer. */
+function buildCssVariables(theme: any, _interactive?: boolean): CSSProperties {
+  if (!theme) return {};
   return {
     "--primary": theme.primaryColor || "#3B82F6",
-    "--secondary": theme.secondaryColor || "#8B5CF6",
+    "--secondary": theme.secondaryColor || theme.primaryColor || "#8B5CF6",
     "--accent": theme.accentColor || "#F59E0B",
-    "--bg": theme.backgroundColor || (isDark ? "#090D16" : "#F8FAFC"),
-    "--text": theme.textColor || (isDark ? "#F8FAFC" : "#0F172A"),
-    "--surface": isDark ? "rgba(15, 23, 42, 0.85)" : "#FFFFFF",
-    "--surface-hover": isDark ? "rgba(30, 41, 59, 0.9)" : "#F1F5F9",
-    "--muted": isDark ? "#94A3B8" : "#64748B",
-    "--border": isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
-    "--font-heading": `'${theme.headingFont || "Inter"}', sans-serif`,
-    "--font-body": `'${theme.bodyFont || "Inter"}', sans-serif`,
+    "--background": theme.backgroundColor || "#090D16",
+    "--text": theme.textColor || "#F8FAFC",
+    "--surface": theme.mode === "light" ? "#ffffff" : "rgba(255,255,255,0.04)",
+    "--border": theme.mode === "light" ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)",
+    "--font-heading": theme.headingFont || theme.fontFamily || "Inter",
+    "--font-body": theme.bodyFont || theme.fontFamily || "Inter",
     "--radius": theme.borderRadius || "12px",
-    "--shadow": theme.shadow || "md",
-    backgroundColor: "var(--bg)",
-    color: "var(--text)",
-    fontFamily: "var(--font-body)",
-    minHeight: interactive ? "100%" : "100vh",
-    width: "100%",
-    flex: "1 1 auto",
-    display: "flex",
-    flexDirection: "column",
+    fontFamily: `${theme.bodyFont || theme.fontFamily || "Inter"}, ui-sans-serif, system-ui, sans-serif`,
+    backgroundColor: theme.backgroundColor || "#090D16",
+    color: theme.textColor || "#F8FAFC",
   } as CSSProperties;
 }
+
+export function getCleanSocialUrl(platform: string, value: string): string {
+  if (!value || typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed) || /^mailto:/i.test(trimmed) || /^tel:/i.test(trimmed)) {
+    return trimmed;
+  }
+  const cleanHandle = trimmed.replace(/^@/, "");
+  switch (platform.toLowerCase()) {
+    case "instagram":
+    case "insta":
+      return `https://instagram.com/${cleanHandle}`;
+    case "github":
+      return `https://github.com/${cleanHandle}`;
+    case "twitter":
+    case "x":
+      return `https://x.com/${cleanHandle}`;
+    case "linkedin":
+      return cleanHandle.includes("/") ? `https://linkedin.com/${cleanHandle}` : `https://linkedin.com/in/${cleanHandle}`;
+    case "youtube":
+      return `https://youtube.com/@${cleanHandle}`;
+    case "facebook":
+      return `https://facebook.com/${cleanHandle}`;
+    case "twitch":
+      return `https://twitch.tv/${cleanHandle}`;
+    case "whatsapp":
+      return `https://wa.me/${cleanHandle.replace(/[^0-9]/g, "")}`;
+    case "email":
+      return `mailto:${cleanHandle}`;
+    case "phone":
+      return `tel:${cleanHandle}`;
+    default:
+      return `https://${trimmed}`;
+  }
+}
+
+function SocialLinksRow({
+  socials,
+  theme,
+  sel,
+  className = "",
+}: {
+  socials: Record<string, any> | undefined;
+  theme: SiteConfigJSON["theme"];
+  sel?: (key: string) => any;
+  className?: string;
+}) {
+  if (!socials || typeof socials !== "object") return null;
+  const isDark = getIsDarkTheme(theme);
+
+  const platforms = [
+    { key: "instagram", label: "Instagram", icon: Instagram },
+    { key: "github", label: "GitHub", icon: Github },
+    { key: "linkedin", label: "LinkedIn", icon: Linkedin },
+    { key: "twitter", label: "Twitter", icon: Twitter },
+    { key: "youtube", label: "YouTube", icon: Youtube },
+    { key: "facebook", label: "Facebook", icon: Facebook },
+    { key: "twitch", label: "Twitch", icon: Twitch },
+    { key: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+    { key: "email", label: "Email", icon: Mail },
+    { key: "phone", label: "Phone", icon: Phone },
+  ];
+
+  const activeLinks = platforms
+    .map((p) => {
+      const val = socials[p.key] || (socials as any)[p.label.toLowerCase()];
+      return val ? { ...p, value: val, url: getCleanSocialUrl(p.key, val) } : null;
+    })
+    .filter(Boolean);
+
+  if (activeLinks.length === 0) return null;
+
+  return (
+    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+      {activeLinks.map((item: any) => {
+        const Icon = item.icon;
+        const selAttr = sel ? sel(`content.socials.${item.key}`) : {};
+        return (
+          <a
+            key={item.key}
+            {...selAttr}
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={item.label}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm ${
+              isDark
+                ? "bg-white/5 hover:bg-white/15 border-white/10 text-white"
+                : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
+            }`}
+          >
+            <Icon size={14} style={{ color: theme.primaryColor }} />
+            <span>{item.label}</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
 
 // ─── Section Renderers ───────────────────────────────────────────────────────
 
@@ -450,6 +562,7 @@ interface SectionRendererProps {
   theme: SiteConfigJSON["theme"];
   selectedElementKey?: string | null;
   interactive?: boolean;
+  siteSlug?: string;
 }
 
 function NavbarSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
@@ -640,6 +753,7 @@ function AboutSection({ section, theme, selectedElementKey, interactive }: Secti
   const content = section.content || {};
   const skills: string[] = content.skills || [];
   const highlights: string[] = content.highlights || [];
+  const socials = content.socials || (content.instagram || content.github || content.linkedin || content.twitter ? content : {});
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
@@ -664,6 +778,9 @@ function AboutSection({ section, theme, selectedElementKey, interactive }: Secti
               ))}
             </div>
           )}
+
+          {/* Social Profiles & Usernames in About Section */}
+          <SocialLinksRow socials={socials} theme={theme} sel={sel} className="pt-2" />
         </div>
 
         {skills.length > 0 && (
@@ -1440,56 +1557,8 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2 justify-center mb-8">
-          {socials.email && (
-            <a
-              {...sel("content.socials.email")}
-              href={`mailto:${socials.email}`}
-              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
-                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
-              }`}
-            >
-              <Mail size={14} /> Email
-            </a>
-          )}
-          {socials.phone && (
-            <a
-              {...sel("content.socials.phone")}
-              href={`tel:${socials.phone}`}
-              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
-                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
-              }`}
-            >
-              <Phone size={14} /> Call
-            </a>
-          )}
-          {socials.linkedin && (
-            <a
-              {...sel("content.socials.linkedin")}
-              href={socials.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
-                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
-              }`}
-            >
-              <Linkedin size={14} /> LinkedIn
-            </a>
-          )}
-          {socials.twitter && (
-            <a
-              {...sel("content.socials.twitter")}
-              href={socials.twitter}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
-                isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
-              }`}
-            >
-              <Twitter size={14} /> Twitter
-            </a>
-          )}
-        </div>
+        {/* Social Links Row */}
+        <SocialLinksRow socials={socials} theme={theme} sel={sel} className="justify-center mb-8" />
 
         {/* Custom Links List */}
         {customLinks.length > 0 && (
@@ -1715,9 +1784,123 @@ function TestimonialsSection({ section, theme, selectedElementKey, interactive }
   );
 }
 
-function ContactSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function ContactSection({ section, theme, selectedElementKey, interactive, siteSlug }: SectionRendererProps) {
   const c = section.content || {};
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+  const formConfig = c.formConfig || {};
+
+  const isFormEnabled = formConfig.enabled !== false;
+  const submitText = formConfig.submitButtonText || c.buttonText || "Send Message";
+
+  const isNameRequired = formConfig.nameRequired !== false;
+  const isEmailRequired = formConfig.emailRequired !== false;
+  const isPhoneEnabled = formConfig.phoneEnabled !== false;
+  const isPhoneRequired = !!formConfig.phoneRequired;
+  const isMessageEnabled = formConfig.messageEnabled !== false;
+  const isMessageRequired = formConfig.messageRequired !== false;
+
+  const namePlaceholder = formConfig.namePlaceholder || `Your Name${isNameRequired ? " *" : " (Optional)"}`;
+  const emailPlaceholder = formConfig.emailPlaceholder || `Your Email${isEmailRequired ? " *" : " (Optional)"}`;
+  const phonePlaceholder = formConfig.phonePlaceholder || `Phone Number${isPhoneRequired ? " *" : " (Optional)"}`;
+  const messagePlaceholder = formConfig.messagePlaceholder || `Your Message...${isMessageRequired ? " *" : " (Optional)"}`;
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+    honeypot: "",
+  });
+  const [customFields, setCustomFields] = useState<Record<string, string>>({});
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [successInfo, setSuccessInfo] = useState<{ message: string; whatsappUrl: string | null; redirectUrl: string | null } | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (interactive) return; // Prevent live API post while clicking in the visual editor canvas
+
+    if (isNameRequired && !formData.name.trim()) {
+      setErrorMsg("Please enter your name.");
+      return;
+    }
+
+    if (isEmailRequired && (!formData.email.trim() || !formData.email.includes("@"))) {
+      setErrorMsg("Please provide a valid email address.");
+      return;
+    }
+
+    if (isPhoneEnabled && isPhoneRequired && !formData.phone.trim()) {
+      setErrorMsg("Please enter your phone number.");
+      return;
+    }
+
+    if (isMessageEnabled && isMessageRequired && !formData.message.trim()) {
+      setErrorMsg("Please enter your message.");
+      return;
+    }
+
+    // Validate any required custom fields
+    if (Array.isArray(formConfig.fields)) {
+      for (const f of formConfig.fields) {
+        if (f.required && (!customFields[f.name] || !customFields[f.name].trim())) {
+          setErrorMsg(`Please fill in the ${f.label || f.name} field.`);
+          return;
+        }
+      }
+    }
+
+    setSubmitStatus("submitting");
+    setErrorMsg(null);
+
+    try {
+      const targetSlug = siteSlug || "site";
+      const res = await formsApi.submit(targetSlug, {
+        name: formData.name || "Anonymous",
+        email: formData.email || "no-email@visitor.com",
+        phone: formData.phone,
+        message: formData.message,
+        customData: customFields,
+        formId: section.id,
+        referrer: typeof document !== "undefined" ? document.referrer : "",
+        honeypot: formData.honeypot,
+      });
+
+      if (res?.success) {
+        setSubmitStatus("success");
+        setSuccessInfo({
+          message: res.message || formConfig.successMessage || "Thank you! Your message has been received.",
+          whatsappUrl: res.data?.whatsappUrl || null,
+          redirectUrl: res.data?.redirectUrl || null,
+        });
+
+        // Directly redirect to WhatsApp without asking the user or delaying
+        if (res.data?.whatsappUrl) {
+          window.location.href = res.data.whatsappUrl;
+          return;
+        }
+
+        // Redirect to custom target URL if configured
+        if (res.data?.redirectUrl) {
+          window.location.href = res.data.redirectUrl;
+          return;
+        }
+      } else {
+        throw new Error(res?.message || "Failed to submit message");
+      }
+    } catch (err: any) {
+      setSubmitStatus("error");
+      setErrorMsg(err.message || "Something went wrong while sending your message. Please try again.");
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({ name: "", email: "", phone: "", message: "", honeypot: "" });
+    setCustomFields({});
+    setSubmitStatus("idle");
+    setSuccessInfo(null);
+    setErrorMsg(null);
+  };
 
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-4xl mx-auto">
@@ -1728,16 +1911,17 @@ function ContactSection({ section, theme, selectedElementKey, interactive }: Sec
         {section.subtitle && <p {...sel("subtitle")} className="opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+      <div className={`grid grid-cols-1 ${isFormEnabled ? "md:grid-cols-2" : "max-w-md mx-auto"} gap-12 items-start`}>
+        {/* Contact Info Channels */}
         <div className="space-y-6">
           {c.email && (
             <div {...sel("content.email")} className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <Mail size={18} style={{ color: theme.primaryColor }} />
               </div>
-              <div>
-                <div className="text-xs opacity-60">Email</div>
-                <a href={`mailto:${c.email}`} className="font-semibold hover:underline">
+              <div className="min-w-0">
+                <div className="text-xs opacity-60">Email Us</div>
+                <a href={`mailto:${c.email}`} className="font-semibold hover:underline truncate block">
                   {c.email}
                 </a>
               </div>
@@ -1745,62 +1929,225 @@ function ContactSection({ section, theme, selectedElementKey, interactive }: Sec
           )}
           {c.phone && (
             <div {...sel("content.phone")} className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <Phone size={18} style={{ color: theme.primaryColor }} />
               </div>
               <div>
-                <div className="text-xs opacity-60">Phone</div>
-                <div className="font-semibold">{c.phone}</div>
+                <div className="text-xs opacity-60">Call Directly</div>
+                <a href={`tel:${c.phone}`} className="font-semibold hover:underline">
+                  {c.phone}
+                </a>
               </div>
             </div>
           )}
           {c.address && (
             <div {...sel("content.address")} className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <MapPin size={18} style={{ color: theme.primaryColor }} />
               </div>
               <div>
-                <div className="text-xs opacity-60">Address</div>
+                <div className="text-xs opacity-60">Location</div>
                 <div className="font-semibold">{c.address}</div>
               </div>
             </div>
           )}
+          {(c.publicWhatsapp || c.whatsapp) && (
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                <MessageCircle size={18} className="text-emerald-400" />
+              </div>
+              <div>
+                <div className="text-xs opacity-60">WhatsApp Chat</div>
+                <a
+                  href={`https://wa.me/${(c.publicWhatsapp || c.whatsapp).replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-emerald-400 hover:underline"
+                >
+                  {c.publicWhatsapp || c.whatsapp}
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Social Profiles in Contact Section */}
+          <SocialLinksRow
+            socials={c.socials || (c.instagram || c.github || c.linkedin || c.twitter ? c : undefined)}
+            theme={theme}
+            sel={sel}
+            className="pt-2"
+          />
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4 p-6 rounded-2xl border bg-white/5 backdrop-blur-sm">
-          <input
-            type="text"
-            placeholder="Your Name"
-            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500"
-          />
-          <input
-            type="email"
-            placeholder="Your Email"
-            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500"
-          />
-          <textarea
-            rows={4}
-            placeholder="Your Message..."
-            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 resize-none"
-          />
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl font-bold text-white shadow-lg transition-all"
-            style={{ background: theme.primaryColor }}
-          >
-            Send Message
-          </button>
-        </form>
+        {/* Interactive Form Card */}
+        {isFormEnabled && (
+          <div {...sel("form")} className="relative rounded-2xl border bg-white/5 backdrop-blur-sm p-6 overflow-hidden transition-all duration-500 shadow-xl">
+            {submitStatus === "success" ? (
+              <div className="py-8 px-4 text-center space-y-5 animate-in fade-in zoom-in-95 duration-500">
+                {/* Celebratory animated pulse icon */}
+                <div className="relative inline-flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-emerald-500/30 animate-ping" />
+                  <div className="relative w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                    <CheckCircle className="w-9 h-9" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="text-xl font-bold text-slate-100">Message Received!</h3>
+                  <p className="text-sm text-slate-300 max-w-sm mx-auto leading-relaxed">
+                    {successInfo?.message || "Thank you for getting in touch. We will get back to you shortly."}
+                  </p>
+                </div>
+
+                {successInfo?.whatsappUrl && (
+                  <div className="pt-2">
+                    <a
+                      href={successInfo.whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <MessageCircle className="w-4 h-4" /> Open in WhatsApp
+                    </a>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-xs text-slate-400 hover:text-slate-200 transition-colors underline"
+                  >
+                    Send another message
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Anti-spam honeypot (hidden from real users) */}
+                <input
+                  type="text"
+                  name="user_note_extra"
+                  value={formData.honeypot}
+                  onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                  style={{ display: "none" }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+
+                {errorMsg && (
+                  <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs leading-relaxed">
+                    {errorMsg}
+                  </div>
+                )}
+
+                {/* Name field */}
+                <div>
+                  <input
+                    type="text"
+                    required={isNameRequired}
+                    placeholder={namePlaceholder}
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    disabled={submitStatus === "submitting"}
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                  />
+                </div>
+
+                {/* Email field */}
+                <div>
+                  <input
+                    type="email"
+                    required={isEmailRequired}
+                    placeholder={emailPlaceholder}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={submitStatus === "submitting"}
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                  />
+                </div>
+
+                {/* Optional/Compulsory Phone field */}
+                {isPhoneEnabled && (
+                  <div>
+                    <input
+                      type="tel"
+                      required={isPhoneRequired}
+                      placeholder={phonePlaceholder}
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      disabled={submitStatus === "submitting"}
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50 font-mono"
+                    />
+                  </div>
+                )}
+
+                {/* Custom fields if configured */}
+                {Array.isArray(formConfig.fields) &&
+                  formConfig.fields.map((f: any) => (
+                    <div key={f.id || f.name}>
+                      <input
+                        type={f.type === "tel" ? "tel" : f.type === "email" ? "email" : "text"}
+                        required={f.required}
+                        placeholder={`${f.label || f.name}${f.required ? " *" : " (Optional)"}`}
+                        value={customFields[f.name] || ""}
+                        onChange={(e) => setCustomFields({ ...customFields, [f.name]: e.target.value })}
+                        disabled={submitStatus === "submitting"}
+                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                      />
+                    </div>
+                  ))}
+
+                {/* Message field */}
+                {isMessageEnabled && (
+                  <div>
+                    <textarea
+                      rows={4}
+                      required={isMessageRequired}
+                      placeholder={messagePlaceholder}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      disabled={submitStatus === "submitting"}
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 resize-none transition-colors disabled:opacity-50"
+                    />
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={submitStatus === "submitting"}
+                  className="w-full py-3.5 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+                  style={{ background: theme.primaryColor }}
+                >
+                  {submitStatus === "submitting" ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>{submitText}</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
 function FooterSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const content = section.content || {};
+  const socials = content.socials || (content.instagram || content.github || content.linkedin || content.twitter ? content : {});
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
   return (
-    <footer id={section.id} data-section-id={section.id} className="py-12 px-6 border-t border-white/10 text-center text-xs opacity-60">
-      <p {...sel("title")}>© {new Date().getFullYear()} {section.title || "Nexora AI"}. All rights reserved.</p>
+    <footer id={section.id} data-section-id={section.id} className="py-12 px-6 border-t border-white/10 text-center text-xs opacity-80 space-y-4">
+      <SocialLinksRow socials={socials} theme={theme} sel={sel} className="justify-center" />
+      <p {...sel("title")} className="opacity-60">© {new Date().getFullYear()} {section.title || "Nexora AI"}. All rights reserved.</p>
     </footer>
   );
 }
@@ -2194,9 +2541,10 @@ interface RenderSectionProps {
   theme: SiteConfigJSON["theme"];
   selectedElementKey?: string | null;
   interactive?: boolean;
+  siteSlug?: string;
 }
 
-function RenderSection({ section, theme, selectedElementKey, interactive }: RenderSectionProps) {
+function RenderSection({ section, theme, selectedElementKey, interactive, siteSlug }: RenderSectionProps) {
   if (section.visible === false) return null;
 
   const rendererProps = {
@@ -2204,6 +2552,7 @@ function RenderSection({ section, theme, selectedElementKey, interactive }: Rend
     theme,
     selectedElementKey,
     interactive: !!interactive,
+    siteSlug,
   };
 
   switch (section.type) {
@@ -2213,7 +2562,7 @@ function RenderSection({ section, theme, selectedElementKey, interactive }: Rend
       return <HeroSection {...rendererProps} />;
     case "about":
       return <AboutSection {...rendererProps} />;
-case "features":
+    case "features":
       return <FeaturesSection {...rendererProps} />;
     case "services":
       return <ServicesSection {...rendererProps} />;
@@ -2237,7 +2586,7 @@ case "features":
       return <FAQSection {...rendererProps} />;
     case "blog":
       return <BlogSection {...rendererProps} />;
-case "links":
+    case "links":
       return <LinksSection {...rendererProps} />;
     case "digital_card":
       return <DigitalCardSection {...rendererProps} />;
@@ -2294,6 +2643,7 @@ interface SiteRendererProps {
   onSelectElement?: (elementKey: string, sectionId: string) => void;
   onRequestImageEdit?: (sectionId: string, elementKey: string) => void;
   interactive?: boolean;
+  siteSlug?: string;
 }
 
 interface InlineEditorState {
@@ -2315,6 +2665,7 @@ export function SiteRenderer({
   onSelectElement,
   onRequestImageEdit,
   interactive = false,
+  siteSlug,
 }: SiteRendererProps) {
   const updateElementValue = useEditorStore((state) => state.updateElementValue);
   const updateElementStyle = useEditorStore((state) => state.updateElementStyle);
@@ -2630,6 +2981,7 @@ return (
               theme={config.theme}
               selectedElementKey={selectedElementKey}
               interactive={interactive}
+              siteSlug={siteSlug || config?.meta?.slug || config?.meta?.id}
             />
           </div>
         );

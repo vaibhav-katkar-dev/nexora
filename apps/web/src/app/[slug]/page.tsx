@@ -6,6 +6,7 @@ import Link from "next/link";
 import { projectsApi } from "@/lib/api";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { injectSeoHeadTags } from "@/lib/seoGenerator";
+import { initSiteAnalytics } from "@/lib/analyticsTracker";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 const RESERVED_SLUGS = ["dashboard", "login", "register", "editor", "api", "admin", "favicon.ico"];
@@ -60,6 +61,14 @@ export default function PublicSitePage() {
       });
   }, [slug]);
 
+  // Zero-overhead analytics tracker for pageviews, clicks, and session visit duration
+  useEffect(() => {
+    if (project && slug) {
+      const cleanup = initSiteAnalytics(slug);
+      return cleanup;
+    }
+  }, [project, slug]);
+
   if (loading) {
     return (
       <div style={{ background: "var(--bg)", minHeight: "100vh" }} className="flex flex-col items-center justify-center text-slate-500">
@@ -98,7 +107,8 @@ export default function PublicSitePage() {
 
   return (
     <main className="min-h-screen">
-      <SiteRenderer config={project.config} customCode={project.customCode} />
+      <SiteRenderer config={project.config} customCode={project.customCode} siteSlug={slug} />
     </main>
   );
 }
+
