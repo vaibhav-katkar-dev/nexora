@@ -58,6 +58,63 @@ export default function TemplateGalleryPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
 
+  // Quick-Fill Onboarding Modal state
+  const [quickFillModal, setQuickFillModal] = useState<{
+    open: boolean;
+    templateConfig: SiteConfigJSON | null;
+  }>({ open: false, templateConfig: null });
+  const [quickFillName, setQuickFillName] = useState("");
+  const [quickFillPhone, setQuickFillPhone] = useState("");
+  const [quickFillService, setQuickFillService] = useState("");
+
+  /** Inject the 3 quick-fill values into ALL matching fields across the template config */
+  const injectQuickFillIntoConfig = (config: SiteConfigJSON, name: string, phone: string, service: string): SiteConfigJSON => {
+    if (!name && !phone && !service) return config;
+    const patched = JSON.parse(JSON.stringify(config)) as SiteConfigJSON;
+    if (name) patched.meta.title = name;
+    patched.sections = patched.sections.map((sec: any) => {
+      const c = { ...(sec.content || {}) } as any;
+      // Business name injection
+      if (name) {
+        if (typeof c.businessName === "string") c.businessName = name;
+        if (typeof c.companyName === "string") c.companyName = name;
+        if (sec.type === "hero" || sec.type === "header") {
+          if (typeof c.title === "string" && c.title.length < 60) c.title = name;
+          if (typeof c.heading === "string" && c.heading.length < 60) c.heading = name;
+        }
+        if (typeof c.logoText === "string") c.logoText = name;
+        if (typeof c.brand === "string") c.brand = name;
+      }
+      // Phone/WhatsApp injection
+      if (phone) {
+        if (typeof c.phone === "string") c.phone = phone;
+        if (typeof c.whatsapp === "string") c.whatsapp = phone;
+        if (typeof c.publicWhatsapp === "string") c.publicWhatsapp = phone;
+        if (c.formConfig) c.formConfig = { ...c.formConfig, whatsappNumber: phone };
+      }
+      // Service/tagline injection
+      if (service) {
+        if (sec.type === "hero" && typeof c.subtitle === "string") c.subtitle = service;
+        if (sec.type === "hero" && typeof c.tagline === "string") c.tagline = service;
+        if (sec.type === "hero" && typeof c.description === "string" && c.description.length < 120) c.description = service;
+      }
+      return { ...sec, content: c };
+    });
+    return patched;
+  };
+
+  const handleQuickFillSubmit = () => {
+    if (!quickFillModal.templateConfig) return;
+    const patched = injectQuickFillIntoConfig(
+      quickFillModal.templateConfig,
+      quickFillName.trim(),
+      quickFillPhone.trim(),
+      quickFillService.trim()
+    );
+    setQuickFillModal({ open: false, templateConfig: null });
+    handleCreateFromTemplate(patched, quickFillName.trim() || undefined);
+  };
+
   // Templates drawn strictly from backend DB as single source of truth
   const [templates, setTemplates] = useState<Array<{
     id: string;
@@ -348,7 +405,10 @@ export default function TemplateGalleryPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleCreateFromTemplate(template.config);
+                          setQuickFillName("");
+                          setQuickFillPhone("");
+                          setQuickFillService("");
+                          setQuickFillModal({ open: true, templateConfig: template.config });
                         }}
                         disabled={isCreating}
                         className="flex-1 h-[42px] rounded-[10px] text-[13px] font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors duration-250 disabled:opacity-50 flex items-center justify-center gap-1.5"
@@ -391,7 +451,13 @@ export default function TemplateGalleryPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleCreateFromTemplate(previewTemplate.config)}
+                  onClick={() => {
+                    setQuickFillName("");
+                    setQuickFillPhone("");
+                    setQuickFillService("");
+                    setPreviewTemplate(null);
+                    setQuickFillModal({ open: true, templateConfig: previewTemplate.config });
+                  }}
                   disabled={isCreating}
                   className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50"
                 >
@@ -408,6 +474,86 @@ export default function TemplateGalleryPage() {
             {/* Live Render Area */}
             <div className="flex-1 overflow-auto bg-white">
               <SiteRenderer config={previewTemplate.config} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick-Fill Onboarding Modal ─────────────────────────────────────── */}
+      {quickFillModal.open && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setQuickFillModal({ open: false, templateConfig: null })}
+        >
+          <div
+            className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-8 space-y-7 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-slate-900">Quick-fill your site</h3>
+                <button onClick={() => setQuickFillModal({ open: false, templateConfig: null })} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+                  <X size={18} />
+                </button>
+              </div>
+              <p className="text-sm text-slate-500">Answer 3 quick questions and we'll pre-fill your entire site — ready to publish in minutes.</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">1. Your business or site name</label>
+                <input
+                  type="text"
+                  value={quickFillName}
+                  onChange={(e) => setQuickFillName(e.target.value)}
+                  placeholder="e.g. Sunrise Bakery, Dr. Patel Clinic, Alex Portfolio"
+                  autoFocus
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-400"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">2. WhatsApp / phone number</label>
+                <input
+                  type="tel"
+                  value={quickFillPhone}
+                  onChange={(e) => setQuickFillPhone(e.target.value)}
+                  placeholder="e.g. +91 98765 43210"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-400"
+                />
+                <p className="text-[11px] text-slate-400">Leads from your contact form will be sent here via WhatsApp.</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">3. Your main service or tagline</label>
+                <input
+                  type="text"
+                  value={quickFillService}
+                  onChange={(e) => setQuickFillService(e.target.value)}
+                  placeholder="e.g. Fresh artisan bread & pastries since 2010"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-400"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5 pt-1">
+              <button
+                onClick={handleQuickFillSubmit}
+                disabled={isCreating || !quickFillName.trim()}
+                className="w-full h-12 rounded-2xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+              >
+                {isCreating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                Build My Site
+              </button>
+              <button
+                onClick={() => {
+                  setQuickFillModal({ open: false, templateConfig: null });
+                  if (quickFillModal.templateConfig) handleCreateFromTemplate(quickFillModal.templateConfig);
+                }}
+                className="w-full h-10 rounded-2xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              >
+                Skip — I'll fill in manually
+              </button>
             </div>
           </div>
         </div>

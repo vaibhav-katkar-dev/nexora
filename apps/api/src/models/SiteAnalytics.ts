@@ -19,6 +19,9 @@ export interface ISiteAnalyticsDailyDocument extends Document {
   };
   referrers: Map<string, number>;
   popularActions: Map<string, number>;
+  utmSources: Map<string, number>;
+  utmMediums: Map<string, number>;
+  utmCampaigns: Map<string, number>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +50,21 @@ const SiteAnalyticsDailySchema = new Schema<ISiteAnalyticsDailyDocument>(
       default: () => new Map(),
     },
     popularActions: {
+      type: Map,
+      of: Number,
+      default: () => new Map(),
+    },
+    utmSources: {
+      type: Map,
+      of: Number,
+      default: () => new Map(),
+    },
+    utmMediums: {
+      type: Map,
+      of: Number,
+      default: () => new Map(),
+    },
+    utmCampaigns: {
       type: Map,
       of: Number,
       default: () => new Map(),

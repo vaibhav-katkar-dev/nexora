@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /editor/
+Disallow: /settings/
+Disallow: /api/
+Disallow: /publish/
+
+Sitemap: https://nexora.site/sitemap.xml

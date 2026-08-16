@@ -545,3 +545,52 @@ body {
   animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Framer-grade smooth visual depth utilities */
+@keyframes nexoraFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nexora-reveal {
+  animation: nexoraFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nexora-card-glow {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nexora-card-glow:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 20px 2px rgba(99, 102, 241, 0.15);
+}
+
+.nexora-glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* AI Assistant card expand animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: bottom right;
+}
+
+

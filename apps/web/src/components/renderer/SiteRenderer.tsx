@@ -43,9 +43,11 @@ import {
   Loader2,
   MessageCircle,
   Send,
+  X,
 } from "lucide-react";
 import { useEditorStore } from "@/store/editorStore";
 import { formsApi } from "@/lib/api";
+import { getUrlUtmParams } from "@/lib/analyticsTracker";
 
 // Icon mapping helper
 const ICON_MAP: Record<string, any> = {
@@ -563,6 +565,7 @@ interface SectionRendererProps {
   selectedElementKey?: string | null;
   interactive?: boolean;
   siteSlug?: string;
+  onAddToCart?: (item: { name: string; price: string }) => void;
 }
 
 function NavbarSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
@@ -648,103 +651,132 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
   const stats: any[] = content.stats || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
+  const bgImage = content.backgroundImage || content.bgImage;
+  const bgPosition = content.backgroundPosition || "center";
+  const overlayOpacity = typeof content.overlayOpacity === "number" ? content.overlayOpacity : 0.45;
+
   return (
     <section
       id={section.id}
       data-section-id={section.id}
-      className="relative px-6 py-20 lg:py-32 max-w-7xl mx-auto flex flex-col items-center text-center justify-center min-h-[75vh]"
+      className="relative px-6 py-20 lg:py-32 w-full mx-auto flex flex-col items-center text-center justify-center min-h-[75vh] overflow-hidden"
+      style={
+        bgImage
+          ? {
+              backgroundImage: `url(${bgImage})`,
+              backgroundPosition: bgPosition,
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+            }
+          : undefined
+      }
     >
-      {/* Background Subtle Glow */}
+      {/* Dark Overlay when Background Image is active */}
+      {bgImage && (
+        <div
+          className="absolute inset-0 bg-slate-950 pointer-events-none transition-opacity duration-300"
+          style={{ opacity: overlayOpacity }}
+        />
+      )}
+
+      {/* Background Subtle Glow (when no background image or as accent layer) */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-25 blur-3xl -z-10"
+        className="absolute inset-0 pointer-events-none opacity-25 blur-3xl -z-0"
         style={{
           background: `radial-gradient(circle at 50% 30%, ${theme.primaryColor}, transparent 70%)`,
         }}
       />
 
-      {section.badge && (
-        <div
-          {...sel("badge")}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-6 border shadow-sm"
-          style={{
-            borderColor: `${theme.primaryColor}40`,
-            background: `${theme.primaryColor}15`,
-            color: theme.primaryColor,
-          }}
-        >
-          {section.badge}
-        </div>
-      )}
-
-      <h1
-        {...sel("title")}
-        className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl leading-none mb-6"
-        style={{ fontFamily: "var(--font-heading)" }}
-      >
-        {section.title}
-      </h1>
-
-      {section.subtitle && (
-        <p {...sel("subtitle")} className="text-lg sm:text-xl opacity-85 max-w-2xl font-normal leading-relaxed mb-10" style={getElementStyle(section, "subtitle")}>
-          {section.subtitle}
-        </p>
-      )}
-
-      {(content.avatarUrl || content.image || content.imageUrl || content.bgImage) && (
-        <div className="w-full max-w-3xl mb-16 nexora-hero-image-wrapper">
-          <img
-            {...sel("content.image")}
-            src={content.avatarUrl || content.image || content.imageUrl || content.bgImage}
-            alt={section.title || "Hero"}
-            loading="lazy"
-            decoding="async"
-            className="nexora-hero-image w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
-            style={{ borderRadius: "var(--radius)" }}
-          />
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
-        {content.ctaText && (
-          <a
-            {...sel("content.ctaText")}
-            href={content.ctaLink || "#"}
-            className="px-8 py-3.5 rounded-xl font-bold text-white shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center text-center justify-center w-full">
+        {section.badge && (
+          <div
+            {...sel("badge")}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-6 border shadow-sm backdrop-blur-sm"
             style={{
-              background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})`,
-              borderRadius: "var(--radius)",
+              borderColor: `${theme.primaryColor}40`,
+              background: `${theme.primaryColor}20`,
+              color: theme.primaryColor,
             }}
           >
-            {content.ctaText}
-          </a>
+            {section.badge}
+          </div>
         )}
-        {content.secondaryCtaText && (
-          <a
-            {...sel("content.secondaryCtaText")}
-            href={content.secondaryCtaLink || "#"}
-            className="px-8 py-3.5 rounded-xl font-semibold border backdrop-blur-sm transition-all hover:bg-white/5"
-            style={{
-              borderColor: "rgba(255, 255, 255, 0.15)",
-              borderRadius: "var(--radius)",
-            }}
+
+        <h1
+          {...sel("title")}
+          className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl leading-none mb-6 text-white"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          {section.title}
+        </h1>
+
+        {section.subtitle && (
+          <p
+            {...sel("subtitle")}
+            className="text-lg sm:text-xl opacity-90 max-w-2xl font-normal leading-relaxed mb-10 text-slate-200"
+            style={getElementStyle(section, "subtitle")}
           >
-            {content.secondaryCtaText}
-          </a>
+            {section.subtitle}
+          </p>
+        )}
+
+        {/* Foreground Hero Image / Avatar (if not used as background) */}
+        {!bgImage && (content.avatarUrl || content.image || content.imageUrl) && (
+          <div className="w-full max-w-3xl mb-16 nexora-hero-image-wrapper">
+            <img
+              {...sel("content.image")}
+              src={content.avatarUrl || content.image || content.imageUrl}
+              alt={section.title || "Hero"}
+              loading="lazy"
+              decoding="async"
+              className="nexora-hero-image w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
+              style={{ borderRadius: "var(--radius)" }}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
+          {content.ctaText && (
+            <a
+              {...sel("content.ctaText")}
+              href={content.ctaLink || "#"}
+              className="px-8 py-3.5 rounded-xl font-bold text-white shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+              style={{
+                background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})`,
+                borderRadius: "var(--radius)",
+              }}
+            >
+              {content.ctaText}
+            </a>
+          )}
+          {content.secondaryCtaText && (
+            <a
+              {...sel("content.secondaryCtaText")}
+              href={content.secondaryCtaLink || "#"}
+              className="px-8 py-3.5 rounded-xl font-semibold border backdrop-blur-sm transition-all hover:bg-white/10 text-white"
+              style={{
+                borderColor: "rgba(255, 255, 255, 0.2)",
+                borderRadius: "var(--radius)",
+              }}
+            >
+              {content.secondaryCtaText}
+            </a>
+          )}
+        </div>
+
+        {stats.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-white/15 w-full max-w-3xl">
+            {stats.map((st: any, i: number) => (
+              <div key={i} {...sel(`content.stats.${i}.value`)} className="text-center">
+                <div className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
+                  {st.value}
+                </div>
+                <div className="text-xs uppercase tracking-wider opacity-70 text-slate-300 mt-1">{st.label}</div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
-
-      {stats.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-white/10 w-full max-w-3xl">
-          {stats.map((st: any, i: number) => (
-            <div key={i} {...sel(`content.stats.${i}.value`)} className="text-center">
-              <div className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
-                {st.value}
-              </div>
-              <div className="text-xs uppercase tracking-wider opacity-60 mt-1">{st.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
     </section>
   );
 }
@@ -954,14 +986,14 @@ function ServicesSection({ section, theme, selectedElementKey, interactive }: Se
   );
 }
 
-function ProductsSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function ProductsSection({ section, theme, selectedElementKey, interactive, onAddToCart }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight text-white" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
@@ -972,7 +1004,7 @@ function ProductsSection({ section, theme, selectedElementKey, interactive }: Se
           <div
             key={i}
             {...sel(`content.items.${i}`)}
-            className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+            className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl nexora-card-glow"
             style={{ backgroundColor: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.08)", borderRadius: "var(--radius)" }}
           >
             {item.image && (
@@ -1006,7 +1038,22 @@ function ProductsSection({ section, theme, selectedElementKey, interactive }: Se
                     {item.price}
                   </span>
                 )}
-                {(item.buttonText || item.url || item.ctaLink) && (
+                {onAddToCart ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      if (!interactive) {
+                        e.preventDefault();
+                        onAddToCart({ name: item.title || `Product ${i + 1}`, price: item.price || "$0" });
+                      }
+                    }}
+                    {...sel(`content.items.${i}.buttonText`)}
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-white shadow transition-all hover:opacity-90 active:scale-95 cursor-pointer flex items-center gap-1.5"
+                    style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
+                  >
+                    <span>{item.buttonText || "Order Now"}</span>
+                  </button>
+                ) : (item.buttonText || item.url || item.ctaLink) ? (
                   <a
                     href={item.url || item.ctaLink || "#"}
                     {...sel(`content.items.${i}.buttonText`)}
@@ -1015,7 +1062,7 @@ function ProductsSection({ section, theme, selectedElementKey, interactive }: Se
                   >
                     {item.buttonText || "Buy Now"}
                   </a>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
@@ -1135,7 +1182,7 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive }: S
   );
 }
 
-function MenuSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function MenuSection({ section, theme, selectedElementKey, interactive, onAddToCart }: SectionRendererProps) {
   const categories: any[] = section.content?.categories || [];
   const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
@@ -1148,7 +1195,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive }: Sectio
             {section.badge}
           </span>
         )}
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight text-white" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
@@ -1177,7 +1224,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive }: Sectio
                     <div
                       key={ii}
                       {...sel(`content.categories.${ci}.items.${ii}`)}
-                      className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                      className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl nexora-card-glow"
                       style={{ backgroundColor: "rgba(255, 255, 255, 0.03)", borderColor: "rgba(255, 255, 255, 0.08)", borderRadius: "var(--radius)" }}
                     >
                       {item.image && (
@@ -1200,7 +1247,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive }: Sectio
                       <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                         <div>
                           <div className="flex items-start justify-between gap-2 mb-2">
-                            <h4 {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-lg" style={{ fontFamily: "var(--font-heading)" }}>
+                            <h4 {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-lg text-white" style={{ fontFamily: "var(--font-heading)" }}>
                               {item.name}
                             </h4>
                             {item.price && (
@@ -1211,7 +1258,22 @@ function MenuSection({ section, theme, selectedElementKey, interactive }: Sectio
                           </div>
                           {item.desc && <p {...sel(`content.categories.${ci}.items.${ii}.desc`)} className="text-sm opacity-75 leading-relaxed">{item.desc}</p>}
                         </div>
-                        {(item.url || item.buttonText) && (
+                        {onAddToCart ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              if (!interactive) {
+                                e.preventDefault();
+                                onAddToCart({ name: item.name || `Item ${ii + 1}`, price: item.price || "$0" });
+                              }
+                            }}
+                            {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
+                            className="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white shadow-md transition-all hover:opacity-90 active:scale-95 cursor-pointer"
+                            style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})`, borderRadius: "var(--radius)" }}
+                          >
+                            <span>{item.buttonText || "Add to Order 🛍️"}</span>
+                          </button>
+                        ) : (item.url || item.buttonText) ? (
                           <a
                             href={item.url || "#"}
                             {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
@@ -1220,7 +1282,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive }: Sectio
                           >
                             {item.buttonText || "Order Now"}
                           </a>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   ))}
@@ -1249,13 +1311,28 @@ function MenuSection({ section, theme, selectedElementKey, interactive }: Sectio
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <span {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-base truncate">{item.name}</span>
+                          <span {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-base truncate text-white">{item.name}</span>
                           <span {...sel(`content.categories.${ci}.items.${ii}.price`)} className="font-extrabold text-base shrink-0" style={{ color: theme.primaryColor }}>
                             {item.price}
                           </span>
                         </div>
                         {item.desc && <p {...sel(`content.categories.${ci}.items.${ii}.desc`)} className="text-xs opacity-65 truncate mt-0.5">{item.desc}</p>}
-                        {(item.url || item.buttonText) && (
+                        {onAddToCart ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              if (!interactive) {
+                                e.preventDefault();
+                                onAddToCart({ name: item.name || `Item ${ii + 1}`, price: item.price || "$0" });
+                              }
+                            }}
+                            {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white shadow transition-all hover:opacity-90 active:scale-95 cursor-pointer"
+                            style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
+                          >
+                            <span>{item.buttonText || "+ Add"}</span>
+                          </button>
+                        ) : (item.url || item.buttonText) ? (
                           <a
                             href={item.url || "#"}
                             {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
@@ -1264,7 +1341,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive }: Sectio
                           >
                             {item.buttonText || "Order Now"}
                           </a>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   ))}
@@ -1855,6 +1932,7 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
 
     try {
       const targetSlug = siteSlug || "site";
+      const utmParams = getUrlUtmParams();
       const res = await formsApi.submit(targetSlug, {
         name: formData.name || "Anonymous",
         email: formData.email || "no-email@visitor.com",
@@ -1864,6 +1942,13 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
         formId: section.id,
         referrer: typeof document !== "undefined" ? document.referrer : "",
         honeypot: formData.honeypot,
+        utm: {
+          source: utmParams.utmSource,
+          medium: utmParams.utmMedium,
+          campaign: utmParams.utmCampaign,
+          term: utmParams.utmTerm,
+          content: utmParams.utmContent,
+        },
       });
 
       if (res?.success) {
@@ -2542,9 +2627,10 @@ interface RenderSectionProps {
   selectedElementKey?: string | null;
   interactive?: boolean;
   siteSlug?: string;
+  onAddToCart?: (item: { name: string; price: string }) => void;
 }
 
-function RenderSection({ section, theme, selectedElementKey, interactive, siteSlug }: RenderSectionProps) {
+function RenderSection({ section, theme, selectedElementKey, interactive, siteSlug, onAddToCart }: RenderSectionProps) {
   if (section.visible === false) return null;
 
   const rendererProps = {
@@ -2553,6 +2639,7 @@ function RenderSection({ section, theme, selectedElementKey, interactive, siteSl
     selectedElementKey,
     interactive: !!interactive,
     siteSlug,
+    onAddToCart,
   };
 
   switch (section.type) {
@@ -2821,21 +2908,61 @@ containerSelector
   const elementColorCss = buildElementColorCss(config.sections || []);
   const elementStyleCss = buildElementStyleCss(config.sections || []);
 
-return (
+  // Live WhatsApp Ordering Cart for Products / Menu
+  const [cart, setCart] = useState<Record<string, { name: string; price: string; count: number }>>({});
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const handleAddToCart = (item: { name: string; price: string }) => {
+    setCart((prev) => {
+      const existing = prev[item.name];
+      const count = existing ? existing.count + 1 : 1;
+      return { ...prev, [item.name]: { name: item.name, price: item.price, count } };
+    });
+    setIsCartOpen(true);
+  };
+
+  const handleUpdateCartCount = (name: string, delta: number) => {
+    setCart((prev) => {
+      const existing = prev[name];
+      if (!existing) return prev;
+      const nextCount = existing.count + delta;
+      if (nextCount <= 0) {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      }
+      return { ...prev, [name]: { ...existing, count: nextCount } };
+    });
+  };
+
+  const totalItemCount = Object.values(cart).reduce((sum, item) => sum + item.count, 0);
+  const totalPrice = Object.values(cart).reduce((sum, item) => {
+    const numeric = parseFloat(String(item.price).replace(/[^0-9.]/g, "")) || 0;
+    return sum + numeric * item.count;
+  }, 0);
+
+  const handleCheckoutWhatsApp = () => {
+    let whatsappNum = "";
+    for (const s of config.sections || []) {
+      const c = s.content || {};
+      if (c.whatsapp) { whatsappNum = String(c.whatsapp).replace(/[^0-9]/g, ""); break; }
+      if (c.publicWhatsapp) { whatsappNum = String(c.publicWhatsapp).replace(/[^0-9]/g, ""); break; }
+      if (c.formConfig?.whatsappNumber) { whatsappNum = String(c.formConfig.whatsappNumber).replace(/[^0-9]/g, ""); break; }
+      if (c.phone) { whatsappNum = String(c.phone).replace(/[^0-9]/g, ""); break; }
+    }
+
+    const lines = Object.values(cart).map((item) => `• ${item.count}x ${item.name} (${item.price})`);
+    const message = `Hello! I would like to place an order from *${config.meta?.title || "your site"}*:\n\n${lines.join("\n")}\n\n*Total: $${totalPrice.toFixed(2)}*\n\nPlease confirm availability and details!`;
+    const targetUrl = whatsappNum
+      ? `https://wa.me/${whatsappNum}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
+  };
+
+  return (
     <div
-      className={`${containerClass} min-h-full w-full flex flex-col flex-1`}
+      className={`${containerClass} min-h-full w-full flex flex-col flex-1 relative`}
       style={buildCssVariables(config.theme, interactive)}
-      // ── Editor-only safety net ─────────────────────────────────────────
-      // In interactive (visual editor) mode we prevent two things that would
-      // otherwise yank the user out of the editor:
-      //   1) Link navigation — any click inside an <a href> (React-rendered OR
-      //      raw HTML via dangerouslySetInnerHTML) is prevented so the element
-      //      can be selected/edited instead of opening the page.
-      //   2) Form submission — custom-HTML forms won't navigate during editing.
-      // We use the *capture* phase so this runs before the section onClick
-      // selection logic, and preventDefault() does NOT stop event bubbling, so
-      // element/section selection still works. The published site & preview
-      // render without `interactive`, so their links/forms behave normally.
       onClickCapture={(e) => {
         if (!interactive) return;
         if ((e.target as HTMLElement)?.closest?.("a[href], button[type='submit']")) {
@@ -2847,16 +2974,10 @@ return (
         e.preventDefault();
       }}
     >
-{scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
-
-      {/* Per-element custom text colors (visual editor "Custom Color" tool) */}
+      {scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
       {elementColorCss && <style dangerouslySetInnerHTML={{ __html: elementColorCss }} />}
       {elementStyleCss && <style dangerouslySetInnerHTML={{ __html: elementStyleCss }} />}
 
-{/* Editor-only: force a normal cursor so template custom-cursor CSS
-          (cursor: url(...) / cursor: none) never interferes with editing.
-          Scoped to the template container so the published site keeps the
-          template's real cursors. */}
       {interactive && (
         <style
           dangerouslySetInnerHTML={{
@@ -2982,15 +3103,86 @@ return (
               selectedElementKey={selectedElementKey}
               interactive={interactive}
               siteSlug={siteSlug || config?.meta?.slug || config?.meta?.id}
+              onAddToCart={handleAddToCart}
             />
           </div>
         );
       })}
 
-{(customCode?.html || config.customCode?.html) && (
-        <div dangerouslySetInnerHTML={{ __html: customCode?.html || config.customCode?.html || "" }} />
+      {/* ─── Floating WhatsApp Order Cart ─── */}
+      {totalItemCount > 0 && !interactive && (
+        <div className="fixed bottom-5 right-5 z-50 animate-slide-up select-none">
+          {isCartOpen ? (
+            <div className="bg-slate-900/95 border border-slate-700/80 rounded-2xl p-4 shadow-2xl w-72 text-white space-y-3 mb-2 backdrop-blur-xl">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-white">Order Summary</h4>
+                <button
+                  type="button"
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="space-y-2 max-h-52 overflow-y-auto">
+                {Object.values(cart).map((item) => (
+                  <div key={item.name} className="flex items-center justify-between text-xs">
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="font-semibold text-slate-200 truncate">{item.name}</p>
+                      <p className="text-[11px] text-slate-400 font-mono">{item.price}</p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg px-1 py-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateCartCount(item.name, -1)}
+                        className="w-5 h-5 rounded flex items-center justify-center font-bold text-slate-400 hover:text-white"
+                      >
+                        −
+                      </button>
+                      <span className="text-xs font-bold font-mono w-4 text-center">{item.count}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateCartCount(item.name, 1)}
+                        className="w-5 h-5 rounded flex items-center justify-center font-bold text-slate-400 hover:text-white"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-slate-800 pt-2.5 flex items-center justify-between">
+                <span className="text-xs text-slate-400">Total</span>
+                <span className="text-base font-black text-white font-mono">${totalPrice.toFixed(2)}</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCheckoutWhatsApp}
+                className="w-full h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
+              >
+                <MessageCircle size={14} />
+                <span>Place Order via WhatsApp</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsCartOpen(true)}
+              className="h-10 px-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-xl flex items-center gap-2.5 transition-all hover:scale-105 active:scale-95"
+            >
+              <MessageCircle size={14} />
+              <span>{totalItemCount} item{totalItemCount !== 1 ? "s" : ""} · View Order</span>
+            </button>
+          )}
+        </div>
       )}
 
+      {(customCode?.html || config.customCode?.html) && (
+        <div dangerouslySetInnerHTML={{ __html: customCode?.html || config.customCode?.html || "" }} />
+      )}
     </div>
   );
 }

@@ -85,6 +85,11 @@ function getTodayDateString(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function sanitizeKey(key?: string): string {
+  if (!key) return "";
+  return String(key).slice(0, 60).replace(/[\.\$]/g, "_").trim();
+}
+
 /**
  * Public Analytics Event Ingestion
  * POST /api/v1/analytics/collect
@@ -98,7 +103,17 @@ export async function collectEvent(req: Request, res: Response) {
       } catch {}
     }
 
-    const { siteIdOrSlug, eventType, referrer, deviceType, durationSeconds, target } = payload || {};
+    const {
+      siteIdOrSlug,
+      eventType,
+      referrer,
+      deviceType,
+      durationSeconds,
+      target,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+    } = payload || {};
 
     if (!siteIdOrSlug || !eventType) {
       return res.status(204).end();
@@ -115,7 +130,10 @@ export async function collectEvent(req: Request, res: Response) {
 
     const safeDevice = deviceType === "mobile" || deviceType === "tablet" ? deviceType : "desktop";
     const refSource = cleanReferrerDomain(referrer);
-    const safeTarget = target ? String(target).slice(0, 60).replace(/[\.\$]/g, "_") : "";
+    const safeTarget = sanitizeKey(target);
+    const safeUtmSource = sanitizeKey(utmSource);
+    const safeUtmMedium = sanitizeKey(utmMedium);
+    const safeUtmCampaign = sanitizeKey(utmCampaign);
 
     // Build optimized atomic MongoDB update
     const updateOps: any = {
@@ -133,6 +151,17 @@ export async function collectEvent(req: Request, res: Response) {
 
       if (refSource) {
         updateOps.$inc[`referrers.${refSource.replace(/[\.\$]/g, "_")}`] = 1;
+      }
+
+      // Track UTM parameters
+      if (safeUtmSource) {
+        updateOps.$inc[`utmSources.${safeUtmSource}`] = 1;
+      }
+      if (safeUtmMedium) {
+        updateOps.$inc[`utmMediums.${safeUtmMedium}`] = 1;
+      }
+      if (safeUtmCampaign) {
+        updateOps.$inc[`utmCampaigns.${safeUtmCampaign}`] = 1;
       }
 
       // Check unique visitor buffer
@@ -243,6 +272,9 @@ export async function getProjectAnalytics(req: Request, res: Response) {
     const deviceTotals = { mobile: 0, desktop: 0, tablet: 0 };
     const referrerTotals: Record<string, number> = {};
     const actionTotals: Record<string, number> = {};
+    const utmSourceTotals: Record<string, number> = {};
+    const utmCampaignTotals: Record<string, number> = {};
+    const utmMediumTotals: Record<string, number> = {};
 
     const dailyTrend: Array<{
       date: string;
@@ -291,6 +323,24 @@ export async function getProjectAnalytics(req: Request, res: Response) {
         }
       }
 
+      if (doc?.utmSources) {
+        for (const [k, v] of Object.entries(doc.utmSources)) {
+          utmSourceTotals[k] = (utmSourceTotals[k] || 0) + (Number(v) || 0);
+        }
+      }
+
+      if (doc?.utmCampaigns) {
+        for (const [k, v] of Object.entries(doc.utmCampaigns)) {
+          utmCampaignTotals[k] = (utmCampaignTotals[k] || 0) + (Number(v) || 0);
+        }
+      }
+
+      if (doc?.utmMediums) {
+        for (const [k, v] of Object.entries(doc.utmMediums)) {
+          utmMediumTotals[k] = (utmMediumTotals[k] || 0) + (Number(v) || 0);
+        }
+      }
+
       dailyTrend.push({
         date: dStr,
         views: dViews,
@@ -320,6 +370,21 @@ export async function getProjectAnalytics(req: Request, res: Response) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
 
+    const topUtmSources = Object.entries(utmSourceTotals)
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    const topUtmCampaigns = Object.entries(utmCampaignTotals)
+      .map(([campaign, count]) => ({ campaign, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    const topUtmMediums = Object.entries(utmMediumTotals)
+      .map(([medium, count]) => ({ medium, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
     return res.json({
       success: true,
       data: {
@@ -336,6 +401,9 @@ export async function getProjectAnalytics(req: Request, res: Response) {
         deviceBreakdown: deviceTotals,
         topReferrers,
         topActions,
+        topUtmSources,
+        topUtmCampaigns,
+        topUtmMediums,
         dailyTrend,
       },
     });
@@ -396,6 +464,9 @@ export async function getDashboardSummary(req: Request, res: Response) {
     const deviceTotals = { mobile: 0, desktop: 0, tablet: 0 };
     const referrerTotals: Record<string, number> = {};
     const actionTotals: Record<string, number> = {};
+    const utmSourceTotals: Record<string, number> = {};
+    const utmCampaignTotals: Record<string, number> = {};
+    const utmMediumTotals: Record<string, number> = {};
 
     const dailyTrend: Array<{
       date: string;
@@ -444,6 +515,24 @@ export async function getDashboardSummary(req: Request, res: Response) {
             actionTotals[cleanK] = (actionTotals[cleanK] || 0) + (Number(v) || 0);
           }
         }
+
+        if (doc.utmSources) {
+          for (const [k, v] of Object.entries(doc.utmSources)) {
+            utmSourceTotals[k] = (utmSourceTotals[k] || 0) + (Number(v) || 0);
+          }
+        }
+
+        if (doc.utmCampaigns) {
+          for (const [k, v] of Object.entries(doc.utmCampaigns)) {
+            utmCampaignTotals[k] = (utmCampaignTotals[k] || 0) + (Number(v) || 0);
+          }
+        }
+
+        if (doc.utmMediums) {
+          for (const [k, v] of Object.entries(doc.utmMediums)) {
+            utmMediumTotals[k] = (utmMediumTotals[k] || 0) + (Number(v) || 0);
+          }
+        }
       }
 
       totalViews += dViews;
@@ -480,13 +569,28 @@ export async function getDashboardSummary(req: Request, res: Response) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
 
+    const topUtmSources = Object.entries(utmSourceTotals)
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    const topUtmCampaigns = Object.entries(utmCampaignTotals)
+      .map(([campaign, count]) => ({ campaign, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    const topUtmMediums = Object.entries(utmMediumTotals)
+      .map(([medium, count]) => ({ medium, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
     return res.json({
       success: true,
       data: {
         projectId: "all",
         projectName: "All Sites Combined",
         projectSlug: "all",
-        period: "30d",
+        period: days <= 7 ? "7d" : "30d",
         totalViews,
         uniqueVisitors,
         totalClicks,
@@ -496,6 +600,9 @@ export async function getDashboardSummary(req: Request, res: Response) {
         deviceBreakdown: deviceTotals,
         topReferrers,
         topActions,
+        topUtmSources,
+        topUtmCampaigns,
+        topUtmMediums,
         dailyTrend,
       },
     });

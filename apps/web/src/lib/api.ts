@@ -408,7 +408,26 @@ export const mediaApi = {
 
 // ─── Form Submissions & Leads ───────────────────────────────────────────────
 export const formsApi = {
-  submit: (slugOrId: string, payload: { name: string; email: string; phone?: string; message?: string; customData?: Record<string, any>; formId?: string; referrer?: string; honeypot?: string }) =>
+  submit: (
+    slugOrId: string,
+    payload: {
+      name: string;
+      email: string;
+      phone?: string;
+      message?: string;
+      customData?: Record<string, any>;
+      formId?: string;
+      referrer?: string;
+      honeypot?: string;
+      utm?: {
+        source?: string;
+        medium?: string;
+        campaign?: string;
+        term?: string;
+        content?: string;
+      };
+    }
+  ) =>
     apiFetch<{ success: boolean; message: string; data: { id: string; whatsappUrl: string | null; redirectUrl: string | null; successMessage: string } }>(
       `/forms/submit/${encodeURIComponent(slugOrId)}`,
       {
@@ -451,7 +470,19 @@ export const formsApi = {
 
 // ─── Site Analytics ────────────────────────────────────────────────────────
 export const analyticsApi = {
-  collect: (payload: { siteIdOrSlug: string; eventType: "pageview" | "click" | "form_submit" | "duration"; referrer?: string; deviceType?: "desktop" | "mobile" | "tablet"; durationSeconds?: number; target?: string }) => {
+  collect: (payload: {
+    siteIdOrSlug: string;
+    eventType: "pageview" | "click" | "form_submit" | "duration";
+    referrer?: string;
+    deviceType?: "desktop" | "mobile" | "tablet";
+    durationSeconds?: number;
+    target?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+  }) => {
     const url = `${API_BASE}/analytics/collect`;
     const body = JSON.stringify(payload);
 
@@ -485,6 +516,9 @@ export const analyticsApi = {
         deviceBreakdown: { mobile: number; desktop: number; tablet: number };
         topReferrers: Array<{ source: string; count: number; percentage: number }>;
         topActions: Array<{ target: string; count: number }>;
+        topUtmSources: Array<{ source: string; count: number }>;
+        topUtmCampaigns: Array<{ campaign: string; count: number }>;
+        topUtmMediums: Array<{ medium: string; count: number }>;
         dailyTrend: Array<{
           date: string;
           views: number;
@@ -511,6 +545,9 @@ export const analyticsApi = {
         deviceBreakdown: { mobile: number; desktop: number; tablet: number };
         topReferrers: Array<{ source: string; count: number; percentage: number }>;
         topActions: Array<{ target: string; count: number }>;
+        topUtmSources: Array<{ source: string; count: number }>;
+        topUtmCampaigns: Array<{ campaign: string; count: number }>;
+        topUtmMediums: Array<{ medium: string; count: number }>;
         dailyTrend: Array<{
           date: string;
           views: number;

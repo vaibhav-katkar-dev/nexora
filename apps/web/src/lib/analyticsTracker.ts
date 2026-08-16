@@ -8,9 +8,37 @@ function getDeviceType(): "mobile" | "tablet" | "desktop" {
   return "desktop";
 }
 
+export function getUrlUtmParams(): {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+} {
+  if (typeof window === "undefined") return {};
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const utmSource = params.get("utm_source")?.trim();
+    const utmMedium = params.get("utm_medium")?.trim();
+    const utmCampaign = params.get("utm_campaign")?.trim();
+    const utmTerm = params.get("utm_term")?.trim();
+    const utmContent = params.get("utm_content")?.trim();
+
+    return {
+      ...(utmSource && { utmSource }),
+      ...(utmMedium && { utmMedium }),
+      ...(utmCampaign && { utmCampaign }),
+      ...(utmTerm && { utmTerm }),
+      ...(utmContent && { utmContent }),
+    };
+  } catch {
+    return {};
+  }
+}
+
 /**
  * Initializes privacy-friendly, zero-overhead analytics tracking on a published site.
- * Tracks pageview, time on page (duration), and interactive button/link clicks.
+ * Tracks pageview (including UTM parameters), time on page (duration), and interactive button/link clicks.
  * Returns cleanup function.
  */
 export function initSiteAnalytics(siteSlugOrId: string): () => void {
@@ -24,13 +52,15 @@ export function initSiteAnalytics(siteSlugOrId: string): () => void {
   const startTime = Date.now();
   const deviceType = getDeviceType();
   const referrer = document.referrer || "";
+  const utmParams = getUrlUtmParams();
 
-  // 1. Initial Pageview
+  // 1. Initial Pageview with UTM parameters
   analyticsApi.collect({
     siteIdOrSlug: siteSlugOrId,
     eventType: "pageview",
     referrer,
     deviceType,
+    ...utmParams,
   });
 
   // 2. Click tracking for CTAs and outbound links

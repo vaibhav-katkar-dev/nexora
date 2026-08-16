@@ -866,6 +866,11 @@ export default function DashboardPage() {
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
                             {lead.projectName || lead.projectSlug}
                           </span>
+                          {(lead.utm?.campaign || lead.utm?.source) && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60" title={`UTM Source: ${lead.utm.source || "n/a"} | Medium: ${lead.utm.medium || "n/a"}`}>
+                              🎯 {lead.utm.campaign || lead.utm.source}
+                            </span>
+                          )}
                           <span className="text-[10px] text-slate-400 flex items-center gap-1">
                             <Clock size={10} />
                             {new Date(lead.createdAt).toLocaleString()}
@@ -1136,7 +1141,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Breakdown Grids */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Device Breakdown */}
               <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -1221,6 +1226,44 @@ export default function DashboardPage() {
                 </div>
               </div>
 
+              {/* Marketing & UTM Campaigns */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-purple-600" />
+                  <span>UTM Campaigns</span>
+                </h4>
+
+                <div className="space-y-2.5 pt-1">
+                  {analyticsData?.topUtmCampaigns && analyticsData.topUtmCampaigns.length > 0 ? (
+                    analyticsData.topUtmCampaigns.map((utm: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-700 truncate max-w-[130px]">
+                          {utm.campaign}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 font-mono">
+                          {utm.count} visits
+                        </span>
+                      </div>
+                    ))
+                  ) : analyticsData?.topUtmSources && analyticsData.topUtmSources.length > 0 ? (
+                    analyticsData.topUtmSources.map((utm: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-700 truncate max-w-[130px]">
+                          {utm.source}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 font-mono">
+                          {utm.count} visits
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-slate-400 py-4 text-center">
+                      Add ?utm_campaign=... or ?utm_source=... to campaign links to track traffic sources.
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Top CTA Actions */}
               <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -1232,7 +1275,7 @@ export default function DashboardPage() {
                   {analyticsData?.topActions && analyticsData.topActions.length > 0 ? (
                     analyticsData.topActions.map((act: any, idx: number) => (
                       <div key={idx} className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-slate-700 truncate max-w-[150px]">
+                        <span className="font-semibold text-slate-700 truncate max-w-[130px]">
                           {act.target}
                         </span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-50 text-violet-700 font-mono">
@@ -1292,6 +1335,14 @@ export default function DashboardPage() {
                   <div className="flex justify-between">
                     <span className="text-slate-400 font-medium">Referrer:</span>
                     <span className="text-slate-700 truncate max-w-[220px]">{selectedLead.referrer}</span>
+                  </div>
+                )}
+                {(selectedLead.utm?.campaign || selectedLead.utm?.source) && (
+                  <div className="flex justify-between pt-1 border-t border-slate-200/60">
+                    <span className="text-purple-600 font-bold">Marketing Campaign:</span>
+                    <span className="text-purple-700 font-mono font-bold">
+                      {selectedLead.utm.campaign || "n/a"} ({selectedLead.utm.source || "direct"}{selectedLead.utm.medium ? ` / ${selectedLead.utm.medium}` : ""})
+                    </span>
                   </div>
                 )}
               </div>

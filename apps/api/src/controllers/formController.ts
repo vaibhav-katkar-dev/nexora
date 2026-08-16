@@ -24,7 +24,7 @@ function getTodayString(): string {
 export async function submitForm(req: Request, res: Response) {
   try {
     const { slugOrId } = req.params;
-    const { name, email, phone, message, customData, formId, referrer, honeypot } = req.body;
+    const { name, email, phone, message, customData, formId, referrer, honeypot, utm } = req.body;
 
     // Honeypot spam check - bots fill hidden inputs
     if (honeypot) {
@@ -92,6 +92,7 @@ export async function submitForm(req: Request, res: Response) {
       phone: phone ? phone.trim() : "",
       message: message ? message.trim() : "",
       customData: customData || {},
+      utm: utm || {},
       ipHash,
       userAgent: userAgent.slice(0, 200),
       referrer: (referrer || req.headers.referer || "").slice(0, 300),

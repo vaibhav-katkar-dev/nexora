@@ -17,7 +17,8 @@ import { ThemeInspectorPanel } from "@/components/editor/panels/ThemeInspectorPa
 import { AddSectionPanel } from "@/components/editor/panels/AddSectionPanel";
 import { CanvasPreview } from "@/components/editor/CanvasPreview";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
-import { Loader2, Sparkles, Globe, ArrowRight } from "lucide-react";
+import { AiCanvasPromptBar } from "@/components/editor/AiCanvasPromptBar";
+import { Loader2, Sparkles, Globe, ArrowRight, Layers, SlidersHorizontal, Palette, Plus } from "lucide-react";
 
 // Lazy-load heavy panels and modals to keep initial bundle size lightweight
 const SeoInspectorPanel = dynamic(() => import("@/components/editor/panels/SeoInspectorPanel").then(mod => mod.SeoInspectorPanel), { ssr: false });
@@ -446,6 +447,7 @@ export default function EditorPage() {
               style={{
                 height: isSheetOpen ? `${sheetH}vh` : "3rem",
                 minHeight: "3rem",
+                maxHeight: "calc(100vh - 7rem)",
                 transition: sheetDragRef.current ? "none" : "height 0.32s cubic-bezier(0.32, 0.72, 0, 1)",
                 willChange: "height",
               }}
@@ -544,7 +546,7 @@ export default function EditorPage() {
           </>
         )}
 
-        <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-slate-950 max-md:pb-14">
+        <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-slate-950 max-md:pb-24">
           {showCodeEditor ? (
             <CodeEditorPanel />
           ) : viewMode === "preview" ? (
@@ -571,6 +573,41 @@ export default function EditorPage() {
             />
           )}
         </div>
+
+        {/* ── Mobile 4-tab bottom navigation bar ──────────────────────────── */}
+        {showSidebar && (
+          <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-slate-900 border-t border-slate-700/80 flex items-stretch h-14">
+            {([
+              { tab: "sections", icon: Layers, label: "Sections" },
+              { tab: "inspector", icon: SlidersHorizontal, label: "Edit" },
+              { tab: "theme", icon: Palette, label: "Theme" },
+              { tab: "add", icon: Plus, label: "Add" },
+            ] as { tab: SidebarTab; icon: React.ElementType; label: string }[]).map(({ tab, icon: Icon, label }) => {
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (sheetH <= SHEET_COLLAPSED || !isSheetOpen) {
+                      setSheetH(SHEET_PEEK);
+                      setIsSheetOpen(true);
+                    }
+                  }}
+                  className={`flex-1 flex flex-col items-center justify-center gap-1 transition-colors ${
+                    isActive
+                      ? "text-indigo-400 bg-indigo-950/60 font-semibold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Icon size={17} />
+                  <span className="text-[10px] font-bold">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Custom URL Slug & Publish Modal */}
@@ -607,6 +644,8 @@ export default function EditorPage() {
           onClose={() => setImagePickerState({ isOpen: false, currentUrl: "" })}
         />
       )}
+      {/* AI Assistant — fixed-position, non-intrusive, desktop only */}
+      <AiCanvasPromptBar />
     </div>
   );
 }

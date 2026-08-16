@@ -11,6 +11,13 @@ export interface IFormResponseDocument extends Document {
   phone?: string;
   message: string;
   customData?: Record<string, any>;
+  utm?: {
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    term?: string;
+    content?: string;
+  };
   isRead: boolean;
   isStarred: boolean;
   ipHash?: string;
@@ -32,6 +39,13 @@ const FormResponseSchema = new Schema<IFormResponseDocument>(
     phone: { type: String, default: "", trim: true },
     message: { type: String, default: "", trim: true },
     customData: { type: Schema.Types.Mixed, default: {} },
+    utm: {
+      source: { type: String, default: "" },
+      medium: { type: String, default: "" },
+      campaign: { type: String, default: "" },
+      term: { type: String, default: "" },
+      content: { type: String, default: "" },
+    },
     isRead: { type: Boolean, default: false, index: true },
     isStarred: { type: Boolean, default: false, index: true },
     ipHash: { type: String, default: "" },

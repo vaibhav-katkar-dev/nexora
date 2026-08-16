@@ -598,6 +598,96 @@ const removeArrayItem = (key: string, index: number) => {
         {section.type === "hero" && (
           <div className="pt-3 border-t border-slate-800 space-y-4">
             <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="text-indigo-400">◈</span> Hero Background Image
+            </h3>
+
+            {/* Background Image URL + Picker */}
+            <div className="space-y-2">
+              <label className={labelClass}>Background Image</label>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={content.backgroundImage || content.bgImage || ""}
+                  onChange={(e) => handleFieldChange("backgroundImage", e.target.value)}
+                  placeholder="https://... (leave empty for solid color)"
+                  className={inputClass}
+                />
+                {onOpenImagePicker && (
+                  <button
+                    onClick={() => onOpenImagePicker(content.backgroundImage || content.bgImage || "", (url) => handleFieldChange("backgroundImage", url))}
+                    className="px-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg border border-slate-700 flex items-center justify-center flex-shrink-0"
+                    title="Pick Background Image"
+                  >
+                    <ImageIcon size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Focal Point Picker — 9-cell grid */}
+            {(content.backgroundImage || content.bgImage) && (
+              <div className="space-y-2">
+                <label className={labelClass}>Image Focal Point</label>
+                <p className="text-[10px] text-slate-500">Choose which part of the image stays visible when cropped on mobile.</p>
+                <div className="grid grid-cols-3 gap-1 w-fit">
+                  {[
+                    { label: "↖", value: "top left" },
+                    { label: "↑", value: "top center" },
+                    { label: "↗", value: "top right" },
+                    { label: "←", value: "center left" },
+                    { label: "⊙", value: "center" },
+                    { label: "→", value: "center right" },
+                    { label: "↙", value: "bottom left" },
+                    { label: "↓", value: "bottom center" },
+                    { label: "↘", value: "bottom right" },
+                  ].map((fp) => {
+                    const current = content.backgroundPosition || "center";
+                    const isActive = current === fp.value;
+                    return (
+                      <button
+                        key={fp.value}
+                        type="button"
+                        onClick={() => handleFieldChange("backgroundPosition", fp.value)}
+                        title={fp.value}
+                        className={`w-9 h-9 rounded-lg border text-sm font-bold transition-all ${
+                          isActive
+                            ? "bg-indigo-600 border-indigo-400 text-white shadow-sm"
+                            : "bg-slate-950 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800"
+                        }`}
+                      >
+                        {fp.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Overlay Darkness Slider */}
+            {(content.backgroundImage || content.bgImage) && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className={labelClass}>Image Overlay Darkness</label>
+                  <span className="text-[11px] font-mono text-indigo-300 font-bold">
+                    {Math.round((content.overlayOpacity ?? 0.45) * 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={85}
+                  step={5}
+                  value={Math.round((content.overlayOpacity ?? 0.45) * 100)}
+                  onChange={(e) => handleFieldChange("overlayOpacity", parseInt(e.target.value) / 100)}
+                  className="w-full h-2 rounded-full accent-indigo-500 cursor-pointer bg-slate-700"
+                />
+                <p className="text-[10px] text-slate-500">
+                  Darken the background image so text stays readable over any photo you upload.
+                </p>
+              </div>
+            )}
+
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2 pt-2 border-t border-slate-800">
               <span className="text-indigo-400">◈</span> Call-to-Actions & Socials
             </h3>
 

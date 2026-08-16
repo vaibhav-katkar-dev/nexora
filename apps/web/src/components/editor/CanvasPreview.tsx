@@ -70,7 +70,7 @@ export function CanvasPreview({
 
   return (
     <div className="flex-1 h-full w-full bg-slate-950 overflow-auto flex flex-col items-center justify-start relative p-2 sm:p-4">
-      {/* Context-Aware Floating Toolbar */}
+      {/* Context-Aware Top Formatting Bar */}
       <ContextToolbar
         scrollRef={scrollContainerRef}
         onRequestImageEdit={onRequestImageEdit}
@@ -93,7 +93,7 @@ export function CanvasPreview({
           ) : (
             <div className="h-full flex flex-col items-center justify-center p-12 text-center text-slate-500 gap-3">
               <Layers size={40} className="opacity-30" />
-              <p className="text-sm font-medium">No site configuration loaded.</p>
+              <p className="text-sm font-medium">No site loaded.</p>
             </div>
           )}
         </DeviceFrame>

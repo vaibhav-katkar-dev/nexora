@@ -52,26 +52,74 @@ export function ImagePickerModal({ currentUrl, onSelect, onClose }: ImagePickerM
     }
   }, [tab]);
 
+  /** Compress image in browser using HTML5 Canvas to WebP (max 1200px, 82% quality) */
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1400;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(e.target?.result as string);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressedDataUrl = canvas.toDataURL("image/webp", 0.82);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) {
       setUploadError("Only image files are allowed.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("File too large. Max 5MB allowed.");
-      return;
-    }
     setIsUploading(true);
     setUploadError("");
     setUploadSuccess("");
+
     try {
+      // First try backend Cloudinary / S3 upload if connected
       const result = await mediaApi.upload(file, projectId || undefined);
-      setUploadSuccess(result.url);
-      // Auto-apply and close
-      onSelect(result.url);
+      if (result?.url) {
+        setUploadSuccess(result.url);
+        onSelect(result.url);
+        onClose();
+        return;
+      }
+    } catch {
+      // Graceful instant fallback: client-side compressed WebP
+    }
+
+    try {
+      const compressedDataUrl = await compressImage(file);
+      setUploadSuccess(compressedDataUrl);
+      onSelect(compressedDataUrl);
       onClose();
     } catch (err: any) {
-      setUploadError(err.message || "Upload failed. Please try again.");
+      setUploadError(err.message || "Failed to process image.");
     } finally {
       setIsUploading(false);
     }

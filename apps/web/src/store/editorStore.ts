@@ -81,6 +81,28 @@ function scheduleAutoSave(
   }, 2500); // 2.5 second debounce
 }
 
+// ─── Debounce history snapshot (text editing) ────────────────────────────────
+// This prevents letter-by-letter undo entries while typing.
+// A snapshot is committed after 800ms of typing inactivity.
+let historySnapshotTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleDebouncedHistorySnapshot(
+  get: () => EditorState,
+  set: (fn: (s: EditorState) => Partial<EditorState>) => void
+) {
+  if (historySnapshotTimeout) clearTimeout(historySnapshotTimeout);
+  historySnapshotTimeout = setTimeout(() => {
+    const { config, customCode } = get();
+    if (!config) return;
+    const clonedConfig = JSON.parse(JSON.stringify(config));
+    const clonedCode = JSON.parse(JSON.stringify(customCode));
+    set((s) => ({
+      past: [...s.past.slice(-49), { config: clonedConfig, customCode: clonedCode }],
+      future: [],
+    }));
+  }, 800);
+}
+
 // ─── Store ──────────────────────────────────────────────────────────────────
 export const useEditorStore = create<EditorState>((set, get) => ({
   projectId: null,
@@ -247,7 +269,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return { ...sec, content: nextContent } as any;
     });
 
-    get().setConfig({ ...clonedConfig, sections: nextSections }, pushHistory);
+    // Apply config update WITHOUT immediate history push — history is debounced
+    // so rapid typing (e.g. renaming a section title) collapses into ONE undo step.
+    // Structural changes (add/remove/move section) use setConfig(…, true) directly.
+    const newConfig = { ...clonedConfig, sections: nextSections };
+    set((s) => ({ config: newConfig, isDirty: true, future: pushHistory ? [] : s.future }));
+    scheduleAutoSave(get, set as any);
+    if (pushHistory) scheduleDebouncedHistorySnapshot(get, set as any);
   },
 
   updateElementStyle: (sectionId, elementKey, styleUpdates) => {
