@@ -9,6 +9,7 @@ import { validateTemplateJSON } from "@ai-platform/templates";
 import { Navbar } from "@/components/navigation/Navbar";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
+import { DeviceFrame, DeviceFrameViewport } from "@/components/editor/DeviceFrame";
 import {
   Globe,
   Sparkles,
@@ -30,6 +31,10 @@ import {
   Loader2,
   Shield,
   Search,
+  ExternalLink,
+  Monitor,
+  Tablet,
+  Smartphone,
 } from "lucide-react";
 
 
@@ -131,6 +136,7 @@ export default function TemplateGalleryPage() {
 
   // Modals
   const [previewTemplate, setPreviewTemplate] = useState<any | null>(null);
+  const [previewViewport, setPreviewViewport] = useState<DeviceFrameViewport>("desktop");
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
 
   // Admin JSON Validator
@@ -274,22 +280,30 @@ export default function TemplateGalleryPage() {
     }
   };
 
-  const handleOpenPreview = (template: any) => {
+  const handleOpenModal = (template: any) => {
+    setPreviewViewport("desktop");
+    setPreviewTemplate(template);
+  };
+
+  const handleOpenInNewTab = (template: any) => {
+    const targetKey = template.slug || template.id;
     try {
       sessionStorage.setItem(
-        `nexora-tpl-preview:${template.slug}`,
-        JSON.stringify({ config: template.config })
+        `nexora-tpl-preview:${targetKey}`,
+        JSON.stringify({
+          config: template.config,
+          name: template.name,
+          category: template.category,
+          description: template.description,
+          slug: template.slug,
+          id: template.id,
+        })
       );
     } catch {
       /* ignore */
     }
 
-    const isMobileScreen = typeof window !== "undefined" && window.innerWidth < 768;
-    if (isMobileScreen) {
-      window.open(`/templates/preview/${template.slug}`, "_blank", "noopener,noreferrer");
-    } else {
-      setPreviewTemplate(template);
-    }
+    window.open(`/templates/preview/${encodeURIComponent(targetKey)}`, "_blank", "noopener,noreferrer");
   };
 
   const handleValidateJSON = () => {
@@ -356,7 +370,7 @@ export default function TemplateGalleryPage() {
           </div>
         </div>
 
-{/* ── Template Cards Grid ─────────────────────────────────────────── */}
+        {/* ── Template Cards Grid ─────────────────────────────────────────── */}
         {templatesLoading ? (
           <div className="py-20 bg-white border border-dashed border-slate-200 rounded-2xl text-center text-slate-400 text-sm flex items-center justify-center gap-2">
             <Loader2 size={16} className="animate-spin text-indigo-500" /> Loading templates…
@@ -365,7 +379,7 @@ export default function TemplateGalleryPage() {
           <div className="py-20 bg-white border border-dashed border-slate-200 rounded-2xl text-center text-slate-400 text-sm">
             No templates match your filter. Try another category or keyword.
           </div>
-) : (
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTemplates.map((template) => {
               const IconComp = CATEGORY_ICON_COMPONENTS[template.category] || Globe;
@@ -375,11 +389,10 @@ export default function TemplateGalleryPage() {
                 <div
                   key={template.id}
                   className="group bg-white rounded-[18px] border border-slate-200/80 overflow-hidden flex flex-col shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_24px_-16px_rgba(16,24,40,0.12)] transition-all duration-300 ease-out cursor-pointer will-change-transform hover:-translate-y-1.5 hover:shadow-[0_28px_52px_-18px_rgba(16,24,40,0.22)] p-3"
-                  onClick={() => handleOpenPreview(template)}
+                  onClick={() => handleOpenModal(template)}
                 >
                   {/* ── Live Preview Area (the hero) ─────────────────────── */}
                   <div className="relative shrink-0 rounded-[13px] overflow-hidden">
-{/* Live desktop render fills the wide 16:9 preview; subtle scale on hover */}
                     <div className="origin-top transform-gpu transition-transform duration-500 ease-out group-hover:scale-[1.02]">
                       <TemplateThumbnail config={template.config} name={template.name} category={template.category} />
                     </div>
@@ -418,9 +431,10 @@ export default function TemplateGalleryPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenPreview(template);
+                          handleOpenInNewTab(template);
                         }}
                         className="px-4 h-[42px] rounded-[10px] text-[13px] font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-colors duration-250 flex items-center justify-center gap-1.5"
+                        title="Open live preview in new browser tab"
                       >
                         <Eye size={14} className="text-slate-400" /> Preview
                       </button>
@@ -433,23 +447,80 @@ export default function TemplateGalleryPage() {
         )}
       </main>
 
-      {/* ── Template Preview Modal ──────────────────────────────────────────── */}
+      {/* ── Template Preview Modal (In-Page Popup) ───────────────────────────── */}
       {previewTemplate && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200"
           onClick={() => setPreviewTemplate(null)}
         >
           <div
-            className="bg-white border border-slate-200 rounded-3xl max-w-5xl w-full h-[88vh] flex flex-col overflow-hidden shadow-2xl animate-scale-in"
+            className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-6xl w-full h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
-              <div>
-                <h3 className="font-bold text-slate-900 text-base">{previewTemplate.name}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{previewTemplate.description}</p>
+            <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/95 shrink-0 gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="min-w-0">
+                  <h3 className="font-bold text-white text-sm sm:text-base flex items-center gap-2 truncate">
+                    {previewTemplate.name}
+                    <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
+                      {previewTemplate.category?.replace("_", " ")}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400 truncate max-w-md hidden sm:block">{previewTemplate.description}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              {/* Viewport Switcher */}
+              <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                <button
+                  onClick={() => setPreviewViewport("desktop")}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
+                    previewViewport === "desktop"
+                      ? "bg-slate-800 text-white shadow-xs"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                  title="Desktop View"
+                >
+                  <Monitor size={13} />
+                  <span className="hidden md:inline">Desktop</span>
+                </button>
+                <button
+                  onClick={() => setPreviewViewport("tablet")}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
+                    previewViewport === "tablet"
+                      ? "bg-slate-800 text-white shadow-xs"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                  title="Tablet View"
+                >
+                  <Tablet size={13} />
+                  <span className="hidden md:inline">Tablet</span>
+                </button>
+                <button
+                  onClick={() => setPreviewViewport("mobile")}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
+                    previewViewport === "mobile"
+                      ? "bg-slate-800 text-white shadow-xs"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                  title="Android Mobile View"
+                >
+                  <Smartphone size={13} />
+                  <span className="hidden md:inline">Mobile</span>
+                </button>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => handleOpenInNewTab(previewTemplate)}
+                  className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all flex items-center gap-1.5 shadow-xs"
+                  title="Open live preview in new browser tab"
+                >
+                  <ExternalLink size={13} className="text-slate-400" />
+                  <span className="hidden sm:inline">New Tab</span>
+                </button>
                 <button
                   onClick={() => {
                     setQuickFillName("");
@@ -459,21 +530,34 @@ export default function TemplateGalleryPage() {
                     setQuickFillModal({ open: true, templateConfig: previewTemplate.config });
                   }}
                   disabled={isCreating}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                  className="px-4 sm:px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 disabled:opacity-50"
                 >
-                  <Sparkles size={13} /> Use This Template
+                  <Sparkles size={13} />
+                  <span className="hidden sm:inline">Use Template</span>
+                  <span className="sm:hidden">Use</span>
                 </button>
                 <button
                   onClick={() => setPreviewTemplate(null)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   <X size={18} />
                 </button>
               </div>
             </div>
+
             {/* Live Render Area */}
-            <div className="flex-1 overflow-auto bg-white">
-              <SiteRenderer config={previewTemplate.config} />
+            <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden bg-slate-950 p-2 sm:p-6 flex flex-col items-center custom-scrollbar">
+              {previewViewport === "desktop" ? (
+                <div className="w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-black">
+                  <SiteRenderer config={previewTemplate.config} />
+                </div>
+              ) : (
+                <div className="my-auto py-2">
+                  <DeviceFrame viewport={previewViewport}>
+                    <SiteRenderer config={previewTemplate.config} />
+                  </DeviceFrame>
+                </div>
+              )}
             </div>
           </div>
         </div>

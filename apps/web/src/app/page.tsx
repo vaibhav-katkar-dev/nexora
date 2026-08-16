@@ -398,7 +398,7 @@ export default function LandingPage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          MAIN HERO ("Get Your Digital Presence Live in Under 3 Minutes.")
+          MAIN HERO ("Create your website in 3 minutes.")
       ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="start"
@@ -413,7 +413,7 @@ export default function LandingPage() {
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 sm:gap-12 lg:gap-16">
             {/* ── Left: Main Hero Copy ── */}
             <div className="flex-1 space-y-5 sm:space-y-6 pt-2">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-sm animate-float-smooth">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-xs animate-float-smooth">
                 <Clock size={14} className="text-indigo-600 animate-sparkle" />
                 <span>Live in under 3 minutes</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -423,33 +423,35 @@ export default function LandingPage() {
                 id="hero-heading"
                 className="text-3xl sm:text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight text-slate-900 leading-[1.08]"
               >
-                Your corner of the internet,
+                Create your website
                 <br />
-                <span className="text-gradient">live today.</span>
+                <span className="text-gradient">in under 3 minutes.</span>
               </h1>
 
-              <p className="text-slate-600 text-lg leading-relaxed max-w-xl">
-                A dead-simple way to build a place for your{" "}
-                <strong className="text-slate-900">
-                  business, ideas, portfolio, or just yourself.
+              <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-xl">
+                The simplest way to build a clean, professional online home for your{" "}
+                <strong className="text-slate-900 font-bold">
+                  business, portfolio, creator brand, restaurant, or ideas.
                 </strong>
               </p>
 
-              {/* Formula Callout */}
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-900 text-white font-mono font-bold text-xs shadow-md">
-                <span className="text-indigo-400">Choose</span>
-                <span className="text-slate-500">→</span>
-                <span className="text-indigo-400">Customize</span>
-                <span className="text-slate-500">→</span>
-                <span className="text-emerald-400">Go Live.</span>
+              {/* Simple 3-step pills */}
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700 pt-1">
+                <span className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">1</span> Pick a style
+                </span>
+                <span className="text-slate-400 font-bold">→</span>
+                <span className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">2</span> Add details
+                </span>
+                <span className="text-slate-400 font-bold">→</span>
+                <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] flex items-center justify-center font-bold">3</span> Go live free
+                </span>
               </div>
 
-              <p className="text-xs text-slate-500 font-medium">
-                No code. No hosting headaches. Just pick a look, type, and share.
-              </p>
-
               {/* Primary & Secondary CTAs */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
                 <button
                   onClick={() => setIsModalOpen(true)}
                   className="px-7 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
@@ -467,14 +469,14 @@ export default function LandingPage() {
               </div>
 
               {/* Trust strip under CTA */}
-              <div className="pt-3 grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs font-semibold text-slate-600">
+              <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-semibold text-slate-600">
                 {[
-                  "Free Nexora address",
-                  "Global hosting included",
+                  "Free Nexora link included",
+                  "Fast hosting built-in",
                   "Free SSL security",
-                  "100% Mobile-ready",
-                  "SEO-ready basics",
-                  "Instant publishing",
+                  "100% Mobile responsive",
+                  "No coding required",
+                  "Publish in 1-click",
                 ].map((item) => (
                   <span key={item} className="flex items-center gap-1.5">
                     <Check size={13} className="text-emerald-600 shrink-0 font-bold" />
@@ -484,36 +486,36 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* ── Right: Static Username Claim Widget ── */}
+            {/* ── Right: Clear Username Claim Widget ── */}
             <div className="w-full lg:w-[460px] flex-shrink-0 relative">
-              <div className="hidden sm:flex absolute -top-5 -right-5 z-30 items-center gap-1.5 bg-slate-900 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-2xl shadow-xl">
+              <div className="hidden sm:flex absolute -top-4 -right-4 z-30 items-center gap-1.5 bg-slate-900 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-2xl shadow-xl border border-slate-700">
                 <Zap size={14} className="text-amber-400" />
-                <span>Instant CDN Ready</span>
+                <span>Instant Free Link</span>
               </div>
 
               <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl shadow-slate-900/10 overflow-hidden relative z-20">
-                <div className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
-                      Claim Your Presence
+                      Claim Your Free Website Link
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-bold">
-                    Free Plan
+                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">
+                    Free Forever
                   </span>
                 </div>
 
-                <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+                <div className="p-5 sm:p-6 space-y-4">
                   <div>
                     <label
                       htmlFor="slug-input"
                       className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider"
                     >
-                      Enter your address handle
+                      Choose your web address
                     </label>
                     <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all">
-                      <span className="text-sm font-semibold text-slate-400 select-none whitespace-nowrap pr-1.5">
+                      <span className="text-sm font-semibold text-slate-400 select-none whitespace-nowrap pr-1.5 font-mono">
                         nexora.site /
                       </span>
                       <input
@@ -534,11 +536,11 @@ export default function LandingPage() {
                     </div>
                     {canProceed ? (
                       <p className="text-[11px] text-emerald-600 font-semibold mt-2 flex items-center gap-1">
-                        <Check size={11} /> nexora.site/{cleanSlug} is available
+                        <Check size={12} className="font-bold" /> nexora.site/{cleanSlug} is ready to claim!
                       </p>
                     ) : (
                       <p className="text-[11px] text-slate-400 mt-2">
-                        Letters, numbers and hyphens only.
+                        Type your name, brand, or project name above.
                       </p>
                     )}
                   </div>
@@ -548,17 +550,15 @@ export default function LandingPage() {
                     disabled={!canProceed}
                     className="w-full h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-lg shadow-indigo-600/25"
                   >
-                    <span>Choose Template & Go Live</span>
+                    <span>Create My Website Free</span>
                     <ArrowRight size={16} />
                   </button>
                 </div>
 
-                <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-center gap-5 text-[11px] text-slate-500 font-semibold">
-                  <span>Zero setup</span>
-                  <span>•</span>
-                  <span>Instant preview</span>
-                  <span>•</span>
-                  <span>Ready in 3 minutes</span>
+                <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-around text-[11px] text-slate-500 font-semibold">
+                  <span>✓ No credit card</span>
+                  <span>✓ Free hosting</span>
+                  <span>✓ Live in 3 mins</span>
                 </div>
               </div>
             </div>

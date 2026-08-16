@@ -1988,19 +1988,19 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
   };
 
   return (
-    <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-4xl mx-auto">
-      <div className="text-center mb-14 space-y-2">
-        <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+    <section id={section.id} data-section-id={section.id} className="py-12 sm:py-20 px-4 sm:px-6 max-w-4xl mx-auto">
+      <div className="text-center mb-8 sm:mb-12 space-y-2">
+        <h2 {...sel("title")} className="text-2xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="text-sm sm:text-base opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className={`grid grid-cols-1 ${isFormEnabled ? "md:grid-cols-2" : "max-w-md mx-auto"} gap-12 items-start`}>
+      <div className={`flex flex-wrap ${!isFormEnabled ? "justify-center max-w-md mx-auto" : ""} gap-8 sm:gap-12 items-start`}>
         {/* Contact Info Channels */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 flex-[1_1_280px]">
           {c.email && (
-            <div {...sel("content.email")} className="flex items-center gap-4">
+            <div {...sel("content.email")} className="flex items-center gap-3.5 sm:gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <Mail size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -2013,7 +2013,7 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
             </div>
           )}
           {c.phone && (
-            <div {...sel("content.phone")} className="flex items-center gap-4">
+            <div {...sel("content.phone")} className="flex items-center gap-3.5 sm:gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <Phone size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -2026,18 +2026,18 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
             </div>
           )}
           {c.address && (
-            <div {...sel("content.address")} className="flex items-center gap-4">
+            <div {...sel("content.address")} className="flex items-center gap-3.5 sm:gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <MapPin size={18} style={{ color: theme.primaryColor }} />
               </div>
               <div>
                 <div className="text-xs opacity-60">Location</div>
-                <div className="font-semibold">{c.address}</div>
+                <div className="font-semibold text-sm sm:text-base">{c.address}</div>
               </div>
             </div>
           )}
           {(c.publicWhatsapp || c.whatsapp) && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3.5 sm:gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 shrink-0">
                 <MessageCircle size={18} className="text-emerald-400" />
               </div>
@@ -2066,7 +2066,7 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
 
         {/* Interactive Form Card */}
         {isFormEnabled && (
-          <div {...sel("form")} className="relative rounded-2xl border bg-white/5 backdrop-blur-sm p-6 overflow-hidden transition-all duration-500 shadow-xl">
+          <div {...sel("form")} className="flex-[1_1_280px] relative rounded-2xl border bg-white/5 backdrop-blur-sm p-4 sm:p-6 overflow-hidden transition-all duration-500 shadow-xl w-full">
             {submitStatus === "success" ? (
               <div className="py-8 px-4 text-center space-y-5 animate-in fade-in zoom-in-95 duration-500">
                 {/* Celebratory animated pulse icon */}

@@ -1,14 +1,6 @@
-import { notFound } from "next/navigation";
-import { SiteRenderer } from "@/components/renderer/SiteRenderer";
+import { TemplatePreviewClient } from "./TemplatePreviewClient";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
-
-/**
- * Server component that fetches the template config at request time so the
- * rendered HTML (title + full page content) is crawlable / indexable by
- * search engines like Google. The interactive preview then renders client-side
- * via <SiteRenderer>.
- */
 
 interface TemplatePreviewData {
   defaultConfig?: any;
@@ -20,11 +12,7 @@ interface TemplatePreviewData {
 
 async function fetchTemplate(id: string): Promise<TemplatePreviewData | null> {
   try {
-    // Use the PUBLIC getTemplate endpoint (no auth) so this page is crawlable
-    // and indexable by search engines. It returns { data: { defaultConfig, ... } }.
     const res = await fetch(`${API_BASE}/templates/${encodeURIComponent(id)}`, {
-      // Revalidate on a short interval so fresh admin edits show up, while
-      // still allowing the route to be cached & indexed by crawlers.
       next: { revalidate: 60 },
       cache: "force-cache",
     });
@@ -64,18 +52,13 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 export default async function TemplatePreviewPage({ params }: { params: { id: string } }) {
   const data = await fetchTemplate(params.id);
 
-  if (!data?.defaultConfig) {
-    notFound();
-    return null;
-  }
-
   return (
-    <main className="min-h-screen">
-      {/* Inert SEO fallback text (hidden visually) — reinforces indexable content */}
-      <h1 style={{ display: "none" }}>{data.name}</h1>
-      <p style={{ display: "none" }}>{data.description}</p>
+    <main className="min-h-screen bg-slate-950">
+      {/* Inert SEO fallback text for search crawlers */}
+      {data?.name && <h1 style={{ display: "none" }}>{data.name}</h1>}
+      {data?.description && <p style={{ display: "none" }}>{data.description}</p>}
 
-      <SiteRenderer config={data.defaultConfig} />
+      <TemplatePreviewClient id={params.id} initialData={data} />
     </main>
   );
 }

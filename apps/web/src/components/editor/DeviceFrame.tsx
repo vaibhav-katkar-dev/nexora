@@ -56,7 +56,10 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
           </div>
 
           {/* Browser content — scrolls inside here */}
-          <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col">
+          <div
+            ref={scrollRef as React.RefObject<HTMLDivElement>}
+            className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col custom-scrollbar"
+          >
             {children}
           </div>
         </div>
@@ -106,16 +109,19 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
   // ── Mobile: authentic Android phone ────────────────────────────────────
   return (
     <div className="flex flex-col items-center justify-center p-2 sm:p-4 my-auto max-w-full">
-      <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.4rem] sm:rounded-[2.6rem] p-[8px] sm:p-[10px] shadow-2xl border border-slate-700 max-w-full">
+      <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.6rem] sm:rounded-[2.8rem] p-[8px] sm:p-[10px] shadow-2xl border border-slate-700/80 max-w-full">
+        {/* Hardware side buttons */}
         <div className="absolute -left-[3px] top-20 sm:top-24 w-[3px] h-10 sm:h-12 rounded-l bg-slate-700" />
         <div className="absolute -left-[3px] top-34 sm:top-40 w-[3px] h-12 sm:h-16 rounded-l bg-slate-700" />
         <div className="absolute -right-[3px] top-24 sm:top-28 w-[3px] h-16 sm:h-20 rounded-r bg-slate-700" />
 
-        <div className="bg-black rounded-[1.8rem] sm:rounded-[2rem] overflow-hidden relative max-w-full">
-          <div className="absolute top-2 left-4 sm:left-5 z-30 w-3 h-3 rounded-full bg-slate-800 ring-1 ring-slate-700" />
+        <div className="bg-black rounded-[2rem] sm:rounded-[2.2rem] overflow-hidden relative max-w-full flex flex-col shadow-inner">
+          {/* Centered Android Punch-Hole Camera */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 w-3 h-3 rounded-full bg-slate-950 ring-2 ring-slate-800 shadow-inner" />
 
-          <div className="relative z-20 h-7 flex items-center justify-between px-4 sm:px-5 pt-1 text-white">
-            <span className="text-[10px] sm:text-[11px] font-semibold tracking-wide">9:41</span>
+          {/* Android Status Bar */}
+          <div className="relative z-20 h-7 flex items-center justify-between px-5 pt-1 text-white select-none shrink-0">
+            <span className="text-[11px] font-semibold tracking-wide">9:41</span>
             <div className="flex items-center gap-1.5">
               <svg width="14" height="10" viewBox="0 0 15 11" className="fill-white">
                 <rect x="0" y="7" width="2.5" height="4" rx="0.5" />
@@ -137,19 +143,17 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
             </div>
           </div>
 
+          {/* Scrollable Screen Content */}
           <div
             ref={scrollRef as React.RefObject<HTMLDivElement>}
-            className="w-[360px] max-w-[calc(100vw-2.5rem)] h-[min(750px,calc(100vh-170px))] min-h-[340px] sm:min-h-[500px] overflow-y-auto overflow-x-hidden flex flex-col"
+            className="w-[390px] sm:w-[412px] max-w-[calc(100vw-2.5rem)] h-[min(820px,calc(100vh-160px))] min-h-[380px] sm:min-h-[520px] overflow-y-auto overflow-x-hidden flex flex-col bg-slate-950"
           >
             {children}
           </div>
 
-          <div className="relative z-20 h-8 sm:h-9 flex items-center justify-center pb-1 gap-12 sm:gap-16 bg-black">
-            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-white/80" />
-            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-[3px] border-2 border-white/80" />
-            <span className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-white/80 flex items-center justify-center">
-              <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white/80" />
-            </span>
+          {/* Android Gesture Navigation Bar */}
+          <div className="relative z-20 h-6 flex items-center justify-center pb-1 bg-black select-none shrink-0">
+            <div className="w-28 h-1 rounded-full bg-white/60" />
           </div>
         </div>
       </div>
