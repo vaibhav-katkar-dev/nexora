@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   SiteConfigJSON,
@@ -253,7 +253,8 @@ function elementSel(
       });
     },
     onBlur: (e: React.FocusEvent<HTMLElement>) => {
-      const text = e.currentTarget.innerText || e.currentTarget.textContent || "";
+      // Trim to avoid saving leading/trailing whitespace introduced by browser or adjacent elements
+      const text = (e.currentTarget.innerText || e.currentTarget.textContent || "").trim();
       useEditorStore.getState().updateElementValue(sectionId!, key, text, true);
     },
     onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => {
@@ -262,6 +263,14 @@ function elementSel(
         e.currentTarget.blur();
       }
     },
+  };
+}
+
+/** Selectable in the editor but not inline-editable (e.g. contact info cards). */
+function selectOnly(key: string, selectedElementKey?: string | null) {
+  return {
+    "data-element-key": key,
+    "data-selected": selectedElementKey === key ? "true" : "false",
   };
 }
 
@@ -767,11 +776,11 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
         {stats.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-white/15 w-full max-w-3xl">
             {stats.map((st: any, i: number) => (
-              <div key={i} {...sel(`content.stats.${i}.value`)} className="text-center">
-                <div className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
+              <div key={i} className="text-center">
+                <div {...sel(`content.stats.${i}.value`)} className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
                   {st.value}
                 </div>
-                <div className="text-xs uppercase tracking-wider opacity-70 text-slate-300 mt-1">{st.label}</div>
+                <div {...sel(`content.stats.${i}.label`)} className="text-xs uppercase tracking-wider opacity-70 text-slate-300 mt-1">{st.label}</div>
               </div>
             ))}
           </div>
@@ -803,9 +812,9 @@ function AboutSection({ section, theme, selectedElementKey, interactive }: Secti
           {highlights.length > 0 && (
             <div className="space-y-3 pt-2">
               {highlights.map((h: string, i: number) => (
-                <div key={i} {...sel(`content.highlights.${i}`)} className="flex items-start gap-3 text-sm opacity-90">
-                  <CheckCircle2 size={18} style={{ color: theme.primaryColor }} className="mt-0.5 flex-shrink-0" />
-                  <span>{h}</span>
+                <div key={i} className="flex items-start gap-3 text-sm opacity-90">
+                  <CheckCircle2 size={18} style={{ color: theme.primaryColor }} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
+                  <span {...sel(`content.highlights.${i}`)}>{h}</span>
                 </div>
               ))}
             </div>
@@ -901,11 +910,11 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive }: Se
               {(item.buttonText || item.url || item.ctaLink) && (
                 <a
                   href={item.url || item.ctaLink || "#"}
-                  {...sel(`content.items.${i}.buttonText`)}
                   className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline cursor-pointer"
                   style={{ color: theme.primaryColor }}
                 >
-                  {item.buttonText || "Learn More"} &rarr;
+                  <span {...sel(`content.items.${i}.buttonText`)}>{item.buttonText || "Learn More"}</span>
+                  <span aria-hidden="true">{"\u2192"}</span>
                 </a>
               )}
               </div>
@@ -970,11 +979,11 @@ function ServicesSection({ section, theme, selectedElementKey, interactive }: Se
                 {(item.buttonText || item.url || item.ctaLink) && (
                   <a
                     href={item.url || item.ctaLink || "#"}
-                    {...sel(`content.items.${i}.buttonText`)}
                     className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline cursor-pointer"
                     style={{ color: theme.primaryColor }}
                   >
-                    {item.buttonText || "Learn More"} &rarr;
+                    <span {...sel(`content.items.${i}.buttonText`)}>{item.buttonText || "Learn More"}</span>
+                    <span aria-hidden="true">{"\u2192"}</span>
                   </a>
                 )}
               </div>
@@ -1047,20 +1056,18 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
                         onAddToCart({ name: item.title || `Product ${i + 1}`, price: item.price || "$0" });
                       }
                     }}
-                    {...sel(`content.items.${i}.buttonText`)}
                     className="px-4 py-2 rounded-xl text-sm font-bold text-white shadow transition-all hover:opacity-90 active:scale-95 cursor-pointer flex items-center gap-1.5"
                     style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
                   >
-                    <span>{item.buttonText || "Order Now"}</span>
+                    <span {...sel(`content.items.${i}.buttonText`)}>{item.buttonText || "Order Now"}</span>
                   </button>
                 ) : (item.buttonText || item.url || item.ctaLink) ? (
                   <a
                     href={item.url || item.ctaLink || "#"}
-                    {...sel(`content.items.${i}.buttonText`)}
                     className="px-4 py-2 rounded-xl text-sm font-bold text-white shadow transition-all hover:opacity-90 cursor-pointer"
                     style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
                   >
-                    {item.buttonText || "Buy Now"}
+                    <span {...sel(`content.items.${i}.buttonText`)}>{item.buttonText || "Buy Now"}</span>
                   </a>
                 ) : null}
               </div>
@@ -1267,20 +1274,18 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                                 onAddToCart({ name: item.name || `Item ${ii + 1}`, price: item.price || "$0" });
                               }
                             }}
-                            {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
                             className="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white shadow-md transition-all hover:opacity-90 active:scale-95 cursor-pointer"
                             style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})`, borderRadius: "var(--radius)" }}
                           >
-                            <span>{item.buttonText || "Add to Order 🛍️"}</span>
+                            <span {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}>{item.buttonText || "Add to Order 🛍️"}</span>
                           </button>
                         ) : (item.url || item.buttonText) ? (
                           <a
                             href={item.url || "#"}
-                            {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
                             className="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white shadow-md transition-all hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0"
                             style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})`, borderRadius: "var(--radius)" }}
                           >
-                            {item.buttonText || "Order Now"}
+                            <span {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}>{item.buttonText || "Order Now"}</span>
                           </a>
                         ) : null}
                       </div>
@@ -1326,20 +1331,18 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                                 onAddToCart({ name: item.name || `Item ${ii + 1}`, price: item.price || "$0" });
                               }
                             }}
-                            {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
                             className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white shadow transition-all hover:opacity-90 active:scale-95 cursor-pointer"
                             style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
                           >
-                            <span>{item.buttonText || "+ Add"}</span>
+                            <span {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}>{item.buttonText || "+ Add"}</span>
                           </button>
                         ) : (item.url || item.buttonText) ? (
                           <a
                             href={item.url || "#"}
-                            {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
                             className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white shadow transition-all hover:opacity-90"
                             style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
                           >
-                            {item.buttonText || "Order Now"}
+                            <span {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}>{item.buttonText || "Order Now"}</span>
                           </a>
                         ) : null}
                       </div>
@@ -1385,11 +1388,10 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                             {(item.url || item.buttonText) && (
                               <a
                                 href={item.url || "#"}
-                                {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}
                                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-md transition-all hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0"
                                 style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
                               >
-                                {item.buttonText || "Order Now"}
+                                <span {...sel(`content.categories.${ci}.items.${ii}.buttonText`)}>{item.buttonText || "Order Now"}</span>
                               </a>
                             )}
                           </div>
@@ -1490,7 +1492,7 @@ function PricingSection({ section, theme, selectedElementKey, interactive }: Sec
               <div className="space-y-3 mb-8">
                 {(p.features || []).map((f: string, fi: number) => (
                   <div key={fi} className="flex items-center gap-3 text-sm opacity-85">
-                    <CheckCircle2 size={16} style={{ color: theme.primaryColor }} />
+                    <CheckCircle2 size={16} style={{ color: theme.primaryColor }} aria-hidden="true" />
                     <span {...sel(`content.plans.${i}.features.${fi}`)}>{f}</span>
                   </div>
                 ))}
@@ -1498,11 +1500,10 @@ function PricingSection({ section, theme, selectedElementKey, interactive }: Sec
             </div>
             <a
               href={p.url || p.ctaLink || p.buttonUrl || "#"}
-              {...sel(`content.plans.${i}.buttonText`)}
               className="w-full py-3 block text-center font-bold text-white shadow-lg transition-all hover:opacity-90 cursor-pointer"
               style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
             >
-              {p.buttonText || p.ctaText || "Get Started"}
+              <span {...sel(`content.plans.${i}.buttonText`)}>{p.buttonText || p.ctaText || "Get Started"}</span>
             </a>
           </div>
         ))}
@@ -1608,12 +1609,12 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
 
         {section.content?.location && (
           <div
-            {...sel("content.location")}
             className={`inline-flex items-center gap-1.5 text-xs opacity-75 mb-6 font-medium px-3 py-1.5 rounded-full border ${
               isDark ? "bg-white/5 border-white/5" : "bg-slate-100 border-slate-200 text-slate-700"
             }`}
           >
-            <MapPin size={12} /> {section.content.location}
+            <MapPin size={12} aria-hidden="true" />
+            <span {...sel("content.location")}>{section.content.location}</span>
           </div>
         )}
 
@@ -1835,8 +1836,10 @@ function TestimonialsSection({ section, theme, selectedElementKey, interactive }
               borderRadius: "var(--radius)",
             }}
           >
-            <blockquote {...sel(`content.items.${i}.quote`)} className="opacity-85 leading-relaxed text-sm md:text-base italic">
-              “{t.quote}”
+            <blockquote className="opacity-85 leading-relaxed text-sm md:text-base italic">
+              <span aria-hidden="true">{"\u201C"}</span>
+              <span {...sel(`content.items.${i}.quote`)}>{t.quote}</span>
+              <span aria-hidden="true">{"\u201D"}</span>
             </blockquote>
             <figcaption className="flex items-center gap-3 mt-auto">
               {t.avatar && (
@@ -2000,7 +2003,10 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
         {/* Contact Info Channels */}
         <div className="space-y-4 sm:space-y-6 flex-[1_1_280px]">
           {c.email && (
-            <div {...sel("content.email")} className="flex items-center gap-3.5 sm:gap-4">
+            <div
+              {...selectOnly("content.email", selectedElementKey)}
+              className="flex items-center gap-3.5 sm:gap-4"
+            >
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <Mail size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -2013,7 +2019,7 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
             </div>
           )}
           {c.phone && (
-            <div {...sel("content.phone")} className="flex items-center gap-3.5 sm:gap-4">
+            <div {...selectOnly("content.phone", selectedElementKey)} className="flex items-center gap-3.5 sm:gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <Phone size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -2026,7 +2032,7 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
             </div>
           )}
           {c.address && (
-            <div {...sel("content.address")} className="flex items-center gap-3.5 sm:gap-4">
+            <div {...selectOnly("content.address", selectedElementKey)} className="flex items-center gap-3.5 sm:gap-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
                 <MapPin size={18} style={{ color: theme.primaryColor }} />
               </div>
@@ -2232,7 +2238,7 @@ function FooterSection({ section, theme, selectedElementKey, interactive }: Sect
   return (
     <footer id={section.id} data-section-id={section.id} className="py-12 px-6 border-t border-white/10 text-center text-xs opacity-80 space-y-4">
       <SocialLinksRow socials={socials} theme={theme} sel={sel} className="justify-center" />
-      <p {...sel("title")} className="opacity-60">© {new Date().getFullYear()} {section.title || "Nexora AI"}. All rights reserved.</p>
+      <p className="opacity-60">© {new Date().getFullYear()} <span {...sel("title")}>{section.title || "Nexora AI"}</span>. All rights reserved.</p>
     </footer>
   );
 }
@@ -2262,8 +2268,12 @@ function MapsSection({ section, theme, selectedElementKey, interactive }: Sectio
       </div>
 
       {c.address && (
-        <p {...sel("address")} className="text-center text-sm mb-6 opacity-80 flex items-center justify-center gap-2">
-          <MapPin size={16} style={{ color: theme.primaryColor }} /> {c.address}
+        <p
+          // MapPin icon is outside editable span to avoid being captured by innerText on blur
+          className="text-center text-sm mb-6 opacity-80 flex items-center justify-center gap-2"
+        >
+          <MapPin size={16} style={{ color: theme.primaryColor }} aria-hidden="true" />
+          <span {...sel("address")}>{c.address}</span>
         </p>
       )}
 
@@ -2310,7 +2320,7 @@ function WhatsAppSection({ section, theme, selectedElementKey, interactive }: Se
       {section.subtitle && <p {...sel("subtitle")} className="opacity-75 mb-8 max-w-2xl mx-auto">{section.subtitle}</p>}
 
       <a
-        {...sel("phone")}
+        {...selectOnly("phone", selectedElementKey)}
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
@@ -2327,8 +2337,9 @@ function WhatsAppSection({ section, theme, selectedElementKey, interactive }: Se
       </a>
 
       {c.availability && (
-        <p {...sel("availability")} className="text-xs opacity-60 mt-4 flex items-center justify-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> {c.availability}
+        <p className="text-xs opacity-60 mt-4 flex items-center justify-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
+          <span {...sel("availability")}>{c.availability}</span>
         </p>
       )}
     </section>
@@ -2379,11 +2390,11 @@ function BlogSection({ section, theme, selectedElementKey, interactive }: Sectio
               {(post.url || post.buttonText) && (
                 <a
                   href={post.url || "#"}
-                  {...sel(`content.posts.${i}.buttonText`)}
                   className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline cursor-pointer"
                   style={{ color: theme.primaryColor }}
                 >
-                  {post.buttonText || "Read Article"} &rarr;
+                  <span {...sel(`content.posts.${i}.buttonText`)}>{post.buttonText || "Read Article"}</span>
+                  <span aria-hidden="true">{"\u2192"}</span>
                 </a>
               )}
             </div>
