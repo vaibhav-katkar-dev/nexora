@@ -601,6 +601,9 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
   const [isMounted, setIsMounted] = useState(false);
   const [mobileMenuOffset, setMobileMenuOffset] = useState(0);
   const navRef = useRef<HTMLElement | null>(null);
+  const menuAccent = theme.primaryColor || "#3B82F6";
+  const mobileMenuItemCount = Math.max(links.length, 1) + (content.ctaText ? 1 : 0);
+  const mobileMenuDesiredHeight = mobileMenuItemCount * 54 + 20;
 
   const logoImage = content.logoImage || content.logo || (section as any).logoImage;
   const logoWidth = content.logoWidth || (section as any).logoWidth || 36;
@@ -655,15 +658,19 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
           <>
             <div
               className="fixed left-0 right-0 bottom-0 bg-slate-950/40 backdrop-blur-sm md:hidden"
-              style={{ top: mobileMenuOffset, zIndex: 9999 }}
+              style={{ top: mobileMenuOffset + 8, zIndex: 9999 }}
               onClick={() => setMobileMenuOpen(false)}
             />
             <div
-              className="fixed left-0 right-0 bottom-0 md:hidden flex flex-col gap-2 overflow-y-auto bg-white border-b border-slate-200/80 p-4 shadow-2xl"
+              className="fixed left-0 right-0 md:hidden flex flex-col gap-2 overflow-y-auto overscroll-contain rounded-b-2xl border p-3 sm:p-4 shadow-2xl"
               style={{
-                top: mobileMenuOffset,
-                maxHeight: `calc(100dvh - ${mobileMenuOffset}px)`,
+                top: mobileMenuOffset + 8,
+                maxHeight: `min(${mobileMenuDesiredHeight}px, 50dvh, calc(100dvh - ${mobileMenuOffset + 20}px))`,
                 zIndex: 10000,
+                backgroundColor: isDark ? "rgba(15, 23, 42, 0.96)" : "rgba(255, 255, 255, 0.96)",
+                borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(15, 23, 42, 0.10)",
+                color: isDark ? "#F8FAFC" : "var(--text)",
+                boxShadow: `0 24px 60px rgba(15, 23, 42, 0.18), 0 0 0 1px ${menuAccent}18`,
               }}
             >
               {/* Mobile Navigation Links */}
@@ -678,14 +685,26 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
                       {...sel(itemKey)}
                       href={linkUrl}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-900 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 transition-colors active:scale-[0.99] touch-manipulation"
+                      className={`flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors active:scale-[0.99] touch-manipulation ${
+                        isDark
+                          ? "bg-white/5 border border-white/10 text-white hover:bg-white/10"
+                          : "bg-slate-50 border border-slate-200 text-slate-900 hover:bg-indigo-50 hover:text-indigo-700"
+                      }`}
+                      style={{ borderColor: `${menuAccent}22` }}
                     >
                       {labelText}
                     </a>
                   );
                 })
               ) : (
-                <div className="text-sm text-slate-600 italic px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl">No links configured</div>
+                <div
+                  className={`text-sm italic px-3.5 py-2.5 rounded-xl border ${
+                    isDark ? "bg-white/5 border-white/10 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-600"
+                  }`}
+                  style={{ borderColor: `${menuAccent}22` }}
+                >
+                  No links configured
+                </div>
               )}
 
               {/* Mobile CTA */}
@@ -694,8 +713,8 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
                   {...sel("content.ctaText")}
                   href={content.ctaLink || "#"}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full px-4 py-3.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105 text-center touch-manipulation"
-                  style={{ background: theme.primaryColor }}
+                  className="w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105 text-center touch-manipulation"
+                  style={{ background: theme.primaryColor, boxShadow: `0 14px 28px ${menuAccent}33` }}
                 >
                   {content.ctaText}
                 </a>
@@ -712,14 +731,14 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
         ref={navRef}
         id={section.id}
         data-section-id={section.id}
-        className="sticky top-0 z-50 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 border-b flex items-center justify-between"
+        className="sticky top-0 z-50 backdrop-blur-md px-3 sm:px-6 py-2 sm:py-3 border-b flex items-center justify-between gap-2"
         style={{
           backgroundColor: isDark ? "rgba(11, 15, 25, 0.75)" : "rgba(255, 255, 255, 0.85)",
           borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
           color: "var(--text)",
         }}
       >
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           {logoImage && (
             <img
               {...sel("content.logoImage")}
@@ -731,15 +750,19 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
               style={{
                 width: typeof logoWidth === "number" ? `${logoWidth}px` : logoWidth,
                 height: typeof logoHeight === "number" ? `${logoHeight}px` : logoHeight,
-                maxHeight: "48px",
+                maxHeight: "40px",
                 ...getElementStyle(section, "content.logoImage"),
               }}
             />
           )}
           <span
             {...sel("title")}
-            className="font-extrabold text-lg sm:text-xl tracking-tight text-white"
-            style={{ fontFamily: "var(--font-heading)", ...getElementStyle(section, "title") }}
+            className="min-w-0 max-w-[56vw] truncate font-extrabold text-base sm:text-xl tracking-tight"
+            style={{
+              fontFamily: "var(--font-heading)",
+              color: isDark ? "#ffffff" : "var(--text)",
+              ...getElementStyle(section, "title"),
+            }}
           >
             {section.title || "Brand"}
           </span>
@@ -784,7 +807,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
         {/* Mobile Menu Toggle */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors touch-manipulation"
+          className="md:hidden min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors touch-manipulation"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
