@@ -30,6 +30,23 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "Sarah Jenkins",
+      "content": {
+        "links": [
+          { "label": "About", "url": "#about" },
+          { "label": "Experience", "url": "#timeline-exp" },
+          { "label": "Education", "url": "#timeline-edu" },
+          { "label": "Contact", "url": "#contact" }
+        ],
+        "ctaText": "Download PDF",
+        "ctaLink": "#contact"
+      },
+      "visible": true
+    },
+    {
       "id": "hero-res",
       "type": "hero",
       "variant": "minimal",

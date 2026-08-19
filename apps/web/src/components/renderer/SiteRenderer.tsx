@@ -44,6 +44,7 @@ import {
   MessageCircle,
   Send,
   X,
+  Menu,
 } from "lucide-react";
 import { useEditorStore } from "@/store/editorStore";
 import { formsApi } from "@/lib/api";
@@ -582,23 +583,36 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
   const links: any[] = content.links || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
   const isDark = getIsDarkTheme(theme);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const logoImage = content.logoImage || content.logo || (section as any).logoImage;
   const logoWidth = content.logoWidth || (section as any).logoWidth || 36;
   const logoHeight = content.logoHeight || (section as any).logoHeight || "auto";
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <nav
       id={section.id}
       data-section-id={section.id}
-      className="sticky top-0 z-50 backdrop-blur-md px-6 py-4 border-b flex items-center justify-between"
+      className="sticky top-0 z-50 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 border-b flex items-center justify-between"
       style={{
         backgroundColor: isDark ? "rgba(11, 15, 25, 0.75)" : "rgba(255, 255, 255, 0.85)",
         borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
         color: "var(--text)",
       }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {logoImage && (
           <img
             {...sel("content.logoImage")}
@@ -610,46 +624,110 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
             style={{
               width: typeof logoWidth === "number" ? `${logoWidth}px` : logoWidth,
               height: typeof logoHeight === "number" ? `${logoHeight}px` : logoHeight,
-              maxHeight: "56px",
+              maxHeight: "48px",
               ...getElementStyle(section, "content.logoImage"),
             }}
           />
         )}
         <span
           {...sel("title")}
-          className="font-extrabold text-xl tracking-tight text-white"
+          className="font-extrabold text-lg sm:text-xl tracking-tight text-white"
           style={{ fontFamily: "var(--font-heading)", ...getElementStyle(section, "title") }}
         >
           {section.title || "Brand"}
         </span>
       </div>
+
+      {/* Desktop Navigation */}
       <div className="hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
-        {links.map((l: any, i: number) => {
-          const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
-          const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
-          const itemKey = `content.links.${i}.label`;
-          return (
-            <a
-              key={i}
-              {...sel(itemKey)}
-              href={linkUrl}
-              className="hover:opacity-100 hover:text-indigo-400 transition-colors"
-              style={getElementStyle(section, itemKey)}
-            >
-              {labelText}
-            </a>
-          );
-        })}
+        {links && links.length > 0 ? (
+          links.map((l: any, i: number) => {
+            const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
+            const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
+            const itemKey = `content.links.${i}.label`;
+            return (
+              <a
+                key={i}
+                {...sel(itemKey)}
+                href={linkUrl}
+                className="hover:opacity-100 hover:text-indigo-400 transition-colors"
+                style={getElementStyle(section, itemKey)}
+              >
+                {labelText}
+              </a>
+            );
+          })
+        ) : (
+          <span className="text-xs text-slate-500 italic">No links configured</span>
+        )}
       </div>
+
+      {/* Desktop CTA */}
       {content.ctaText && (
         <a
           {...sel("content.ctaText")}
           href={content.ctaLink || "#"}
-          className="px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
+          className="hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
           style={{ background: theme.primaryColor, ...getElementStyle(section, "content.ctaText") }}
         >
           {content.ctaText}
         </a>
+      )}
+
+      {/* Mobile Menu Toggle */}
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors"
+        aria-label="Toggle menu"
+      >
+        {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Mobile Menu Drawer */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 top-0 bg-slate-950/40 backdrop-blur-sm z-[9999] md:hidden transition-opacity duration-200"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="fixed top-16 left-0 right-0 bottom-0 max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-b border-slate-200/80 p-4 shadow-2xl md:hidden flex flex-col gap-2 z-[10000] transition-all duration-300 ease-out">
+            {/* Mobile Navigation Links */}
+            {links && links.length > 0 ? (
+              links.map((l: any, i: number) => {
+                const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
+                const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
+                const itemKey = `content.links.${i}.label`;
+                return (
+                  <a
+                    key={i}
+                    {...sel(itemKey)}
+                    href={linkUrl}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors active:scale-[0.99]"
+                    style={getElementStyle(section, itemKey)}
+                  >
+                    {labelText}
+                  </a>
+                );
+              })
+            ) : (
+              <div className="text-sm text-slate-500 italic px-4 py-3.5">No links configured</div>
+            )}
+
+            {/* Mobile CTA */}
+            {content.ctaText && (
+              <a
+                {...sel("content.ctaText")}
+                href={content.ctaLink || "#"}
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full px-4 py-3.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105 text-center"
+                style={{ background: theme.primaryColor, ...getElementStyle(section, "content.ctaText") }}
+              >
+                {content.ctaText}
+              </a>
+            )}
+          </div>
+        </>
       )}
     </nav>
   );
@@ -777,10 +855,11 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-white/15 w-full max-w-3xl">
             {stats.map((st: any, i: number) => (
               <div key={i} className="text-center">
+                {/* outer div is not contentEditable – sel() is on the inner value div only, preventing the label text from being captured by onBlur */}
                 <div {...sel(`content.stats.${i}.value`)} className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
                   {st.value}
                 </div>
-                <div {...sel(`content.stats.${i}.label`)} className="text-xs uppercase tracking-wider opacity-70 text-slate-300 mt-1">{st.label}</div>
+                <div className="text-xs uppercase tracking-wider opacity-70 text-slate-300 mt-1">{st.label}</div>
               </div>
             ))}
           </div>
@@ -1609,6 +1688,7 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive }:
 
         {section.content?.location && (
           <div
+            // MapPin icon is outside the editable span so it isn't captured by el.innerText on blur
             className={`inline-flex items-center gap-1.5 text-xs opacity-75 mb-6 font-medium px-3 py-1.5 rounded-full border ${
               isDark ? "bg-white/5 border-white/5" : "bg-slate-100 border-slate-200 text-slate-700"
             }`}

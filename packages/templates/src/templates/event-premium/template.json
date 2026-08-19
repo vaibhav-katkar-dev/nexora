@@ -30,6 +30,23 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "AI Summit 2026",
+      "content": {
+        "links": [
+          { "label": "Speakers", "url": "#speakers" },
+          { "label": "Schedule", "url": "#schedule" },
+          { "label": "Pricing", "url": "#pricing" },
+          { "label": "Venue", "url": "#venue" }
+        ],
+        "ctaText": "Register Now",
+        "ctaLink": "#pricing"
+      },
+      "visible": true
+    },
+    {
       "id": "hero-evt",
       "type": "hero",
       "variant": "centered",

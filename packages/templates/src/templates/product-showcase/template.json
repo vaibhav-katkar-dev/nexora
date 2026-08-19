@@ -30,6 +30,22 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "Aura Audio",
+      "content": {
+        "links": [
+          { "label": "Features", "url": "#features" },
+          { "label": "Specs", "url": "#specs" },
+          { "label": "Reviews", "url": "#testimonials" }
+        ],
+        "ctaText": "Buy Now",
+        "ctaLink": "#pricing"
+      },
+      "visible": true
+    },
+    {
       "id": "hero-prod",
       "type": "hero",
       "variant": "split",

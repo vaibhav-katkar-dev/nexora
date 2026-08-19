@@ -30,6 +30,22 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "Nexora AI",
+      "content": {
+        "links": [
+          { "label": "Features", "url": "#features" },
+          { "label": "Pricing", "url": "#pricing" },
+          { "label": "FAQ", "url": "#faq" }
+        ],
+        "ctaText": "Get Started",
+        "ctaLink": "#contact"
+      },
+      "visible": true
+    },
+    {
       "id": "hero-start",
       "type": "hero",
       "variant": "centered",

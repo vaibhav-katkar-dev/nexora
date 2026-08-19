@@ -139,7 +139,7 @@ export function EditorHeader({
         </div>
 
         {!compactPreview && viewMode === "visual" && (
-          <div className="hidden lg:flex items-center bg-slate-900/90 border border-slate-800 rounded-full p-0.5 text-xs">
+          <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-full p-0.5 text-xs">
             <button
               onClick={() => setViewport("desktop")}
               className={`p-1.5 rounded-full transition-all ${

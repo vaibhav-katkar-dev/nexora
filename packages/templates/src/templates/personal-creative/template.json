@@ -30,6 +30,23 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "Elena Vance",
+      "content": {
+        "links": [
+          { "label": "About", "url": "#about" },
+          { "label": "Podcast", "url": "#podcast" },
+          { "label": "Essays", "url": "#essays" },
+          { "label": "Contact", "url": "#contact" }
+        ],
+        "ctaText": "Subscribe",
+        "ctaLink": "#newsletter"
+      },
+      "visible": true
+    },
+    {
       "id": "hero-pers",
       "type": "hero",
       "variant": "split",

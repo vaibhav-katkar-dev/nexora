@@ -108,35 +108,35 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
 
   // ── Mobile: authentic Android phone ────────────────────────────────────
   return (
-    <div className="flex flex-col items-center justify-center p-2 sm:p-4 my-auto max-w-full">
-      <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.6rem] sm:rounded-[2.8rem] p-[8px] sm:p-[10px] shadow-2xl border border-slate-700/80 max-w-full">
+    <div className="flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 my-auto max-w-full">
+      <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.8rem] sm:rounded-[3rem] p-[10px] sm:p-[12px] lg:p-[14px] shadow-2xl border border-slate-700/80 max-w-full">
         {/* Hardware side buttons */}
-        <div className="absolute -left-[3px] top-20 sm:top-24 w-[3px] h-10 sm:h-12 rounded-l bg-slate-700" />
-        <div className="absolute -left-[3px] top-34 sm:top-40 w-[3px] h-12 sm:h-16 rounded-l bg-slate-700" />
-        <div className="absolute -right-[3px] top-24 sm:top-28 w-[3px] h-16 sm:h-20 rounded-r bg-slate-700" />
+        <div className="absolute -left-[3px] top-24 sm:top-28 w-[3px] h-12 sm:h-14 rounded-l bg-slate-700/90" />
+        <div className="absolute -left-[3px] top-40 sm:top-44 w-[3px] h-14 sm:h-18 rounded-l bg-slate-700/90" />
+        <div className="absolute -right-[3px] top-28 sm:top-32 w-[3px] h-18 sm:h-22 rounded-r bg-slate-700/90" />
 
-        <div className="bg-black rounded-[2rem] sm:rounded-[2.2rem] overflow-hidden relative max-w-full flex flex-col shadow-inner">
+        <div className="bg-black rounded-[2.1rem] sm:rounded-[2.3rem] overflow-hidden relative max-w-full flex flex-col shadow-inner">
           {/* Centered Android Punch-Hole Camera */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 w-3 h-3 rounded-full bg-slate-950 ring-2 ring-slate-800 shadow-inner" />
+          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30 w-3.5 h-3.5 rounded-full bg-slate-950 ring-2 ring-slate-800 shadow-inner" />
 
           {/* Android Status Bar */}
-          <div className="relative z-20 h-7 flex items-center justify-between px-5 pt-1 text-white select-none shrink-0">
+          <div className="relative z-20 h-8 flex items-center justify-between px-6 pt-1.5 text-white select-none shrink-0">
             <span className="text-[11px] font-semibold tracking-wide">9:41</span>
             <div className="flex items-center gap-1.5">
-              <svg width="14" height="10" viewBox="0 0 15 11" className="fill-white">
+              <svg width="15" height="11" viewBox="0 0 15 11" className="fill-white">
                 <rect x="0" y="7" width="2.5" height="4" rx="0.5" />
                 <rect x="4" y="5" width="2.5" height="6" rx="0.5" />
                 <rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5" />
                 <rect x="12" y="0" width="2.5" height="11" rx="0.5" />
               </svg>
-              <svg width="14" height="10" viewBox="0 0 15 11" className="fill-white">
+              <svg width="15" height="11" viewBox="0 0 15 11" className="fill-white">
                 <path d="M7.5 9.5 L9.5 7.5 C8.9 6.9 8.2 6.6 7.5 6.6 C6.8 6.6 6.1 6.9 5.5 7.5 Z" />
                 <ellipse cx="7.5" cy="4.6" rx="5" ry="3.2" />
                 <ellipse cx="7.5" cy="7.6" rx="2.2" ry="1.4" />
               </svg>
               <div className="flex items-center gap-[2px]">
-                <div className="w-4 sm:w-5 h-2.5 border border-white/80 rounded-[3px] flex items-center p-[1.5px]">
-                  <div className="w-2.5 sm:w-3.5 h-full bg-white rounded-[1px]" />
+                <div className="w-4.5 sm:w-5 h-2.5 border border-white/80 rounded-[3px] flex items-center p-[1.5px]">
+                  <div className="w-3 sm:w-3.5 h-full bg-white rounded-[1px]" />
                 </div>
                 <div className="w-[2px] h-1.5 bg-white/80 rounded-r-sm" />
               </div>
@@ -146,14 +146,14 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
           {/* Scrollable Screen Content */}
           <div
             ref={scrollRef as React.RefObject<HTMLDivElement>}
-            className="w-[390px] sm:w-[412px] max-w-[calc(100vw-2.5rem)] h-[min(820px,calc(100vh-160px))] min-h-[380px] sm:min-h-[520px] overflow-y-auto overflow-x-hidden flex flex-col bg-slate-950"
+            className="w-[375px] sm:w-[393px] lg:w-[412px] max-w-[calc(100vw-2.5rem)] h-[min(812px,calc(100vh-180px))] min-h-[400px] sm:min-h-[540px] lg:min-h-[600px] overflow-y-auto overflow-x-hidden flex flex-col bg-slate-950"
           >
             {children}
           </div>
 
           {/* Android Gesture Navigation Bar */}
-          <div className="relative z-20 h-6 flex items-center justify-center pb-1 bg-black select-none shrink-0">
-            <div className="w-28 h-1 rounded-full bg-white/60" />
+          <div className="relative z-20 h-7 flex items-center justify-center pb-1.5 bg-black select-none shrink-0">
+            <div className="w-32 h-1 rounded-full bg-white/60" />
           </div>
         </div>
       </div>

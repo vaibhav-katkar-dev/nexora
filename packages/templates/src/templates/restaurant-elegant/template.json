@@ -30,6 +30,22 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "La Maison",
+      "content": {
+        "links": [
+          { "label": "Menu", "url": "#menu" },
+          { "label": "About", "url": "#about" },
+          { "label": "Location", "url": "#contact" }
+        ],
+        "ctaText": "Reserve Table",
+        "ctaLink": "#contact"
+      },
+      "visible": true
+    },
+    {
       "id": "hero-rest",
       "type": "hero",
       "variant": "centered",

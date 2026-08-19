@@ -30,6 +30,22 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "KaiVibes",
+      "content": {
+        "links": [
+          { "label": "Music", "url": "#music" },
+          { "label": "Videos", "url": "#videos" },
+          { "label": "Contact", "url": "#contact" }
+        ],
+        "ctaText": "Follow",
+        "ctaLink": "#socials"
+      },
+      "visible": true
+    },
+    {
       "id": "links-hub",
       "type": "links",
       "variant": "buttons",

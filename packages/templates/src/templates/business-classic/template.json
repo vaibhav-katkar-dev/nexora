@@ -30,6 +30,22 @@
   },
   "sections": [
     {
+      "id": "navbar",
+      "type": "navbar",
+      "variant": "solid",
+      "title": "Apex Advisory",
+      "content": {
+        "links": [
+          { "label": "Services", "url": "#services" },
+          { "label": "Testimonials", "url": "#testimonials" },
+          { "label": "Contact", "url": "#contact" }
+        ],
+        "ctaText": "Book Consultation",
+        "ctaLink": "#contact"
+      },
+      "visible": true
+    },
+    {
       "id": "hero-bus",
       "type": "hero",
       "variant": "split",
