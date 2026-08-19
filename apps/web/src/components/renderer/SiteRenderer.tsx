@@ -6,7 +6,8 @@ import {
   sanitizeTemplateCss,
   resolveTemplateContainerClass,
 } from "@ai-platform/shared";
-import { CSSProperties, useState, useEffect, useMemo, type MouseEvent } from "react";
+import { CSSProperties, useState, useEffect, useMemo, useRef, type MouseEvent } from "react";
+import { createPortal } from "react-dom";
 import {
   Sparkles,
   Zap,
@@ -310,6 +311,19 @@ function getElementStyle(section: Section, elementKey: string): CSSProperties {
   return style;
 }
 
+function getNavElementStyle(section: Section, elementKey: string): CSSProperties {
+  const base = getElementStyle(section, elementKey);
+  return {
+    color: base.color,
+    fontSize: base.fontSize,
+    fontWeight: base.fontWeight,
+    textAlign: base.textAlign,
+    textTransform: base.textTransform,
+    letterSpacing: base.letterSpacing,
+    backgroundColor: base.backgroundColor && base.backgroundColor !== "transparent" ? base.backgroundColor : undefined,
+  };
+}
+
 /**
  * Builds section-scoped CSS that applies per-element custom text colors.
  * Targets both normalized keys and `content.` prefixed data-element-key attributes
@@ -584,10 +598,17 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
   const isDark = getIsDarkTheme(theme);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [mobileMenuOffset, setMobileMenuOffset] = useState(0);
+  const navRef = useRef<HTMLElement | null>(null);
 
   const logoImage = content.logoImage || content.logo || (section as any).logoImage;
   const logoWidth = content.logoWidth || (section as any).logoWidth || 36;
   const logoHeight = content.logoHeight || (section as any).logoHeight || "auto";
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -601,135 +622,176 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
     };
   }, [mobileMenuOpen]);
 
+  useEffect(() => {
+    if (!isMounted || !mobileMenuOpen) return;
+
+    const updateOffset = () => {
+      const nav = navRef.current;
+      if (!nav) return;
+      setMobileMenuOffset(Math.max(0, Math.round(nav.getBoundingClientRect().bottom)));
+    };
+
+    updateOffset();
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && navRef.current) {
+      resizeObserver = new ResizeObserver(() => updateOffset());
+      resizeObserver.observe(navRef.current);
+    }
+
+    window.addEventListener("resize", updateOffset);
+    window.addEventListener("orientationchange", updateOffset);
+
+    return () => {
+      window.removeEventListener("resize", updateOffset);
+      window.removeEventListener("orientationchange", updateOffset);
+      resizeObserver?.disconnect();
+    };
+  }, [isMounted, mobileMenuOpen]);
+
+  const mobileMenuPortal =
+    isMounted && mobileMenuOpen
+      ? createPortal(
+          <>
+            <div
+              className="fixed left-0 right-0 bottom-0 bg-slate-950/40 backdrop-blur-sm md:hidden"
+              style={{ top: mobileMenuOffset, zIndex: 9999 }}
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div
+              className="fixed left-0 right-0 bottom-0 md:hidden flex flex-col gap-2 overflow-y-auto bg-white border-b border-slate-200/80 p-4 shadow-2xl"
+              style={{
+                top: mobileMenuOffset,
+                maxHeight: `calc(100dvh - ${mobileMenuOffset}px)`,
+                zIndex: 10000,
+              }}
+            >
+              {/* Mobile Navigation Links */}
+              {links && links.length > 0 ? (
+                links.map((l: any, i: number) => {
+                  const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
+                  const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
+                  const itemKey = `content.links.${i}.label`;
+                  return (
+                    <a
+                      key={i}
+                      {...sel(itemKey)}
+                      href={linkUrl}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-900 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 transition-colors active:scale-[0.99] touch-manipulation"
+                    >
+                      {labelText}
+                    </a>
+                  );
+                })
+              ) : (
+                <div className="text-sm text-slate-600 italic px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl">No links configured</div>
+              )}
+
+              {/* Mobile CTA */}
+              {content.ctaText && (
+                <a
+                  {...sel("content.ctaText")}
+                  href={content.ctaLink || "#"}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full px-4 py-3.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105 text-center touch-manipulation"
+                  style={{ background: theme.primaryColor }}
+                >
+                  {content.ctaText}
+                </a>
+              )}
+            </div>
+          </>,
+          document.body
+        )
+      : null;
+
   return (
-    <nav
-      id={section.id}
-      data-section-id={section.id}
-      className="sticky top-0 z-50 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 border-b flex items-center justify-between"
-      style={{
-        backgroundColor: isDark ? "rgba(11, 15, 25, 0.75)" : "rgba(255, 255, 255, 0.85)",
-        borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
-        color: "var(--text)",
-      }}
-    >
-      <div className="flex items-center gap-2 sm:gap-3">
-        {logoImage && (
-          <img
-            {...sel("content.logoImage")}
-            src={logoImage}
-            alt={section.title || "Logo"}
-            loading="lazy"
-            decoding="async"
-            className="object-contain rounded shrink-0 transition-all"
-            style={{
-              width: typeof logoWidth === "number" ? `${logoWidth}px` : logoWidth,
-              height: typeof logoHeight === "number" ? `${logoHeight}px` : logoHeight,
-              maxHeight: "48px",
-              ...getElementStyle(section, "content.logoImage"),
-            }}
-          />
-        )}
-        <span
-          {...sel("title")}
-          className="font-extrabold text-lg sm:text-xl tracking-tight text-white"
-          style={{ fontFamily: "var(--font-heading)", ...getElementStyle(section, "title") }}
-        >
-          {section.title || "Brand"}
-        </span>
-      </div>
-
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
-        {links && links.length > 0 ? (
-          links.map((l: any, i: number) => {
-            const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
-            const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
-            const itemKey = `content.links.${i}.label`;
-            return (
-              <a
-                key={i}
-                {...sel(itemKey)}
-                href={linkUrl}
-                className="hover:opacity-100 hover:text-indigo-400 transition-colors"
-                style={getElementStyle(section, itemKey)}
-              >
-                {labelText}
-              </a>
-            );
-          })
-        ) : (
-          <span className="text-xs text-slate-500 italic">No links configured</span>
-        )}
-      </div>
-
-      {/* Desktop CTA */}
-      {content.ctaText && (
-        <a
-          {...sel("content.ctaText")}
-          href={content.ctaLink || "#"}
-          className="hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
-          style={{ background: theme.primaryColor, ...getElementStyle(section, "content.ctaText") }}
-        >
-          {content.ctaText}
-        </a>
-      )}
-
-      {/* Mobile Menu Toggle */}
-      <button
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors"
-        aria-label="Toggle menu"
+    <>
+      <nav
+        ref={navRef}
+        id={section.id}
+        data-section-id={section.id}
+        className="sticky top-0 z-50 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 border-b flex items-center justify-between"
+        style={{
+          backgroundColor: isDark ? "rgba(11, 15, 25, 0.75)" : "rgba(255, 255, 255, 0.85)",
+          borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
+          color: "var(--text)",
+        }}
       >
-        {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {logoImage && (
+            <img
+              {...sel("content.logoImage")}
+              src={logoImage}
+              alt={section.title || "Logo"}
+              loading="lazy"
+              decoding="async"
+              className="object-contain rounded shrink-0 transition-all"
+              style={{
+                width: typeof logoWidth === "number" ? `${logoWidth}px` : logoWidth,
+                height: typeof logoHeight === "number" ? `${logoHeight}px` : logoHeight,
+                maxHeight: "48px",
+                ...getElementStyle(section, "content.logoImage"),
+              }}
+            />
+          )}
+          <span
+            {...sel("title")}
+            className="font-extrabold text-lg sm:text-xl tracking-tight text-white"
+            style={{ fontFamily: "var(--font-heading)", ...getElementStyle(section, "title") }}
+          >
+            {section.title || "Brand"}
+          </span>
+        </div>
 
-      {/* Mobile Menu Drawer */}
-      {mobileMenuOpen && (
-        <>
-          <div
-            className="fixed inset-0 top-0 bg-slate-950/40 backdrop-blur-sm z-[9999] md:hidden transition-opacity duration-200"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="fixed top-16 left-0 right-0 bottom-0 max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-b border-slate-200/80 p-4 shadow-2xl md:hidden flex flex-col gap-2 z-[10000] transition-all duration-300 ease-out">
-            {/* Mobile Navigation Links */}
-            {links && links.length > 0 ? (
-              links.map((l: any, i: number) => {
-                const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
-                const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
-                const itemKey = `content.links.${i}.label`;
-                return (
-                  <a
-                    key={i}
-                    {...sel(itemKey)}
-                    href={linkUrl}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors active:scale-[0.99]"
-                    style={getElementStyle(section, itemKey)}
-                  >
-                    {labelText}
-                  </a>
-                );
-              })
-            ) : (
-              <div className="text-sm text-slate-500 italic px-4 py-3.5">No links configured</div>
-            )}
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
+          {links && links.length > 0 ? (
+            links.map((l: any, i: number) => {
+              const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
+              const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
+              const itemKey = `content.links.${i}.label`;
+              return (
+                <a
+                  key={i}
+                  {...sel(itemKey)}
+                  href={linkUrl}
+                  className="hover:opacity-100 hover:text-indigo-400 transition-colors"
+                  style={getNavElementStyle(section, itemKey)}
+                >
+                  {labelText}
+                </a>
+              );
+            })
+          ) : (
+            <span className="text-xs text-slate-500 italic">No links configured</span>
+          )}
+        </div>
 
-            {/* Mobile CTA */}
-            {content.ctaText && (
-              <a
-                {...sel("content.ctaText")}
-                href={content.ctaLink || "#"}
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full px-4 py-3.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105 text-center"
-                style={{ background: theme.primaryColor, ...getElementStyle(section, "content.ctaText") }}
-              >
-                {content.ctaText}
-              </a>
-            )}
-          </div>
-        </>
-      )}
-    </nav>
+        {/* Desktop CTA */}
+        {content.ctaText && (
+          <a
+            {...sel("content.ctaText")}
+            href={content.ctaLink || "#"}
+            className="hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
+            style={{ background: theme.primaryColor, ...getNavElementStyle(section, "content.ctaText") }}
+          >
+            {content.ctaText}
+          </a>
+        )}
+
+        {/* Mobile Menu Toggle */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors touch-manipulation"
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </nav>
+      {mobileMenuPortal}
+    </>
   );
 }
 

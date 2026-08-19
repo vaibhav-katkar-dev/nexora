@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { authApi } from "@/lib/api";
@@ -36,17 +37,22 @@ export function Navbar({
   const pathname = usePathname();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handlePointerDown(event: PointerEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
   // Close mobile menu on route change
@@ -90,6 +96,8 @@ export function Navbar({
   const userInitial = (user?.name || user?.email || "U")[0].toUpperCase();
   const userName = user?.name || user?.email?.split("@")[0] || "User";
 
+  const mobileMenuTopClass = "top-14 sm:top-16";
+
   return (
     <header className="sticky top-0 z-50 h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between shadow-sm">
 
@@ -114,8 +122,9 @@ export function Navbar({
               return (
                 <button
                   key={item.label}
+                  type="button"
                   onClick={item.action}
-                  className={`group px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  className={`group min-h-9 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap touch-manipulation ${
                     isActive
                       ? "bg-white text-indigo-600 shadow-sm"
                       : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
@@ -127,16 +136,16 @@ export function Navbar({
               );
             }
 
-            return (
-              <Link
-                key={item.label}
-                href={item.href || "#"}
-                className={`group px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                  isActive
-                    ? "bg-white text-indigo-600 shadow-sm"
-                    : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
-                }`}
-              >
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href || "#"}
+                  className={`group min-h-9 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap touch-manipulation ${
+                    isActive
+                      ? "bg-white text-indigo-600 shadow-sm"
+                      : "text-slate-500 hover:text-indigo-600 hover:bg-white/60"
+                  }`}
+                >
                 <IconComp size={13} className={isActive ? "text-indigo-500" : "text-slate-400 group-hover:text-indigo-500 transition-colors"} />
                 {item.label}
               </Link>
@@ -163,10 +172,11 @@ export function Navbar({
         )}
 
         {/* Notifications */}
-        <button
-          className="min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 relative transition-colors"
-          title="Notifications"
-        >
+          <button
+            type="button"
+            className="min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 relative transition-colors"
+            title="Notifications"
+          >
           <Bell size={16} />
           <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-indigo-500 ring-2 ring-white" />
         </button>
@@ -174,6 +184,7 @@ export function Navbar({
         {/* User Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
+            type="button"
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
             className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all min-h-[36px]"
           >
@@ -202,10 +213,11 @@ export function Navbar({
               {/* Admin Template Manager — admin only */}
               {isAdmin && onOpenAdminModal && (
                 <div className="py-1 border-b border-slate-100">
-                  <button
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      onOpenAdminModal();
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    onOpenAdminModal();
                     }}
                     className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-amber-700 hover:bg-amber-50 font-semibold"
                   >
@@ -217,6 +229,7 @@ export function Navbar({
               {/* Sign out */}
               <div className="py-1">
                 <button
+                  type="button"
                   onClick={handleLogout}
                   className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-rose-600 hover:bg-rose-50 font-semibold"
                 >
@@ -229,6 +242,7 @@ export function Navbar({
 
         {/* Mobile Menu Toggle */}
         <button
+          type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 lg:hidden active:bg-slate-200 transition-colors"
           aria-label="Toggle menu"
@@ -238,63 +252,73 @@ export function Navbar({
       </div>
 
       {/* ── Mobile Drawer & Backdrop ── */}
-      {mobileMenuOpen && (
-        <>
-          <div
-            className="fixed inset-0 top-14 sm:top-16 bg-slate-950/40 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="absolute top-14 sm:top-16 left-0 right-0 max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-b border-slate-200/80 p-3 shadow-2xl lg:hidden flex flex-col gap-1 z-50 animate-slide-down safe-bottom">
-            {navItems.map((item) => {
-              const IconComp = item.icon;
-              const isActiveMobile = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-              if (item.action) {
-                return (
-                  <button
-                    key={item.label}
-                    onClick={() => { setMobileMenuOpen(false); item.action?.(); }}
-                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold w-full text-left transition-colors active:scale-[0.99] ${
-                      isActiveMobile
-                        ? "bg-indigo-50 text-indigo-600"
-                        : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
-                    }`}
-                  >
-                    <IconComp size={18} /> {item.label}
-                  </button>
-                );
-              }
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href || "#"}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-colors active:scale-[0.99] ${
-                    isActiveMobile
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
-                  }`}
-                >
-                  <IconComp size={18} /> {item.label}
-                </Link>
-              );
-            })}
+      {isMounted && mobileMenuOpen
+        ? createPortal(
+            <>
+              <div
+                className="fixed inset-x-0 top-14 sm:top-16 bottom-0 z-[9998] bg-slate-950/55 backdrop-blur-sm lg:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+              <div
+                className="fixed left-0 right-0 top-14 sm:top-16 z-[9999] max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-white border-b border-slate-200/80 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.28)] lg:hidden flex flex-col gap-1 safe-bottom"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                {navItems.map((item) => {
+                  const IconComp = item.icon;
+                  const isActiveMobile = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                  if (item.action) {
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          item.action?.();
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold w-full text-left transition-colors active:scale-[0.99] touch-manipulation ${
+                          isActiveMobile
+                            ? "bg-indigo-50 text-indigo-600"
+                            : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                        }`}
+                      >
+                        <IconComp size={18} /> {item.label}
+                      </button>
+                    );
+                  }
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href || "#"}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold transition-colors active:scale-[0.99] touch-manipulation ${
+                        isActiveMobile
+                          ? "bg-indigo-50 text-indigo-600"
+                          : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                      }`}
+                    >
+                      <IconComp size={18} /> {item.label}
+                    </Link>
+                  );
+                })}
 
-            {/* Mobile search */}
-            {onSearchChange && (
-              <div className="relative mt-1 px-1">
-                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search templates..."
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:bg-white"
-                />
+                {/* Mobile search */}
+                {onSearchChange && (
+                  <div className="relative mt-1 px-1">
+                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search templates..."
+                      value={searchQuery}
+                      onChange={(e) => onSearchChange(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:bg-white"
+                    />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </>
-      )}
+            </>,
+            document.body
+          )
+        : null}
     </header>
   );
 }

@@ -157,18 +157,19 @@ export function ImagePickerModal({ currentUrl, onSelect, onClose }: ImagePickerM
               <p className="text-[11px] text-slate-400">Upload to Cloudinary or pick from your library</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+          <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {/* Tab Bar */}
-        <div className="flex gap-1 p-3 border-b border-slate-800 bg-slate-950/40">
+        <div className="flex gap-1 p-3 border-b border-slate-800 bg-slate-950/40 overflow-x-auto overscroll-x-contain">
           {tabs.map((t) => (
             <button
               key={t.id}
+              type="button"
               onClick={() => setTab(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 min-h-[40px] rounded-lg text-xs font-bold transition-all whitespace-nowrap touch-manipulation ${
                 tab === t.id
                   ? "bg-indigo-600 text-white shadow-md"
                   : "text-slate-400 hover:text-white hover:bg-slate-800"
@@ -190,7 +191,7 @@ export function ImagePickerModal({ currentUrl, onSelect, onClose }: ImagePickerM
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => !isUploading && fileInputRef.current?.click()}
-                className={`relative border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
+                className={`relative border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all touch-manipulation ${
                   isDragging
                     ? "border-indigo-500 bg-indigo-950/30 scale-[1.01]"
                     : "border-slate-700 hover:border-indigo-500/60 hover:bg-slate-800/30"
@@ -337,12 +338,13 @@ export function ImagePickerModal({ currentUrl, onSelect, onClose }: ImagePickerM
                     placeholder="https://example.com/image.jpg"
                     className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                   />
-                  <button
-                    onClick={() => { if (urlInput.trim()) { onSelect(urlInput.trim()); onClose(); } }}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors"
-                  >
-                    Apply
-                  </button>
+                <button
+                  type="button"
+                  onClick={() => { if (urlInput.trim()) { onSelect(urlInput.trim()); onClose(); } }}
+                  className="px-4 py-2 min-h-[42px] rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors touch-manipulation"
+                >
+                  Apply
+                </button>
                 </div>
               </div>
               {urlInput && (

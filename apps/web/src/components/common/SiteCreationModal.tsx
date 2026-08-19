@@ -217,8 +217,9 @@ export function SiteCreationModal({
           <div className="flex items-center gap-3">
             {modalStep === "template" ? (
               <button
+                type="button"
                 onClick={() => setModalStep("mode")}
-                className="flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-1 min-h-[36px] text-xs font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors touch-manipulation"
               >
                 <ChevronLeft size={15} /> Back
               </button>
@@ -236,6 +237,7 @@ export function SiteCreationModal({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             disabled={isRedirecting}
             className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
@@ -266,8 +268,9 @@ export function SiteCreationModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               {/* Option A: Use Template */}
               <button
+                type="button"
                 onClick={() => setModalStep("template")}
-                className="group relative text-left p-6 rounded-3xl border-2 border-indigo-500 bg-gradient-to-b from-indigo-50/40 via-white to-white hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 flex flex-col justify-between overflow-hidden"
+                className="group relative text-left p-6 rounded-3xl border-2 border-indigo-500 bg-gradient-to-b from-indigo-50/40 via-white to-white hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 flex flex-col justify-between overflow-hidden touch-manipulation"
               >
                 <div className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider shadow-sm">
                   Recommended
@@ -310,9 +313,10 @@ export function SiteCreationModal({
 
               {/* Option B: Start from Scratch */}
               <button
+                type="button"
                 onClick={() => onLaunch(null)}
                 disabled={isRedirecting}
-                className="group text-left p-6 rounded-3xl border-2 border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50/80 hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
+                className="group text-left p-6 rounded-3xl border-2 border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50/80 hover:shadow-lg transition-all duration-200 flex flex-col justify-between touch-manipulation"
               >
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center mb-4 group-hover:bg-slate-200 group-hover:scale-110 transition-transform">
@@ -359,10 +363,10 @@ export function SiteCreationModal({
           <div className="flex flex-col h-[82vh] max-h-[850px]">
             {/* ── Toolbar: Search & Title ── */}
             <div className="p-6 pb-4 border-b border-slate-100 bg-white space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Select a Template Layout
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                      Select a Template Layout
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Click any design below to start customizing inside the visual editor.
@@ -380,10 +384,11 @@ export function SiteCreationModal({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search templates, tags..."
-                    className="w-full h-10 pl-10 pr-9 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+                    className="w-full h-10 pl-10 pr-9 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
                   />
                   {searchQuery && (
                     <button
+                      type="button"
                       onClick={() => setSearchQuery("")}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-200/50"
                     >
@@ -394,7 +399,7 @@ export function SiteCreationModal({
               </div>
 
               {/* ── Category Filter Pills ── */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-1 no-scrollbar -mx-6 px-6">
+              <div className="flex items-center gap-2 overflow-x-auto overscroll-x-contain pb-1.5 pt-1 no-scrollbar -mx-6 px-6">
                 {dynamicCategories.map((cat) => {
                   const Icon = CATEGORY_ICONS[cat.id] || LayoutTemplate;
                   const count = categoryCounts[cat.id] || 0;
@@ -403,9 +408,10 @@ export function SiteCreationModal({
 
                   return (
                     <button
+                      type="button"
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 ${
+                      className={`flex items-center gap-2 px-3.5 py-2 min-h-[42px] rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 touch-manipulation ${
                         isActive
                           ? "bg-slate-900 text-white shadow-md shadow-slate-900/20 scale-[1.02]"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900"
@@ -445,7 +451,7 @@ export function SiteCreationModal({
                         key={tpl.id}
                         onClick={() => setSelectedTemplateId(tpl.id)}
                         onDoubleClick={() => onLaunch(tpl.id)}
-                        className={`group relative text-left rounded-3xl border-2 bg-white overflow-hidden transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+                        className={`group relative text-left rounded-3xl border-2 bg-white overflow-hidden transition-all duration-200 cursor-pointer flex flex-col justify-between touch-manipulation ${
                           isSelected
                             ? "border-indigo-600 ring-4 ring-indigo-600/15 shadow-xl shadow-indigo-600/10 -translate-y-1"
                             : "border-slate-200 hover:border-slate-300 hover:shadow-lg hover:-translate-y-0.5"
@@ -477,6 +483,7 @@ export function SiteCreationModal({
                           {/* Hover action overlay */}
                           <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3 pointer-events-auto">
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 window.open(`/templates/preview/${tpl.id}`, "_blank");
@@ -489,6 +496,7 @@ export function SiteCreationModal({
                             </button>
 
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedTemplateId(tpl.id);
@@ -619,17 +627,19 @@ export function SiteCreationModal({
 
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
+                  type="button"
                   onClick={() => onLaunch(null)}
                   disabled={isRedirecting}
-                  className="px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors"
+                  className="px-4 py-2.5 min-h-[44px] rounded-2xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors touch-manipulation"
                 >
                   Or Start Blank Canvas
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => onLaunch(selectedTemplateId)}
                   disabled={!selectedTemplateId || isRedirecting}
-                  className="flex-1 sm:flex-none px-6 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/25"
+                  className="flex-1 sm:flex-none px-6 py-2.5 min-h-[44px] rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/25 touch-manipulation"
                 >
                   {isRedirecting ? (
                     "Opening Studio…"

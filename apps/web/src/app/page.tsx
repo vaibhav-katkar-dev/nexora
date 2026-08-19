@@ -342,6 +342,7 @@ export default function LandingPage() {
               Sign in
             </Link>
             <button
+              type="button"
               onClick={() => setIsModalOpen(true)}
               className="btn btn-primary text-xs shadow-md shadow-indigo-600/20 active:scale-95 transition-transform"
             >
@@ -350,6 +351,7 @@ export default function LandingPage() {
             </button>
             {/* Mobile hamburger */}
             <button
+              type="button"
               onClick={() => setMobileNavOpen(!mobileNavOpen)}
               className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors"
               aria-label="Toggle navigation"
@@ -363,18 +365,18 @@ export default function LandingPage() {
         {mobileNavOpen && (
           <>
             <div
-              className="fixed inset-0 top-14 bg-slate-950/30 backdrop-blur-sm z-40 md:hidden"
+              className="fixed inset-x-0 top-14 bottom-0 bg-slate-950/30 backdrop-blur-sm z-40 md:hidden"
               onClick={() => setMobileNavOpen(false)}
             />
-            <div className="absolute top-14 left-0 right-0 bg-white border-b border-slate-200 p-3 flex flex-col gap-1 z-50 animate-slide-down shadow-xl md:hidden safe-bottom">
-              <a href="#start" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Quick Start</a>
-              <Link href="/templates" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Templates</Link>
-              <a href="#how-it-works" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">3-Minute Flow</a>
-              <a href="#presences" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Digital Presences</a>
-              <a href="#differentiation" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">Why Nexora</a>
+            <div className="fixed top-14 left-0 right-0 bg-white border-b border-slate-200 p-3 flex flex-col gap-1 z-50 animate-slide-down shadow-xl md:hidden safe-bottom max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain">
+              <a href="#start" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Quick Start</a>
+              <Link href="/templates" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Templates</Link>
+              <a href="#how-it-works" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">3-Minute Flow</a>
+              <a href="#presences" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Digital Presences</a>
+              <a href="#differentiation" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Why Nexora</a>
               <div className="border-t border-slate-100 mt-1 pt-2 flex flex-col gap-1.5">
-                <Link href="/login" onClick={() => setMobileNavOpen(false)} className="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors">Sign in</Link>
-                <button onClick={() => { setMobileNavOpen(false); setIsModalOpen(true); }} className="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">Get Started Free →</button>
+                <Link href="/login" onClick={() => setMobileNavOpen(false)} className="w-full flex items-center justify-center px-4 py-3 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors touch-manipulation">Sign in</Link>
+                <button type="button" onClick={() => { setMobileNavOpen(false); setIsModalOpen(true); }} className="w-full flex items-center justify-center px-4 py-3 min-h-[48px] rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors touch-manipulation">Get Started Free →</button>
               </div>
             </div>
           </>
