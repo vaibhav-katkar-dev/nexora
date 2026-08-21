@@ -929,7 +929,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
+        <div className="nexora-nav-links hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
           {links && links.length > 0 ? (
             links.map((l: any, i: number) => {
               const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
@@ -940,7 +940,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
                   key={i}
                   {...sel(itemKey)}
                   href={linkUrl}
-                  className="hover:opacity-100 hover:text-indigo-400 transition-colors"
+                  className="hover:opacity-100 hover:text-indigo-400 transition-colors whitespace-nowrap"
                   style={getNavElementStyle(section, itemKey)}
                 >
                   {labelText}
@@ -958,7 +958,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
             <a
               {...sel("content.ctaText")}
               href={content.ctaLink || "#"}
-              className="hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
+              className="nexora-nav-cta hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105 whitespace-nowrap"
               style={{ background: theme.primaryColor, ...getNavElementStyle(section, "content.ctaText") }}
             >
               {content.ctaText}
@@ -968,7 +968,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors touch-manipulation"
+            className="nexora-nav-toggle md:hidden min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors touch-manipulation"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -3519,6 +3519,26 @@ containerSelector
       {scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
       {elementColorCss && <style dangerouslySetInnerHTML={{ __html: elementColorCss }} />}
       {elementStyleCss && <style dangerouslySetInnerHTML={{ __html: elementStyleCss }} />}
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .${containerClass} {
+              container-type: inline-size;
+            }
+            @container (min-width: 768px) {
+              .${containerClass} .nexora-nav-links { display: flex !important; }
+              .${containerClass} .nexora-nav-cta { display: block !important; }
+              .${containerClass} .nexora-nav-toggle { display: none !important; }
+            }
+            @container (max-width: 767px) {
+              .${containerClass} .nexora-nav-links { display: none !important; }
+              .${containerClass} .nexora-nav-cta { display: none !important; }
+              .${containerClass} .nexora-nav-toggle { display: flex !important; }
+            }
+          `,
+        }}
+      />
 
       {interactive && (
         <style
