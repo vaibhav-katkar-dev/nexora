@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useEditorStore } from "@/store/editorStore";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
-import { DeviceFrame } from "@/components/editor/DeviceFrame";
 import { ContextToolbar } from "@/components/editor/ContextToolbar";
-import { Layers } from "lucide-react";
+import { Layers, ZoomIn, ZoomOut } from "lucide-react";
 
 interface CanvasPreviewProps {
   selectedSectionId: string | null;
@@ -24,7 +23,8 @@ export function CanvasPreview({
 }: CanvasPreviewProps) {
   const config = useEditorStore((state) => state.config);
   const customCode = useEditorStore((state) => state.customCode);
-  const viewport = useEditorStore((state) => state.viewport);
+
+  const [zoomLevel, setZoomLevel] = useState(100);
 
   // Ref to the scroll container — used for scroll-to-section behavior
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -69,17 +69,28 @@ export function CanvasPreview({
   }, [selectedElementKey]);
 
   return (
-    <div className="flex-1 h-full w-full bg-slate-950 overflow-auto flex flex-col items-center justify-start relative p-2 sm:p-4">
+    <div className="flex-1 h-full w-full bg-slate-950 flex flex-col relative overflow-hidden">
       {/* Context-Aware Top Formatting Bar */}
       <ContextToolbar
         scrollRef={scrollContainerRef}
         onRequestImageEdit={onRequestImageEdit}
       />
 
-      {/* Device Frame */}
-      <div className="m-auto flex items-center justify-center min-h-full max-w-full">
-        <DeviceFrame viewport={viewport} scrollRef={scrollContainerRef}>
-          {config ? (
+      {/* Full-width Direct Editable Preview */}
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden bg-slate-950 custom-scrollbar relative"
+      >
+        {config ? (
+          <div
+            style={{
+              transform: `scale(${zoomLevel / 100})`,
+              transformOrigin: "top center",
+              width: zoomLevel !== 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
+              minHeight: "100%",
+              transition: "transform 0.15s ease-out, width 0.15s ease-out",
+            }}
+          >
             <SiteRenderer
               config={config}
               customCode={customCode}
@@ -90,14 +101,46 @@ export function CanvasPreview({
               onRequestImageEdit={onRequestImageEdit}
               interactive={true}
             />
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center p-12 text-center text-slate-500 gap-3">
-              <Layers size={40} className="opacity-30" />
-              <p className="text-sm font-medium">No site loaded.</p>
-            </div>
-          )}
-        </DeviceFrame>
+          </div>
+        ) : (
+          <div className="h-full min-h-[400px] flex flex-col items-center justify-center p-12 text-center text-slate-500 gap-3">
+            <Layers size={40} className="opacity-30" />
+            <p className="text-sm font-medium">No site loaded.</p>
+          </div>
+        )}
       </div>
+
+      {/* Live Preview Zoom Controls */}
+      {config && (
+        <div className="absolute bottom-4 right-4 z-40 flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-full px-2.5 py-1 text-xs text-slate-300 shadow-2xl backdrop-blur select-none">
+          <button
+            type="button"
+            onClick={() => setZoomLevel((z) => Math.max(50, z - 10))}
+            disabled={zoomLevel <= 50}
+            className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-colors"
+            title="Zoom Out (-10%)"
+          >
+            <ZoomOut size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoomLevel(100)}
+            className="px-1.5 font-mono text-[11px] font-semibold text-indigo-300 hover:text-indigo-200 transition-colors"
+            title="Reset Zoom to 100%"
+          >
+            {zoomLevel}%
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoomLevel((z) => Math.min(150, z + 10))}
+            disabled={zoomLevel >= 150}
+            className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-colors"
+            title="Zoom In (+10%)"
+          >
+            <ZoomIn size={13} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

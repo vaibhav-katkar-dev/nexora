@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   SiteConfigJSON,
@@ -41,6 +41,7 @@ import {
   Copy,
   Trash2,
   Camera,
+  Image as ImageIcon,
   Loader2,
   MessageCircle,
   Send,
@@ -480,6 +481,11 @@ function buildCssVariables(theme: any, _interactive?: boolean): CSSProperties {
   } as CSSProperties;
 }
 
+/**
+ * Builds section-scoped CSS that applies per-element custom text colors.
+ * Targets both normalized keys and `content.` prefixed data-element-key attributes
+ * so custom colors apply seamlessly to all nav items, text headers, buttons & stats.
+ */
 export function getCleanSocialUrl(platform: string, value: string): string {
   if (!value || typeof value !== "string") return "";
   const trimmed = value.trim();
@@ -580,6 +586,87 @@ function SocialLinksRow({
   );
 }
 
+// ─── Interactive Image Wrapper with Hover Badge ──────────────────────────────
+interface InteractiveImageWrapperProps {
+  children: React.ReactNode;
+  sectionId: string;
+  elementKey: string;
+  interactive?: boolean;
+  onSelectElement?: (elementKey: string, sectionId: string) => void;
+  onRequestImageEdit?: (sectionId: string, elementKey: string) => void;
+  className?: string;
+  badgeLabel?: string;
+  badgePosition?: "top-right" | "center" | "bottom-right" | "below" | "bottom-center";
+  style?: React.CSSProperties;
+}
+
+function InteractiveImageWrapper({
+  children,
+  sectionId,
+  elementKey,
+  interactive,
+  onSelectElement,
+  onRequestImageEdit,
+  className = "",
+  badgeLabel = "Change Photo",
+  badgePosition = "top-right",
+  style,
+}: InteractiveImageWrapperProps) {
+  if (!interactive) {
+    return <div className={className} style={style}>{children}</div>;
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelectElement?.(elementKey, sectionId);
+    onRequestImageEdit?.(sectionId, elementKey);
+  };
+
+  const posClasses =
+    badgePosition === "center"
+      ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+      : badgePosition === "bottom-right"
+      ? "bottom-2 right-2"
+      : badgePosition === "below" || badgePosition === "bottom-center"
+      ? "top-full left-1/2 -translate-x-1/2 mt-1.5"
+      : "top-2 right-2";
+
+  return (
+    <div
+      data-element-key={elementKey}
+      onClick={handleClick}
+      className={`relative group/img-interactive cursor-pointer ${className}`}
+      style={style}
+    >
+      {children}
+      <div
+        style={{
+          all: "initial",
+          display: "flex",
+          alignItems: "center",
+          gap: "5px",
+          padding: "3px 7px",
+          borderRadius: "6px",
+          backgroundColor: "rgba(15, 23, 42, 0.95)",
+          border: "1px solid rgba(99, 102, 241, 0.5)",
+          color: "#c7d2fe",
+          fontSize: "10px",
+          fontWeight: 600,
+          boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+          backdropFilter: "blur(8px)",
+          pointerEvents: "none",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          whiteSpace: "nowrap",
+          zIndex: 50,
+        }}
+        className={`absolute ${posClasses} opacity-0 group-hover/img-interactive:opacity-100 transition-opacity duration-200`}
+      >
+        <Camera size={11} className="text-indigo-400 shrink-0" />
+        <span className="tracking-wide">{badgeLabel}</span>
+      </div>
+    </div>
+  );
+}
 
 // ─── Section Renderers ───────────────────────────────────────────────────────
 
@@ -590,9 +677,11 @@ interface SectionRendererProps {
   interactive?: boolean;
   siteSlug?: string;
   onAddToCart?: (item: { name: string; price: string }) => void;
+  onSelectElement?: (elementKey: string, sectionId: string) => void;
+  onRequestImageEdit?: (sectionId: string, elementKey: string) => void;
 }
 
-function NavbarSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function NavbarSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const content = section.content || {};
   const links: any[] = content.links || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
@@ -739,22 +828,64 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
         }}
       >
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          {logoImage && (
+          {logoImage ? (
             <img
               {...sel("content.logoImage")}
               src={logoImage}
               alt={section.title || "Logo"}
               loading="lazy"
               decoding="async"
-              className="object-contain rounded shrink-0 transition-all"
+              onClick={(e) => {
+                if (!interactive) return;
+                e.stopPropagation();
+                onSelectElement?.("content.logoImage", section.id);
+                onRequestImageEdit?.(section.id, "content.logoImage");
+              }}
+              className={`object-contain rounded shrink-0 transition-all ${
+                interactive ? "cursor-pointer hover:opacity-90 hover:ring-2 hover:ring-indigo-400/80" : ""
+              }`}
               style={{
                 width: typeof logoWidth === "number" ? `${logoWidth}px` : logoWidth,
                 height: typeof logoHeight === "number" ? `${logoHeight}px` : logoHeight,
-                maxHeight: "40px",
+                maxHeight: "44px",
                 ...getElementStyle(section, "content.logoImage"),
               }}
+              title={interactive ? "Click to edit logo" : undefined}
             />
-          )}
+          ) : interactive ? (
+            <div className="relative inline-flex flex-col items-center shrink-0 group/navbar-logo">
+              <button
+                type="button"
+                {...sel("content.logoImage")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectElement?.("content.logoImage", section.id);
+                  onRequestImageEdit?.(section.id, "content.logoImage");
+                }}
+                style={{
+                  all: "unset",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "6px",
+                  border: "1px dashed rgba(148, 163, 184, 0.4)",
+                  backgroundColor: "transparent",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  position: "relative",
+                  transition: "all 0.2s ease",
+                  flexShrink: 0,
+                  boxSizing: "border-box",
+                }}
+                className="hover:!border-slate-300 hover:!text-white group shrink-0"
+                title="Click to add brand logo (optional)"
+              >
+                <Camera size={13} className="opacity-60 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </div>
+          ) : null}
           <span
             {...sel("title")}
             className="min-w-0 max-w-[56vw] truncate font-extrabold text-base sm:text-xl tracking-tight"
@@ -818,7 +949,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive }: Sect
   );
 }
 
-function HeroSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function HeroSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const content = section.content || {};
   const stats: any[] = content.stats || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
@@ -831,7 +962,7 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
     <section
       id={section.id}
       data-section-id={section.id}
-      className="relative px-6 py-20 lg:py-32 w-full mx-auto flex flex-col items-center text-center justify-center min-h-[75vh] overflow-hidden"
+      className="relative px-6 py-20 lg:py-32 w-full mx-auto flex flex-col items-center text-center justify-center min-h-[75vh] overflow-hidden group/hero-sec"
       style={
         bgImage
           ? {
@@ -843,6 +974,8 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
           : undefined
       }
     >
+      {/* Hero Section Content */}
+
       {/* Dark Overlay when Background Image is active */}
       {bgImage && (
         <div
@@ -895,15 +1028,24 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
         {/* Foreground Hero Image / Avatar (if not used as background) */}
         {!bgImage && (content.avatarUrl || content.image || content.imageUrl) && (
           <div className="w-full max-w-3xl mb-16 nexora-hero-image-wrapper">
-            <img
-              {...sel("content.image")}
-              src={content.avatarUrl || content.image || content.imageUrl}
-              alt={section.title || "Hero"}
-              loading="lazy"
-              decoding="async"
-              className="nexora-hero-image w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
-              style={{ borderRadius: "var(--radius)" }}
-            />
+            <InteractiveImageWrapper
+              sectionId={section.id}
+              elementKey="content.image"
+              interactive={interactive}
+              onSelectElement={onSelectElement}
+              onRequestImageEdit={onRequestImageEdit}
+              badgeLabel="Change Photo"
+            >
+              <img
+                {...sel("content.image")}
+                src={content.avatarUrl || content.image || content.imageUrl}
+                alt={section.title || "Hero"}
+                loading="lazy"
+                decoding="async"
+                className="nexora-hero-image w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
+                style={{ borderRadius: "var(--radius)" }}
+              />
+            </InteractiveImageWrapper>
           </div>
         )}
 
@@ -940,7 +1082,6 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-white/15 w-full max-w-3xl">
             {stats.map((st: any, i: number) => (
               <div key={i} className="text-center">
-                {/* outer div is not contentEditable – sel() is on the inner value div only, preventing the label text from being captured by onBlur */}
                 <div {...sel(`content.stats.${i}.value`)} className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
                   {st.value}
                 </div>
@@ -954,16 +1095,52 @@ function HeroSection({ section, theme, selectedElementKey, interactive }: Sectio
   );
 }
 
-function AboutSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function AboutSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const content = section.content || {};
   const skills: string[] = content.skills || [];
   const highlights: string[] = content.highlights || [];
   const socials = content.socials || (content.instagram || content.github || content.linkedin || content.twitter ? content : {});
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+  const aboutImg = content.image || content.avatar || content.photo || content.imageUrl;
 
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row gap-12 items-start">
+        {aboutImg ? (
+          <div className="w-full md:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10 shadow-2xl relative group">
+            <InteractiveImageWrapper
+              sectionId={section.id}
+              elementKey="content.image"
+              interactive={interactive}
+              onSelectElement={onSelectElement}
+              onRequestImageEdit={onRequestImageEdit}
+              badgeLabel="Change Photo"
+            >
+              <img
+                {...sel("content.image")}
+                src={aboutImg}
+                alt={section.title || "About Photo"}
+                className="w-full h-72 md:h-96 object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+              />
+            </InteractiveImageWrapper>
+          </div>
+        ) : interactive ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectElement?.("content.image", section.id);
+              onRequestImageEdit?.(section.id, "content.image");
+            }}
+            style={{ all: "unset", boxSizing: "border-box" }}
+            className="w-full md:w-80 h-72 md:h-96 shrink-0 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-indigo-700/50 hover:border-indigo-400 bg-indigo-950/20 hover:bg-indigo-950/40 text-indigo-300 transition-all cursor-pointer p-6 text-center"
+            title="Click to add an About Profile Photo"
+          >
+            <Camera size={24} className="opacity-80" />
+            <span className="text-xs font-bold">+ Add Profile Photo</span>
+          </button>
+        ) : null}
         <div className="flex-1 space-y-6">
           <div className="inline-block text-xs font-bold uppercase tracking-wider" style={{ color: theme.primaryColor }}>
             About
@@ -1021,8 +1198,233 @@ function AboutSection({ section, theme, selectedElementKey, interactive }: Secti
   );
 }
 
-function FeaturesSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function PricingSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+  const plans: any[] = section.content?.plans || [];
+  const layout = section.variant || section.content?.layout || "grid";
+  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+
+  return (
+    <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-6xl mx-auto">
+      <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+        {section.subtitle && <p {...sel("subtitle")} className="opacity-75">{section.subtitle}</p>}
+      </div>
+
+      <div className={
+        layout === "list"
+          ? "space-y-6 max-w-3xl mx-auto"
+          : layout === "compact"
+          ? "grid grid-cols-1 md:grid-cols-3 gap-4"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      }>
+        {plans.map((p: any, i: number) => (
+          <div
+            key={i}
+            {...sel(`content.plans.${i}`)}
+            className={`rounded-3xl border relative flex flex-col justify-between transition-all ${
+              layout === "compact" ? "p-5" : "p-8"
+            } ${
+              p.isPopular ? "border-2 shadow-2xl scale-105" : "backdrop-blur-sm"
+            }`}
+            style={{
+              backgroundColor: p.isPopular ? `${theme.primaryColor}10` : "rgba(255, 255, 255, 0.03)",
+              borderColor: p.isPopular ? theme.primaryColor : "rgba(255, 255, 255, 0.08)",
+              borderRadius: "var(--radius)",
+            }}
+          >
+            {p.badge && (
+              <span
+                className="absolute -top-3.5 right-6 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider text-white shadow-md"
+                style={{ background: theme.primaryColor }}
+              >
+                {p.badge}
+              </span>
+            )}
+            <div>
+              <h3 {...sel(`content.plans.${i}.name`)} className={`font-bold mb-2 ${layout === "compact" ? "text-xl" : "text-2xl"}`}>{p.name}</h3>
+              <p {...sel(`content.plans.${i}.desc`)} className="text-xs opacity-65 mb-6">{p.desc}</p>
+              <div className="flex items-baseline gap-1 mb-6">
+                <span {...sel(`content.plans.${i}.price`)} className={`font-extrabold tracking-tight ${layout === "compact" ? "text-3xl" : "text-4xl"}`} style={{ fontFamily: "var(--font-heading)" }}>
+                  {p.price}
+                </span>
+                <span className="text-xs opacity-60">/ month</span>
+              </div>
+              <div className="space-y-3 mb-6">
+                {(p.features || []).map((f: string, fi: number) => (
+                  <div key={fi} className="flex items-center gap-3 text-sm opacity-85">
+                    <CheckCircle2 size={16} style={{ color: theme.primaryColor }} aria-hidden="true" />
+                    <span {...sel(`content.plans.${i}.features.${fi}`)}>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <a
+              href={p.url || p.ctaLink || p.buttonUrl || "#"}
+              className="w-full py-3 block text-center font-bold text-white shadow-lg transition-all hover:opacity-90 cursor-pointer"
+              style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
+            >
+              <span {...sel(`content.plans.${i}.buttonText`)}>{p.buttonText || p.ctaText || "Get Started"}</span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FAQSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+
+  return (
+    <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-3xl mx-auto">
+      <div className="text-center mb-14">
+        <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h2>
+      </div>
+
+      <div className="space-y-4">
+        {items.map((item: any, i: number) => {
+          const isOpen = openIdx === i;
+          return (
+            <div
+              key={i}
+              {...sel(`content.items.${i}`)}
+              className="border rounded-2xl overflow-hidden backdrop-blur-sm transition-all"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.03)",
+                borderColor: "rgba(255, 255, 255, 0.08)",
+              }}
+            >
+              <button
+                onClick={() => setOpenIdx(isOpen ? null : i)}
+                className="w-full p-6 text-left font-bold flex justify-between items-center gap-4 text-lg"
+              >
+                <span {...sel(`content.items.${i}.question`)}>{item.question}</span>
+                <ChevronDown size={20} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+              </button>
+              {isOpen && (
+                <div {...sel(`content.items.${i}.answer`)} className="px-6 pb-6 text-sm opacity-75 leading-relaxed border-t border-white/5 pt-4">
+                  {item.answer}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function DigitalCardSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
+  const socials = section.content?.socials || {};
+  const customLinks = section.content?.customLinks || [];
+  const avatar = section.content?.avatar || "";
+  const [clickedIdx, setClickedIdx] = useState<number | null>(null);
+  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
+  const isDark = getIsDarkTheme(theme);
+
+  const handleLinkClick = (i: number, url: string, e: React.MouseEvent) => {
+    if (!url || url === "#") { e.preventDefault(); return; }
+    if (interactive) { e.preventDefault(); return; }
+    setClickedIdx(i);
+    setTimeout(() => setClickedIdx(null), 1500);
+  };
+
+  return (
+    <section id={section.id} data-section-id={section.id} className="min-h-screen flex items-center justify-center p-6">
+      <div
+        className="max-w-md w-full text-center p-8 rounded-3xl border shadow-2xl backdrop-blur-md"
+        style={{
+          backgroundColor: isDark ? "rgba(255, 255, 255, 0.04)" : "var(--surface)",
+          borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "var(--border)",
+          color: "var(--text)",
+          borderRadius: "var(--radius)",
+        }}
+      >
+        {avatar ? (
+          <InteractiveImageWrapper
+            sectionId={section.id}
+            elementKey="content.avatar"
+            interactive={interactive}
+            onSelectElement={onSelectElement}
+            onRequestImageEdit={onRequestImageEdit}
+            badgeLabel="Change Avatar"
+            badgePosition="bottom-right"
+            className="inline-block mx-auto mb-6"
+          >
+            <img
+              {...sel("content.avatar")}
+              src={avatar}
+              alt={section.title || "Avatar"}
+              className="w-28 h-28 rounded-full border-4 object-cover shadow-xl"
+              style={{ borderColor: theme.primaryColor }}
+            />
+          </InteractiveImageWrapper>
+        ) : interactive ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectElement?.("content.avatar", section.id);
+              onRequestImageEdit?.(section.id, "content.avatar");
+            }}
+            style={{ all: "unset", boxSizing: "border-box" }}
+            className="w-28 h-28 rounded-full flex flex-col items-center justify-center border-2 border-dashed border-indigo-400 bg-indigo-950/40 text-indigo-300 mx-auto mb-6 shadow-xl hover:scale-105 transition-all cursor-pointer group"
+            title="Click to upload profile avatar photo"
+          >
+            <Camera size={22} className="text-indigo-400 group-hover:scale-110 transition-transform mb-1" />
+            <span className="text-[10px] font-bold">+ Avatar</span>
+          </button>
+        ) : (
+          <div
+            className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-bold text-white mx-auto mb-6 shadow-xl"
+            style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})` }}
+          >
+            {(section.title || "?")[0].toUpperCase()}
+          </div>
+        )}
+
+        <h1 {...sel("title")} className="text-2xl font-extrabold mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+          {section.title}
+        </h1>
+        <p {...sel("subtitle")} className="text-sm opacity-60 mb-8">{section.subtitle}</p>
+
+        <div className="space-y-4">
+          {customLinks.map((link: any, i: number) => (
+            <a
+              key={i}
+              {...sel(`content.customLinks.${i}`)}
+              href={link.url || "#"}
+              onClick={(e) => handleLinkClick(i, link.url, e)}
+              className="block w-full p-4 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] border"
+              style={{
+                backgroundColor: clickedIdx === i ? theme.primaryColor : "rgba(255, 255, 255, 0.05)",
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                color: clickedIdx === i ? "white" : "inherit",
+                borderRadius: "var(--radius)",
+              }}
+            >
+              {link.text}
+            </a>
+          ))}
+        </div>
+
+        <div className="mt-8 flex justify-center gap-4">
+          <SocialLinksRow socials={socials} theme={theme} sel={sel} className="justify-center" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FeaturesSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
+  const items: any[] = section.content?.items || [];
+  const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
@@ -1034,53 +1436,73 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive }: Se
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className={
+        layout === "list"
+          ? "space-y-6 max-w-4xl mx-auto"
+          : layout === "compact"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      }>
         {items.map((item: any, i: number) => {
           const IconComponent = getIconComponent(item.icon, Sparkles);
           return (
             <div
               key={i}
               {...sel(`content.items.${i}`)}
-              className="rounded-2xl border backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl overflow-hidden flex flex-col"
+              className={`rounded-2xl border backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl overflow-hidden flex ${
+                layout === "list" ? "flex-col sm:flex-row items-start sm:items-center gap-6 p-6" : "flex-col"
+              }`}
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.03)",
                 borderColor: "rgba(255, 255, 255, 0.08)",
                 borderRadius: "var(--radius)",
               }}
             >
-              {item.image && (
-                <div className="h-44 overflow-hidden relative">
-                  <img
-                    {...sel(`content.items.${i}.image`)}
-                    src={item.image}
-                    alt={item.title}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
+              {item.image && layout !== "compact" && (
+                <div className={layout === "list" ? "w-full sm:w-48 h-36 shrink-0 overflow-hidden relative rounded-xl" : "h-44 overflow-hidden relative"}>
+                  <InteractiveImageWrapper
+                    sectionId={section.id}
+                    elementKey={`content.items.${i}.image`}
+                    interactive={interactive}
+                    onSelectElement={onSelectElement}
+                    onRequestImageEdit={onRequestImageEdit}
+                    badgeLabel="Change Photo"
+                    className="w-full h-full"
+                  >
+                    <img
+                      {...sel(`content.items.${i}.image`)}
+                      src={item.image}
+                      alt={item.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </InteractiveImageWrapper>
                 </div>
               )}
-              <div className="p-8 flex-1 flex flex-col">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-md"
-                  style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
-                >
-                  <IconComponent size={24} />
+              <div className={layout === "list" ? "flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4" : layout === "compact" ? "p-5 flex-1 flex flex-col" : "p-8 flex-1 flex flex-col"}>
+                <div className="flex-1">
+                  <div
+                    className={`rounded-xl flex items-center justify-center shadow-md ${layout === "compact" ? "w-9 h-9 mb-3" : "w-12 h-12 mb-4"}`}
+                    style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
+                  >
+                    <IconComponent size={layout === "compact" ? 18 : 24} />
+                  </div>
+                  <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base mb-1.5" : "text-xl mb-2"}`} style={{ fontFamily: "var(--font-heading)" }}>
+                    {item.title}
+                  </h3>
+                  <p {...sel(`content.items.${i}.desc`)} className={`opacity-75 leading-relaxed ${layout === "compact" ? "text-xs" : "text-sm"}`}>{item.desc}</p>
                 </div>
-                <h3 {...sel(`content.items.${i}.title`)} className="text-xl font-bold mb-3" style={{ fontFamily: "var(--font-heading)" }}>
-                  {item.title}
-                </h3>
-                <p {...sel(`content.items.${i}.desc`)} className="opacity-75 text-sm leading-relaxed">{item.desc}</p>
-              {(item.buttonText || item.url || item.ctaLink) && (
-                <a
-                  href={item.url || item.ctaLink || "#"}
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline cursor-pointer"
-                  style={{ color: theme.primaryColor }}
-                >
-                  <span {...sel(`content.items.${i}.buttonText`)}>{item.buttonText || "Learn More"}</span>
-                  <span aria-hidden="true">{"\u2192"}</span>
-                </a>
-              )}
+                {(item.buttonText || item.url || item.ctaLink) && (
+                  <a
+                    href={item.url || item.ctaLink || "#"}
+                    className={`inline-flex items-center gap-1.5 text-sm font-semibold hover:underline cursor-pointer shrink-0 ${layout === "list" ? "self-start sm:self-center" : "mt-4"}`}
+                    style={{ color: theme.primaryColor }}
+                  >
+                    <span {...sel(`content.items.${i}.buttonText`)}>{item.buttonText || "Learn More"}</span>
+                    <span aria-hidden="true">→</span>
+                  </a>
+                )}
               </div>
             </div>
           );
@@ -1090,8 +1512,9 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive }: Se
   );
 }
 
-function ServicesSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function ServicesSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
+  const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
@@ -1103,51 +1526,71 @@ function ServicesSection({ section, theme, selectedElementKey, interactive }: Se
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className={
+        layout === "list"
+          ? "space-y-6 max-w-4xl mx-auto"
+          : layout === "compact"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      }>
         {items.map((item: any, i: number) => {
           const IconComponent = getIconComponent(item.icon, Sparkles);
           return (
             <article
               key={i}
               {...sel(`content.items.${i}`)}
-              className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+              className={`rounded-2xl border backdrop-blur-sm flex overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
+                layout === "list" ? "flex-col sm:flex-row items-start sm:items-center gap-6 p-6" : "flex-col"
+              }`}
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.03)",
                 borderColor: "rgba(255, 255, 255, 0.08)",
                 borderRadius: "var(--radius)",
               }}
             >
-              {item.image && (
-                <div className="h-52 overflow-hidden relative">
-                  <img
-                    {...sel(`content.items.${i}.image`)}
-                    src={item.image}
-                    alt={item.title}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
+              {item.image && layout !== "compact" && (
+                <div className={layout === "list" ? "w-full sm:w-56 h-40 shrink-0 overflow-hidden relative rounded-xl" : "h-52 overflow-hidden relative"}>
+                  <InteractiveImageWrapper
+                    sectionId={section.id}
+                    elementKey={`content.items.${i}.image`}
+                    interactive={interactive}
+                    onSelectElement={onSelectElement}
+                    onRequestImageEdit={onRequestImageEdit}
+                    badgeLabel="Change Photo"
+                    className="w-full h-full"
+                  >
+                    <img
+                      {...sel(`content.items.${i}.image`)}
+                      src={item.image}
+                      alt={item.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </InteractiveImageWrapper>
                 </div>
               )}
-              <div className="p-6 flex-1 flex flex-col">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-md"
-                  style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
-                >
-                  <IconComponent size={24} />
+              <div className={layout === "list" ? "flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4" : layout === "compact" ? "p-5 flex-1 flex flex-col" : "p-6 flex-1 flex flex-col"}>
+                <div className="flex-1">
+                  <div
+                    className={`rounded-xl flex items-center justify-center shadow-md ${layout === "compact" ? "w-9 h-9 mb-3" : "w-12 h-12 mb-4"}`}
+                    style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
+                  >
+                    <IconComponent size={layout === "compact" ? 18 : 24} />
+                  </div>
+                  <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base mb-1.5" : "text-xl mb-2"}`} style={{ fontFamily: "var(--font-heading)" }}>
+                    {item.title}
+                  </h3>
+                  <p {...sel(`content.items.${i}.desc`)} className={`opacity-75 leading-relaxed ${layout === "compact" ? "text-xs" : "text-sm"}`}>{item.desc}</p>
                 </div>
-                <h3 {...sel(`content.items.${i}.title`)} className="text-xl font-bold mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-                  {item.title}
-                </h3>
-                <p {...sel(`content.items.${i}.desc`)} className="opacity-75 text-sm leading-relaxed flex-1">{item.desc}</p>
                 {(item.buttonText || item.url || item.ctaLink) && (
                   <a
                     href={item.url || item.ctaLink || "#"}
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline cursor-pointer"
+                    className={`inline-flex items-center gap-1.5 text-sm font-semibold hover:underline cursor-pointer shrink-0 ${layout === "list" ? "self-start sm:self-center" : "mt-4"}`}
                     style={{ color: theme.primaryColor }}
                   >
                     <span {...sel(`content.items.${i}.buttonText`)}>{item.buttonText || "Learn More"}</span>
-                    <span aria-hidden="true">{"\u2192"}</span>
+                    <span aria-hidden="true">→</span>
                   </a>
                 )}
               </div>
@@ -1159,8 +1602,9 @@ function ServicesSection({ section, theme, selectedElementKey, interactive }: Se
   );
 }
 
-function ProductsSection({ section, theme, selectedElementKey, interactive, onAddToCart }: SectionRendererProps) {
+function ProductsSection({ section, theme, selectedElementKey, interactive, onAddToCart, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
+  const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
@@ -1172,27 +1616,45 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className={
+        layout === "list"
+          ? "space-y-6 max-w-4xl mx-auto"
+          : layout === "compact"
+          ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      }>
         {items.map((item: any, i: number) => (
           <div
             key={i}
             {...sel(`content.items.${i}`)}
-            className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl nexora-card-glow"
+            className={`rounded-2xl border backdrop-blur-sm flex overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl nexora-card-glow ${
+              layout === "list" ? "flex-col sm:flex-row items-start sm:items-center gap-6 p-6" : "flex-col"
+            }`}
             style={{ backgroundColor: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.08)", borderRadius: "var(--radius)" }}
           >
             {item.image && (
-              <div className="h-52 overflow-hidden relative">
-                <img
-                  {...sel(`content.items.${i}.image`)}
-                  src={item.image}
-                  alt={item.title}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
+              <div className={layout === "list" ? "w-full sm:w-48 h-36 shrink-0 overflow-hidden relative rounded-xl" : layout === "compact" ? "h-36 overflow-hidden relative" : "h-52 overflow-hidden relative"}>
+                <InteractiveImageWrapper
+                  sectionId={section.id}
+                  elementKey={`content.items.${i}.image`}
+                  interactive={interactive}
+                  onSelectElement={onSelectElement}
+                  onRequestImageEdit={onRequestImageEdit}
+                  badgeLabel="Change Photo"
+                  className="w-full h-full"
+                >
+                  <img
+                    {...sel(`content.items.${i}.image`)}
+                    src={item.image}
+                    alt={item.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </InteractiveImageWrapper>
               </div>
             )}
-            {item.badge && (
+            {item.badge && layout !== "list" && (
               <span
                 className="mx-4 mt-4 w-fit px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white shadow"
                 style={{ background: theme.primaryColor }}
@@ -1200,14 +1662,26 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
                 {item.badge}
               </span>
             )}
-            <div className="p-6 flex-1 flex flex-col">
-              <h3 {...sel(`content.items.${i}.title`)} className="text-xl font-bold mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-                {item.title}
-              </h3>
-              <p {...sel(`content.items.${i}.desc`)} className="opacity-75 text-sm leading-relaxed flex-1">{item.desc}</p>
-              <div className="mt-4 flex items-center justify-between gap-3">
+            <div className={layout === "list" ? "flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full" : layout === "compact" ? "p-4 flex-1 flex flex-col justify-between" : "p-6 flex-1 flex flex-col"}>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base" : "text-xl"}`} style={{ fontFamily: "var(--font-heading)" }}>
+                    {item.title}
+                  </h3>
+                  {item.badge && layout === "list" && (
+                    <span
+                      className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white shadow"
+                      style={{ background: theme.primaryColor }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
+                <p {...sel(`content.items.${i}.desc`)} className={`opacity-75 leading-relaxed ${layout === "compact" ? "text-xs" : "text-sm"}`}>{item.desc}</p>
+              </div>
+              <div className={`flex items-center gap-3 ${layout === "list" ? "shrink-0" : "mt-4 justify-between"}`}>
                 {item.price && (
-                  <span {...sel(`content.items.${i}.price`)} className="text-2xl font-extrabold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: theme.primaryColor }}>
+                  <span {...sel(`content.items.${i}.price`)} className={`font-extrabold tracking-tight ${layout === "compact" ? "text-lg" : "text-2xl"}`} style={{ fontFamily: "var(--font-heading)", color: theme.primaryColor }}>
                     {item.price}
                   </span>
                 )}
@@ -1243,7 +1717,7 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
   );
 }
 
-function GallerySection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function GallerySection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const images: any[] = section.content?.images || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
@@ -1267,14 +1741,24 @@ function GallerySection({ section, theme, selectedElementKey, interactive }: Sec
               borderRadius: "var(--radius)",
             }}
           >
-            <img
-              {...sel(`content.images.${i}.url`)}
-              src={img.url}
-              alt={img.alt || `Gallery image ${i + 1}`}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover"
-            />
+            <InteractiveImageWrapper
+              sectionId={section.id}
+              elementKey={`content.images.${i}.url`}
+              interactive={interactive}
+              onSelectElement={onSelectElement}
+              onRequestImageEdit={onRequestImageEdit}
+              badgeLabel="Change Photo"
+              className="w-full h-full"
+            >
+              <img
+                {...sel(`content.images.${i}.url`)}
+                src={img.url}
+                alt={img.alt || `Gallery image ${i + 1}`}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            </InteractiveImageWrapper>
           </figure>
         ))}
       </div>
@@ -1282,8 +1766,9 @@ function GallerySection({ section, theme, selectedElementKey, interactive }: Sec
   );
 }
 
-function PortfolioSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function PortfolioSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const projects: any[] = section.content?.projects || [];
+  const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
@@ -1295,12 +1780,20 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive }: S
         {section.subtitle && <p {...sel("subtitle")} className="opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className={
+        layout === "list"
+          ? "space-y-6 max-w-4xl mx-auto"
+          : layout === "compact"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      }>
         {projects.map((p: any, i: number) => (
           <div
             key={i}
             {...sel(`content.projects.${i}`)}
-            className="group overflow-hidden rounded-2xl border backdrop-blur-sm flex flex-col justify-between transition-all duration-300 hover:border-indigo-500/50 hover:shadow-2xl"
+            className={`group overflow-hidden rounded-2xl border backdrop-blur-sm flex justify-between transition-all duration-300 hover:border-indigo-500/50 hover:shadow-2xl ${
+              layout === "list" ? "flex-col sm:flex-row items-stretch" : "flex-col"
+            }`}
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.03)",
               borderColor: "rgba(255, 255, 255, 0.08)",
@@ -1308,31 +1801,41 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive }: S
             }}
           >
             {p.image && (
-              <div className="h-48 overflow-hidden relative">
-                <img
-                  {...sel(`content.projects.${i}.image`)}
-                  src={p.image}
-                  alt={p.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+              <div className={layout === "list" ? "w-full sm:w-60 h-44 shrink-0 overflow-hidden relative" : layout === "compact" ? "h-36 overflow-hidden relative" : "h-48 overflow-hidden relative"}>
+                <InteractiveImageWrapper
+                  sectionId={section.id}
+                  elementKey={`content.projects.${i}.image`}
+                  interactive={interactive}
+                  onSelectElement={onSelectElement}
+                  onRequestImageEdit={onRequestImageEdit}
+                  badgeLabel="Change Photo"
+                  className="w-full h-full"
+                >
+                  <img
+                    {...sel(`content.projects.${i}.image`)}
+                    src={p.image}
+                    alt={p.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </InteractiveImageWrapper>
               </div>
             )}
-            <div className="p-6 flex-1 flex flex-col justify-between">
+            <div className={layout === "compact" ? "p-4 flex-1 flex flex-col justify-between" : "p-6 flex-1 flex flex-col justify-between"}>
               <div>
                 {p.tag && (
                   <span
-                    className="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider mb-3"
+                    className="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider mb-2"
                     style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
                   >
                     {p.tag}
                   </span>
                 )}
-                <h3 {...sel(`content.projects.${i}.name`)} className="text-xl font-bold mb-2 group-hover:text-indigo-400 transition-colors">
+                <h3 {...sel(`content.projects.${i}.name`)} className={`font-bold mb-1 group-hover:text-indigo-400 transition-colors ${layout === "compact" ? "text-base" : "text-xl"}`}>
                   {p.name}
                 </h3>
-                <p {...sel(`content.projects.${i}.desc`)} className="opacity-70 text-sm leading-relaxed mb-6">{p.desc}</p>
+                <p {...sel(`content.projects.${i}.desc`)} className={`opacity-75 leading-relaxed mb-4 ${layout === "compact" ? "text-xs line-clamp-2" : "text-sm"}`}>{p.desc}</p>
               </div>
               {p.url && (
                 <a
@@ -1353,7 +1856,7 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive }: S
   );
 }
 
-function MenuSection({ section, theme, selectedElementKey, interactive, onAddToCart }: SectionRendererProps) {
+function MenuSection({ section, theme, selectedElementKey, interactive, onAddToCart, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const categories: any[] = section.content?.categories || [];
   const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
@@ -1400,16 +1903,26 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                     >
                       {item.image && (
                         <div className="h-48 overflow-hidden relative">
-                          <img
-                            {...sel(`content.categories.${ci}.items.${ii}.image`)}
-                            src={item.image}
-                            alt={item.name}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                          />
+                          <InteractiveImageWrapper
+                            sectionId={section.id}
+                            elementKey={`content.categories.${ci}.items.${ii}.image`}
+                            interactive={interactive}
+                            onSelectElement={onSelectElement}
+                            onRequestImageEdit={onRequestImageEdit}
+                            badgeLabel="Change Photo"
+                            className="w-full h-full"
+                          >
+                            <img
+                              {...sel(`content.categories.${ci}.items.${ii}.image`)}
+                              src={item.image}
+                              alt={item.name}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                            />
+                          </InteractiveImageWrapper>
                           {item.badge && (
-                            <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white shadow" style={{ background: theme.primaryColor }}>
+                            <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white shadow z-10" style={{ background: theme.primaryColor }}>
                               {item.badge}
                             </span>
                           )}
@@ -1469,14 +1982,25 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                       style={{ borderColor: "rgba(255, 255, 255, 0.08)", borderRadius: "var(--radius)" }}
                     >
                       {item.image && (
-                        <img
-                          {...sel(`content.categories.${ci}.items.${ii}.image`)}
-                          src={item.image}
-                          alt={item.name}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-16 h-16 rounded-xl object-cover shrink-0 shadow-md border border-white/10"
-                        />
+                        <InteractiveImageWrapper
+                          sectionId={section.id}
+                          elementKey={`content.categories.${ci}.items.${ii}.image`}
+                          interactive={interactive}
+                          onSelectElement={onSelectElement}
+                          onRequestImageEdit={onRequestImageEdit}
+                          badgeLabel="Change"
+                          badgePosition="bottom-right"
+                          className="shrink-0"
+                        >
+                          <img
+                            {...sel(`content.categories.${ci}.items.${ii}.image`)}
+                            src={item.image}
+                            alt={item.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-16 h-16 rounded-xl object-cover shadow-md border border-white/10"
+                          />
+                        </InteractiveImageWrapper>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
@@ -1525,12 +2049,23 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                       className="flex items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
                     >
                       {item.image && (
-                        <img
-                          {...sel(`content.categories.${ci}.items.${ii}.image`)}
-                          src={item.image}
-                          alt={item.name}
-                          className="w-20 h-20 rounded-xl object-cover shrink-0 shadow-md border border-white/10"
-                        />
+                        <InteractiveImageWrapper
+                          sectionId={section.id}
+                          elementKey={`content.categories.${ci}.items.${ii}.image`}
+                          interactive={interactive}
+                          onSelectElement={onSelectElement}
+                          onRequestImageEdit={onRequestImageEdit}
+                          badgeLabel="Change"
+                          badgePosition="bottom-right"
+                          className="shrink-0"
+                        >
+                          <img
+                            {...sel(`content.categories.${ci}.items.${ii}.image`)}
+                            src={item.image}
+                            alt={item.name}
+                            className="w-20 h-20 rounded-xl object-cover shadow-md border border-white/10"
+                          />
+                        </InteractiveImageWrapper>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-3">
@@ -1609,258 +2144,6 @@ function TimelineSection({ section, theme, selectedElementKey, interactive }: Se
   );
 }
 
-function PricingSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
-  const plans: any[] = section.content?.plans || [];
-  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
-
-  return (
-    <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-6xl mx-auto">
-      <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
-          {section.title}
-        </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="opacity-75">{section.subtitle}</p>}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {plans.map((p: any, i: number) => (
-          <div
-            key={i}
-            {...sel(`content.plans.${i}`)}
-            className={`p-8 rounded-3xl border relative flex flex-col justify-between transition-all ${
-              p.isPopular ? "border-2 shadow-2xl scale-105" : "backdrop-blur-sm"
-            }`}
-            style={{
-              backgroundColor: p.isPopular ? `${theme.primaryColor}10` : "rgba(255, 255, 255, 0.03)",
-              borderColor: p.isPopular ? theme.primaryColor : "rgba(255, 255, 255, 0.08)",
-              borderRadius: "var(--radius)",
-            }}
-          >
-            {p.badge && (
-              <span
-                className="absolute -top-3.5 right-6 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider text-white shadow-md"
-                style={{ background: theme.primaryColor }}
-              >
-                {p.badge}
-              </span>
-            )}
-            <div>
-              <h3 {...sel(`content.plans.${i}.name`)} className="text-2xl font-bold mb-2">{p.name}</h3>
-              <p {...sel(`content.plans.${i}.desc`)} className="text-xs opacity-65 mb-6">{p.desc}</p>
-              <div className="flex items-baseline gap-1 mb-8">
-                <span {...sel(`content.plans.${i}.price`)} className="text-4xl font-extrabold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
-                  {p.price}
-                </span>
-                <span className="text-xs opacity-60">/ month</span>
-              </div>
-              <div className="space-y-3 mb-8">
-                {(p.features || []).map((f: string, fi: number) => (
-                  <div key={fi} className="flex items-center gap-3 text-sm opacity-85">
-                    <CheckCircle2 size={16} style={{ color: theme.primaryColor }} aria-hidden="true" />
-                    <span {...sel(`content.plans.${i}.features.${fi}`)}>{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <a
-              href={p.url || p.ctaLink || p.buttonUrl || "#"}
-              className="w-full py-3 block text-center font-bold text-white shadow-lg transition-all hover:opacity-90 cursor-pointer"
-              style={{ background: theme.primaryColor, borderRadius: "var(--radius)" }}
-            >
-              <span {...sel(`content.plans.${i}.buttonText`)}>{p.buttonText || p.ctaText || "Get Started"}</span>
-            </a>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function FAQSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
-  const items: any[] = section.content?.items || [];
-  const [openIdx, setOpenIdx] = useState<number | null>(0);
-  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
-
-  return (
-    <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-3xl mx-auto">
-      <div className="text-center mb-14">
-        <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
-          {section.title}
-        </h2>
-      </div>
-
-      <div className="space-y-4">
-        {items.map((item: any, i: number) => {
-          const isOpen = openIdx === i;
-          return (
-            <div
-              key={i}
-              {...sel(`content.items.${i}`)}
-              className="border rounded-2xl overflow-hidden backdrop-blur-sm transition-all"
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.03)",
-                borderColor: "rgba(255, 255, 255, 0.08)",
-              }}
-            >
-              <button
-                onClick={() => setOpenIdx(isOpen ? null : i)}
-                className="w-full p-6 text-left font-bold flex justify-between items-center gap-4 text-lg"
-              >
-                <span {...sel(`content.items.${i}.question`)}>{item.question}</span>
-                <ChevronDown size={20} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
-              </button>
-              {isOpen && (
-                <div {...sel(`content.items.${i}.answer`)} className="px-6 pb-6 text-sm opacity-75 leading-relaxed border-t border-white/5 pt-4">
-                  {item.answer}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function DigitalCardSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
-  const socials = section.content?.socials || {};
-  const customLinks = section.content?.customLinks || [];
-  const avatar = section.content?.avatar || "";
-  const [clickedIdx, setClickedIdx] = useState<number | null>(null);
-  const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
-  const isDark = getIsDarkTheme(theme);
-
-  const handleLinkClick = (i: number, url: string, e: React.MouseEvent) => {
-    if (!url || url === "#") { e.preventDefault(); return; }
-    if (interactive) { e.preventDefault(); return; }
-    setClickedIdx(i);
-    setTimeout(() => setClickedIdx(null), 1500);
-  };
-
-  return (
-    <section id={section.id} data-section-id={section.id} className="min-h-screen flex items-center justify-center p-6">
-      <div
-        className="max-w-md w-full text-center p-8 rounded-3xl border shadow-2xl backdrop-blur-md"
-        style={{
-          backgroundColor: isDark ? "rgba(255, 255, 255, 0.04)" : "var(--surface)",
-          borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "var(--border)",
-          color: "var(--text)",
-          borderRadius: "var(--radius)",
-        }}
-      >
-        {avatar ? (
-          <img
-            {...sel("content.avatar")}
-            src={avatar}
-            alt={section.title || "Avatar"}
-            className="w-28 h-28 rounded-full border-4 object-cover mx-auto mb-6 shadow-xl"
-            style={{ borderColor: theme.primaryColor }}
-          />
-        ) : (
-          <div
-            className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-bold text-white mx-auto mb-6 shadow-xl"
-            style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})` }}
-          >
-            {(section.title || "?")[0].toUpperCase()}
-          </div>
-        )}
-
-        <h1 {...sel("title")} className="text-2xl font-extrabold mb-1" style={{ fontFamily: "var(--font-heading)" }}>
-          {section.title}
-        </h1>
-        {section.subtitle && <p {...sel("subtitle")} className="text-sm font-semibold mb-4" style={{ color: theme.primaryColor }}>{section.subtitle}</p>}
-        {section.content?.bio && <p {...sel("content.bio")} className="text-sm opacity-80 leading-relaxed mb-6">{section.content.bio}</p>}
-
-        {section.content?.location && (
-          <div
-            // MapPin icon is outside the editable span so it isn't captured by el.innerText on blur
-            className={`inline-flex items-center gap-1.5 text-xs opacity-75 mb-6 font-medium px-3 py-1.5 rounded-full border ${
-              isDark ? "bg-white/5 border-white/5" : "bg-slate-100 border-slate-200 text-slate-700"
-            }`}
-          >
-            <MapPin size={12} aria-hidden="true" />
-            <span {...sel("content.location")}>{section.content.location}</span>
-          </div>
-        )}
-
-        {/* Primary CTA Button */}
-        {section.content?.ctaText && (
-          <div className="mb-8">
-            <a
-              {...sel("content.ctaText")}
-              href={section.content?.ctaLink || "#"}
-              className="inline-block w-full py-3.5 rounded-xl font-bold text-white shadow-xl transition-all transform hover:-translate-y-0.5"
-              style={{
-                background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor || theme.primaryColor})`,
-                borderRadius: "var(--radius)",
-              }}
-            >
-              {section.content.ctaText}
-            </a>
-          </div>
-        )}
-
-        {/* Social Links Row */}
-        <SocialLinksRow socials={socials} theme={theme} sel={sel} className="justify-center mb-8" />
-
-        {/* Custom Links List */}
-        {customLinks.length > 0 && (
-          <div className="space-y-3">
-            {customLinks.map((link: any, i: number) => {
-              const IconComponent = getIconComponent(link.icon, ExternalLink);
-              const clicked = clickedIdx === i;
-              return (
-                <a
-                  key={i}
-                  {...sel(`content.customLinks.${i}`)}
-                  href={link.url || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => handleLinkClick(i, link.url, e)}
-                  className={`flex items-center justify-between py-3.5 px-5 rounded-2xl border font-bold transition-all shadow-md group ${
-                    clicked
-                      ? "bg-emerald-500/20 border-emerald-500/50 scale-[0.98]"
-                      : isDark
-                      ? "bg-white/5 hover:bg-white/10 border-white/10 hover:scale-[1.02] text-white"
-                      : "bg-slate-50 hover:bg-slate-100 border-slate-200/80 hover:scale-[1.02] text-slate-900"
-                  }`}
-                  style={{ borderRadius: "var(--radius)" }}
-                >
-                  <div className="flex items-center gap-3">
-                    {clicked ? (
-                      <CheckCircle2 size={18} className="text-emerald-400" />
-                    ) : (
-                      <IconComponent
-                        size={18}
-                        className="opacity-70 group-hover:opacity-100 transition-opacity"
-                        style={{ color: theme.primaryColor }}
-                      />
-                    )}
-                    <span
-                      {...sel(`content.customLinks.${i}.label`)}
-                      className={`text-sm transition-colors ${clicked ? "text-emerald-300" : ""}`}
-                    >
-                      {link.label}
-                    </span>
-                  </div>
-                  {link.badge && !clicked && (
-                    <span
-                      className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: `${theme.primaryColor}20`, color: theme.primaryColor }}
-                    >
-                      {link.badge}
-                    </span>
-                  )}
-                  {clicked && <span className="text-[10px] font-bold text-emerald-400">✓ Opened</span>}
-                </a>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
 
 function LinksSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
   const links: any[] = section.content?.links || [];
@@ -1926,8 +2209,9 @@ function LinksSection({ section, theme, selectedElementKey, interactive }: Secti
   );
 }
 
-function TeamSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function TeamSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const members: any[] = section.content?.members || [];
+  const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
@@ -1939,12 +2223,20 @@ function TeamSection({ section, theme, selectedElementKey, interactive }: Sectio
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className={
+        layout === "list"
+          ? "space-y-4 max-w-3xl mx-auto"
+          : layout === "compact"
+          ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
+          : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+      }>
         {members.map((m: any, i: number) => (
           <article
             key={i}
             {...sel(`content.members.${i}`)}
-            className="rounded-2xl border backdrop-blur-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+            className={`rounded-2xl border backdrop-blur-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
+              layout === "list" ? "flex items-center gap-5 p-4" : ""
+            }`}
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.03)",
               borderColor: "rgba(255, 255, 255, 0.08)",
@@ -1952,22 +2244,32 @@ function TeamSection({ section, theme, selectedElementKey, interactive }: Sectio
             }}
           >
             {m.avatar && (
-              <div className="aspect-square overflow-hidden relative">
-                <img
-                  {...elementSel(`content.members.${i}.avatar`, selectedElementKey)}
-                  src={m.avatar}
-                  alt={m.name}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
+              <div className={layout === "list" ? "w-16 h-16 rounded-full overflow-hidden shrink-0 relative" : "aspect-square overflow-hidden relative"}>
+                <InteractiveImageWrapper
+                  sectionId={section.id}
+                  elementKey={`content.members.${i}.avatar`}
+                  interactive={interactive}
+                  onSelectElement={onSelectElement}
+                  onRequestImageEdit={onRequestImageEdit}
+                  badgeLabel="Change Photo"
+                  className="w-full h-full"
+                >
+                  <img
+                    {...sel(`content.members.${i}.avatar`)}
+                    src={m.avatar}
+                    alt={m.name}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                  />
+                </InteractiveImageWrapper>
               </div>
             )}
-            <div className="p-6 text-center">
-              <h3 className="text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>{m.name}</h3>
-              <div className="text-xs font-semibold uppercase tracking-wider mt-1 mb-3" style={{ color: theme.primaryColor }}>
+            <div className={layout === "list" ? "flex-1 min-w-0 text-left" : layout === "compact" ? "p-3 text-center" : "p-6 text-center"}>
+              <h3 {...sel(`content.members.${i}.name`)} className={`font-bold ${layout === "compact" ? "text-sm truncate" : "text-lg"}`} style={{ fontFamily: "var(--font-heading)" }}>{m.name}</h3>
+              <div {...sel(`content.members.${i}.role`)} className={`font-semibold uppercase tracking-wider ${layout === "compact" ? "text-[10px] mt-0.5" : "text-xs mt-1 mb-3"}`} style={{ color: theme.primaryColor }}>
                 {m.role}
               </div>
-              {m.bio && <p className="text-sm opacity-70 leading-relaxed">{m.bio}</p>}
+              {m.bio && layout !== "compact" && <p {...sel(`content.members.${i}.bio`)} className="text-sm opacity-70 leading-relaxed">{m.bio}</p>}
             </div>
           </article>
         ))}
@@ -1976,8 +2278,9 @@ function TeamSection({ section, theme, selectedElementKey, interactive }: Sectio
   );
 }
 
-function TestimonialsSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function TestimonialsSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const items: any[] = section.content?.items || [];
+  const layout = section.variant || section.content?.layout || "grid";
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
   return (
@@ -1989,33 +2292,52 @@ function TestimonialsSection({ section, theme, selectedElementKey, interactive }
         {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className={
+        layout === "list"
+          ? "space-y-6 max-w-3xl mx-auto"
+          : layout === "compact"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      }>
         {items.map((t: any, i: number) => (
           <figure
             key={i}
             {...sel(`content.items.${i}`)}
-            className="rounded-2xl border backdrop-blur-sm p-8 flex flex-col gap-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+            className={`rounded-2xl border backdrop-blur-sm flex flex-col gap-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
+              layout === "compact" ? "p-5 gap-3" : "p-8"
+            }`}
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.03)",
               borderColor: "rgba(255, 255, 255, 0.08)",
               borderRadius: "var(--radius)",
             }}
           >
-            <blockquote className="opacity-85 leading-relaxed text-sm md:text-base italic">
-              <span aria-hidden="true">{"\u201C"}</span>
+            <blockquote className={`opacity-85 leading-relaxed italic ${layout === "compact" ? "text-xs" : "text-sm md:text-base"}`}>
+              <span aria-hidden="true">“</span>
               <span {...sel(`content.items.${i}.quote`)}>{t.quote}</span>
-              <span aria-hidden="true">{"\u201D"}</span>
+              <span aria-hidden="true">”</span>
             </blockquote>
             <figcaption className="flex items-center gap-3 mt-auto">
               {t.avatar && (
-                <img
-                  {...sel(`content.items.${i}.avatar`)}
-                  src={t.avatar}
-                  alt={t.author}
-                  className="w-11 h-11 rounded-full object-cover border-2"
-                  style={{ borderColor: `${theme.primaryColor}55` }}
-                  loading="lazy"
-                />
+                <InteractiveImageWrapper
+                  sectionId={section.id}
+                  elementKey={`content.items.${i}.avatar`}
+                  interactive={interactive}
+                  onSelectElement={onSelectElement}
+                  onRequestImageEdit={onRequestImageEdit}
+                  badgeLabel="Change"
+                  badgePosition="below"
+                  className="shrink-0"
+                >
+                  <img
+                    {...sel(`content.items.${i}.avatar`)}
+                    src={t.avatar}
+                    alt={t.author}
+                    className="w-11 h-11 rounded-full object-cover border-2"
+                    style={{ borderColor: `${theme.primaryColor}55` }}
+                    loading="lazy"
+                  />
+                </InteractiveImageWrapper>
               )}
               <div>
                 <div {...sel(`content.items.${i}.author`)} className="font-bold text-sm">{t.author}</div>
@@ -2672,7 +2994,7 @@ function VideoSection({ section, theme, selectedElementKey, interactive }: Secti
   );
 }
 
-function CtaSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
+function CtaSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const content = section.content || {};
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
   const isDark = getIsDarkTheme(theme);
@@ -2763,23 +3085,32 @@ function CtaSection({ section, theme, selectedElementKey, interactive }: Section
 
         {ctaImage && (
           <div className="nexora-cta-image-wrapper relative shrink-0 z-10 max-w-xs lg:max-w-md w-full">
-            <div
-              className="nexora-cta-image-card p-3 bg-white/10 dark:bg-slate-900/60 border border-white/20 rounded-2xl shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500"
-              style={{ borderRadius: "var(--radius)" }}
+            <InteractiveImageWrapper
+              sectionId={section.id}
+              elementKey="content.image"
+              interactive={interactive}
+              onSelectElement={onSelectElement}
+              onRequestImageEdit={onRequestImageEdit}
+              badgeLabel="Change Photo"
             >
-              <img
-                {...sel("content.image")}
-                src={ctaImage}
-                alt={section.title || "CTA image"}
-                className="nexora-cta-image w-full h-64 lg:h-72 object-cover rounded-xl shadow-inner"
-                loading="lazy"
-              />
-              {content.caption && (
-                <p {...sel("content.caption")} className="text-center text-xs opacity-75 mt-2 font-mono">
-                  {content.caption}
-                </p>
-              )}
-            </div>
+              <div
+                className="nexora-cta-image-card p-3 bg-white/10 dark:bg-slate-900/60 border border-white/20 rounded-2xl shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <img
+                  {...sel("content.image")}
+                  src={ctaImage}
+                  alt={section.title || "CTA image"}
+                  className="nexora-cta-image w-full h-64 lg:h-72 object-cover rounded-xl shadow-inner"
+                  loading="lazy"
+                />
+                {content.caption && (
+                  <p {...sel("content.caption")} className="text-center text-xs opacity-75 mt-2 font-mono">
+                    {content.caption}
+                  </p>
+                )}
+              </div>
+            </InteractiveImageWrapper>
           </div>
         )}
       </div>
@@ -2804,9 +3135,11 @@ interface RenderSectionProps {
   interactive?: boolean;
   siteSlug?: string;
   onAddToCart?: (item: { name: string; price: string }) => void;
+  onSelectElement?: (elementKey: string, sectionId: string) => void;
+  onRequestImageEdit?: (sectionId: string, elementKey: string) => void;
 }
 
-function RenderSection({ section, theme, selectedElementKey, interactive, siteSlug, onAddToCart }: RenderSectionProps) {
+function RenderSection({ section, theme, selectedElementKey, interactive, siteSlug, onAddToCart, onSelectElement, onRequestImageEdit }: RenderSectionProps) {
   if (section.visible === false) return null;
 
   const rendererProps = {
@@ -2816,6 +3149,8 @@ function RenderSection({ section, theme, selectedElementKey, interactive, siteSl
     interactive: !!interactive,
     siteSlug,
     onAddToCart,
+    onSelectElement,
+    onRequestImageEdit,
   };
 
   switch (section.type) {
@@ -3166,113 +3501,263 @@ containerSelector
         if (section.visible === false) return null;
         const isSelected = selectedSectionId === section.id;
 
-        return (
-          <div
-            key={section.id}
-            id={section.id}
-            data-section-id={section.id}
-            onClick={(e) => {
-              if (!interactive) return;
-              e.stopPropagation();
+            const sectionBgImage = section.content?.backgroundImage || (section as any).backgroundImage || (section.type === "hero" ? (section.content?.bgImage || (section as any).bgImage) : null);
 
-              const target = (e.target as HTMLElement)?.closest?.("[data-element-key]");
-              if (target) {
-                const elKey = target.getAttribute("data-element-key");
-                if (elKey) {
-                  onSelectElement?.(elKey, section.id);
+            return (
+              <div
+                key={section.id}
+                id={section.id}
+                data-section-id={section.id}
+                onClick={(e) => {
+                  if (!interactive) return;
+                  e.stopPropagation();
 
-                  const isImage = (e.target as HTMLElement)?.closest?.("img") !== null;
-                  if (isImage) {
-                    onRequestImageEdit?.(section.id, elKey);
+                  if (onSelectSection) onSelectSection(section.id);
+
+                  const target = (e.target as HTMLElement)?.closest?.("[data-element-key]");
+                  if (target) {
+                    const elKey = target.getAttribute("data-element-key");
+                    if (elKey) {
+                      onSelectElement?.(elKey, section.id);
+
+                      const isImage =
+                        (e.target as HTMLElement)?.tagName?.toLowerCase() === "img" ||
+                        target.tagName?.toLowerCase() === "img" ||
+                        (e.target as HTMLElement)?.closest?.("img") !== null ||
+                        /image|avatar|photo|logo/i.test(elKey);
+
+                      if (isImage) {
+                        onRequestImageEdit?.(section.id, elKey);
+                      }
+                    }
                   }
-                  return;
+                }}
+                draggable={interactive}
+                onDragStart={(e) => {
+                  if (!interactive) return;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", section.id);
+                }}
+                onDragOver={(e) => {
+                  if (!interactive) return;
+                  e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  if (!interactive) return;
+                  e.preventDefault();
+                  const sourceId = e.dataTransfer.getData("text/plain");
+                  if (sourceId && sourceId !== section.id) {
+                    moveSection(sourceId, section.id);
+                  }
+                }}
+                style={
+                  sectionBgImage && section.type !== "hero"
+                    ? {
+                        backgroundImage: `url(${sectionBgImage})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }
+                    : undefined
                 }
-              }
+                className={`relative transition-all duration-200 ease-out will-change-transform group ${
+                  interactive ? "cursor-pointer" : ""
+                } ${
+                  interactive && isSelected
+                    ? "z-20 before:absolute before:inset-0 sm:before:rounded-[0.9rem] before:border before:border-indigo-400/50"
+                    : interactive
+                    ? "hover:before:absolute hover:before:inset-0 sm:before:rounded-[0.9rem] hover:before:border hover:before:border-slate-700/40"
+                    : ""
+                }`}
+              >
+                {interactive && (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "2px",
+                      height: "26px",
+                      padding: "0 4px",
+                      borderRadius: "6px",
+                      backgroundColor: "rgba(15, 23, 42, 0.95)",
+                      border: "1px solid rgba(71, 85, 105, 0.5)",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                      backdropFilter: "blur(8px)",
+                      zIndex: 40,
+                      fontFamily: "system-ui, -apple-system, sans-serif",
+                      boxSizing: "border-box",
+                    }}
+                    className={`absolute top-2 right-3 transition-all duration-150 ${
+                      isSelected
+                        ? "opacity-100 scale-100 pointer-events-auto"
+                        : "opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none group-hover:pointer-events-auto"
+                    }`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center gap-1 px-1 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-200" title="Drag to reorder section">
+                      <GripVertical size={11} />
+                      <span className="font-mono text-[9px] font-bold text-indigo-300 uppercase tracking-wider">
+                        {section.type}
+                      </span>
+                    </div>
 
-              if (onSelectSection) onSelectSection(section.id);
-            }}
-            draggable={interactive}
-            onDragStart={(e) => {
-              if (!interactive) return;
-              e.dataTransfer.effectAllowed = "move";
-              e.dataTransfer.setData("text/plain", section.id);
-            }}
-            onDragOver={(e) => {
-              if (!interactive) return;
-              e.preventDefault();
-            }}
-            onDrop={(e) => {
-              if (!interactive) return;
-              e.preventDefault();
-              const sourceId = e.dataTransfer.getData("text/plain");
-              if (sourceId && sourceId !== section.id) {
-                moveSection(sourceId, section.id);
-              }
-            }}
-            className={`relative transition-all duration-200 ease-out will-change-transform group ${
-              interactive ? "cursor-pointer" : ""
-            } ${
-              interactive && isSelected
-                ? "z-20 before:absolute before:inset-0 sm:before:rounded-[0.9rem] before:border before:border-indigo-400/50"
-                : interactive
-                ? "hover:before:absolute hover:before:inset-0 sm:before:rounded-[0.9rem] hover:before:border hover:before:border-slate-700/40"
-                : ""
-            }`}
-          >
-            {interactive && (
-              <>
-                <div className={`absolute left-3 top-3 z-30 flex items-center gap-1.5 rounded-full border border-slate-700/70 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition-opacity duration-200 ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} title="Drag to reorder section">
-                  <GripVertical size={12} className="text-slate-400" />
-                  <span className="uppercase tracking-[0.2em]">Move</span>
-                </div>
+                    <div style={{ width: "1px", height: "12px", backgroundColor: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
 
-                <div
-                  className={`absolute top-3 right-3 z-30 flex items-center gap-1 p-1 rounded-xl bg-slate-900/90 border border-slate-700/80 shadow-xl backdrop-blur-md transition-all duration-200 ${
-                    isSelected ? "opacity-100 scale-100" : "opacity-0 group-hover:opacity-100 scale-95 hover:scale-100"
-                  }`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-400 uppercase tracking-wider bg-indigo-950/60 rounded-md border border-indigo-700/40">
-                    {section.type}
+                    {/* Navbar Logo Edit Button */}
+                    {section.type === "navbar" && (
+                      <>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectElement?.("content.logoImage", section.id);
+                            onRequestImageEdit?.(section.id, "content.logoImage");
+                          }}
+                          title="Change Navbar Logo Image"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "22px",
+                            height: "22px",
+                            borderRadius: "4px",
+                            color: "#818cf8",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                          className="hover:!text-white hover:!bg-indigo-950/80"
+                        >
+                          <Camera size={12} />
+                        </span>
+                        <div style={{ width: "1px", height: "12px", backgroundColor: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+                      </>
+                    )}
+
+                    {/* Section Background Image Button */}
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectElement?.("content.backgroundImage", section.id);
+                        onRequestImageEdit?.(section.id, "content.backgroundImage");
+                      }}
+                      title="Set Section Background Photo"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "4px",
+                        color: sectionBgImage ? "#818cf8" : "#94a3b8",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                      className="hover:!text-white hover:!bg-slate-800"
+                    >
+                      <ImageIcon size={12} />
+                    </span>
+
+                    <div style={{ width: "1px", height: "12px", backgroundColor: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const idx = config.sections.findIndex((s) => s.id === section.id);
+                        if (idx > 0) moveSection(section.id, config.sections[idx - 1].id);
+                      }}
+                      title="Move Section Up"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "4px",
+                        color: "#94a3b8",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                      className="hover:!text-white hover:!bg-slate-800"
+                    >
+                      <ChevronUp size={12} />
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const idx = config.sections.findIndex((s) => s.id === section.id);
+                        if (idx < config.sections.length - 1) moveSection(section.id, config.sections[idx + 1].id);
+                      }}
+                      title="Move Section Down"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "4px",
+                        color: "#94a3b8",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                      className="hover:!text-white hover:!bg-slate-800"
+                    >
+                      <ChevronDown size={12} />
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        duplicateSection(section.id);
+                      }}
+                      title="Duplicate Section"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "4px",
+                        color: "#94a3b8",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                      className="hover:!text-white hover:!bg-slate-800"
+                    >
+                      <Copy size={12} />
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSection(section.id);
+                      }}
+                      title="Delete Section"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "4px",
+                        color: "#f87171",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                      className="hover:!text-red-300 hover:!bg-red-950/60"
+                    >
+                      <Trash2 size={12} />
+                    </span>
                   </div>
-                  <div className="w-px h-3.5 bg-slate-800 my-auto mx-0.5" />
-                  <button
-                    onClick={() => {
-                      const idx = config.sections.findIndex((s) => s.id === section.id);
-                      if (idx > 0) moveSection(section.id, config.sections[idx - 1].id);
-                    }}
-                    className="p-1 rounded-md hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
-                    title="Move Up"
-                  >
-                    <ChevronUp size={13} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      const idx = config.sections.findIndex((s) => s.id === section.id);
-                      if (idx < config.sections.length - 1) moveSection(section.id, config.sections[idx + 1].id);
-                    }}
-                    className="p-1 rounded-md hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
-                    title="Move Down"
-                  >
-                    <ChevronDown size={13} />
-                  </button>
-                  <button
-                    onClick={() => duplicateSection(section.id)}
-                    className="p-1 rounded-md hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
-                    title="Duplicate Section"
-                  >
-                    <Copy size={13} />
-                  </button>
-                  <button
-                    onClick={() => removeSection(section.id)}
-                    className="p-1 rounded-md hover:bg-red-950/80 text-red-400 hover:text-red-300 transition-colors"
-                    title="Delete Section"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              </>
-            )}
+                )}
             <RenderSection
               section={section}
               theme={config.theme}
@@ -3280,6 +3765,8 @@ containerSelector
               interactive={interactive}
               siteSlug={siteSlug || config?.meta?.slug || config?.meta?.id}
               onAddToCart={handleAddToCart}
+              onSelectElement={onSelectElement}
+              onRequestImageEdit={onRequestImageEdit}
             />
           </div>
         );

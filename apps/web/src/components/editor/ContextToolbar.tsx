@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useEditorStore } from "@/store/editorStore";
 import { normalizeElementKey } from "@/lib/editorElements";
 import { aiApi } from "@/lib/api";
@@ -73,6 +74,22 @@ export function ContextToolbar({
   const [isAiRewriting, setIsAiRewriting] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
 
+  // Refs for dropdown anchor buttons (used to position portaled dropdowns)
+  const aiMenuBtnRef = useRef<HTMLButtonElement>(null);
+  const colorPickerBtnRef = useRef<HTMLButtonElement>(null);
+  const fontSizeBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Recalculate dropdown anchor positions on open
+  const [aiMenuPos, setAiMenuPos] = useState({ top: 0, left: 0 });
+  const [colorPickerPos, setColorPickerPos] = useState({ top: 0, left: 0 });
+  const [fontSizePos, setFontSizePos] = useState({ top: 0, left: 0 });
+
+  const getDropdownPos = useCallback((ref: React.RefObject<HTMLButtonElement | null>) => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return { top: 0, left: 0 };
+    return { top: rect.bottom + 8, left: rect.left };
+  }, []);
+
   // Detect actual mobile screen
   const [isMobileScreen, setIsMobileScreen] = useState(false);
   useEffect(() => {
@@ -88,6 +105,21 @@ export function ContextToolbar({
     setShowFontSizePicker(false);
     setShowAiMenu(false);
   }, [selectedElementKey, activeSectionId]);
+
+  // Close portal dropdowns on scroll or resize to avoid stale positions
+  useEffect(() => {
+    const closeAll = () => {
+      setShowColorPicker(false);
+      setShowFontSizePicker(false);
+      setShowAiMenu(false);
+    };
+    window.addEventListener("scroll", closeAll, true);
+    window.addEventListener("resize", closeAll);
+    return () => {
+      window.removeEventListener("scroll", closeAll, true);
+      window.removeEventListener("resize", closeAll);
+    };
+  }, []);
 
   const section = config?.sections.find((s) => s.id === activeSectionId);
   const sectionIdx = config?.sections.findIndex((s) => s.id === activeSectionId) ?? -1;
@@ -270,10 +302,13 @@ export function ContextToolbar({
                   {/* AI Rewrite Menu */}
                   <div className="relative">
                     <button
+                      ref={aiMenuBtnRef}
                       onClick={() => {
-                        setShowAiMenu(!showAiMenu);
+                        const next = !showAiMenu;
+                        setShowAiMenu(next);
                         setShowColorPicker(false);
                         setShowFontSizePicker(false);
+                        if (next) setAiMenuPos(getDropdownPos(aiMenuBtnRef));
                       }}
                       disabled={isAiRewriting}
                       className="px-2.5 py-1 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-lg flex items-center gap-1 font-semibold text-xs transition-all disabled:opacity-50 shadow-sm"
@@ -282,25 +317,34 @@ export function ContextToolbar({
                       {isAiRewriting ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
                       <span>AI</span>
                     </button>
-                    {showAiMenu && (
-                      <div className="absolute top-full mt-2 left-0 p-1.5 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-[100] flex flex-col gap-0.5 w-44">
-                        <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Rewrite</div>
-                        {[
-                          { key: "catchy", label: "Make Catchy" },
-                          { key: "professional", label: "Professional" },
-                          { key: "shorter", label: "Short & Punchy" },
-                          { key: "grammar", label: "Fix Grammar" },
-                          { key: "titlecase", label: "Title Case" },
-                        ].map(({ key, label }) => (
-                          <button
-                            key={key}
-                            onClick={() => handleAiRewrite(key as any)}
-                            className="px-2 py-1.5 text-left text-xs rounded-lg hover:bg-indigo-600/30 hover:text-white text-slate-200 transition-colors"
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
+                    {showAiMenu && typeof window !== "undefined" && createPortal(
+                      <>
+                        {/* Backdrop to close on outside click */}
+                        <div className="fixed inset-0 z-[9998]" onClick={() => setShowAiMenu(false)} />
+                        <div
+                          className="fixed p-1.5 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-[9999] flex flex-col gap-0.5 w-44"
+                          style={{ top: aiMenuPos.top, left: aiMenuPos.left }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Rewrite</div>
+                          {[
+                            { key: "catchy", label: "Make Catchy" },
+                            { key: "professional", label: "Professional" },
+                            { key: "shorter", label: "Short & Punchy" },
+                            { key: "grammar", label: "Fix Grammar" },
+                            { key: "titlecase", label: "Title Case" },
+                          ].map(({ key, label }) => (
+                            <button
+                              key={key}
+                              onClick={() => handleAiRewrite(key as any)}
+                              className="px-2 py-1.5 text-left text-xs rounded-lg hover:bg-indigo-600/30 hover:text-white text-slate-200 transition-colors"
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </>,
+                      document.body
                     )}
                   </div>
 
@@ -352,10 +396,13 @@ export function ContextToolbar({
                   {/* Color Picker */}
                   <div className="relative">
                     <button
+                      ref={colorPickerBtnRef}
                       onClick={() => {
-                        setShowColorPicker(!showColorPicker);
+                        const next = !showColorPicker;
+                        setShowColorPicker(next);
                         setShowAiMenu(false);
                         setShowFontSizePicker(false);
+                        if (next) setColorPickerPos(getDropdownPos(colorPickerBtnRef));
                       }}
                       className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 flex items-center gap-1"
                       title="Text Color"
@@ -365,41 +412,52 @@ export function ContextToolbar({
                         <span className="w-2.5 h-2.5 rounded-full border border-white/30 inline-block" style={{ background: currentColor }} />
                       )}
                     </button>
-                    {showColorPicker && (
-                      <div className="absolute top-full mt-2 left-0 p-2.5 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-[100] w-52">
-                        <div className="grid grid-cols-6 gap-1.5 mb-2">
-                          {COLOR_PRESETS.map((c) => (
-                            <button
-                              key={c}
-                              onClick={() => handleSetColor(c)}
-                              className={`w-6 h-6 rounded-md border border-white/10 hover:scale-110 transition-transform ${currentColor?.toLowerCase() === c.toLowerCase() ? "ring-2 ring-white ring-offset-1 ring-offset-slate-900" : ""}`}
-                              style={{ background: c }}
-                              title={c}
-                            />
-                          ))}
+                    {showColorPicker && typeof window !== "undefined" && createPortal(
+                      <>
+                        <div className="fixed inset-0 z-[9998]" onClick={() => setShowColorPicker(false)} />
+                        <div
+                          className="fixed p-2.5 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-[9999] w-52"
+                          style={{ top: colorPickerPos.top, left: colorPickerPos.left }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          <div className="grid grid-cols-6 gap-1.5 mb-2">
+                            {COLOR_PRESETS.map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => handleSetColor(c)}
+                                className={`w-6 h-6 rounded-md border border-white/10 hover:scale-110 transition-transform ${currentColor?.toLowerCase() === c.toLowerCase() ? "ring-2 ring-white ring-offset-1 ring-offset-slate-900" : ""}`}
+                                style={{ background: c }}
+                                title={c}
+                              />
+                            ))}
+                          </div>
+                          <input
+                            type="color"
+                            value={currentColor || "#FFFFFF"}
+                            onChange={(e) => handleSetColor(e.target.value)}
+                            className="w-full h-8 rounded cursor-pointer bg-transparent border border-slate-700"
+                          />
+                          {currentColor && (
+                            <button onClick={handleClearColor} className="mt-2 text-[11px] text-slate-400 hover:text-rose-400 w-full text-center">
+                              Reset color
+                            </button>
+                          )}
                         </div>
-                        <input
-                          type="color"
-                          value={currentColor || "#FFFFFF"}
-                          onChange={(e) => handleSetColor(e.target.value)}
-                          className="w-full h-8 rounded cursor-pointer bg-transparent border border-slate-700"
-                        />
-                        {currentColor && (
-                          <button onClick={handleClearColor} className="mt-2 text-[11px] text-slate-400 hover:text-rose-400 w-full text-center">
-                            Reset color
-                          </button>
-                        )}
-                      </div>
+                      </>,
+                      document.body
                     )}
                   </div>
 
                   {/* Font Size */}
                   <div className="relative">
                     <button
+                      ref={fontSizeBtnRef}
                       onClick={() => {
-                        setShowFontSizePicker(!showFontSizePicker);
+                        const next = !showFontSizePicker;
+                        setShowFontSizePicker(next);
                         setShowColorPicker(false);
                         setShowAiMenu(false);
+                        if (next) setFontSizePos(getDropdownPos(fontSizeBtnRef));
                       }}
                       className="px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 font-mono text-[11px] flex items-center gap-1"
                       title="Font Size"
@@ -407,19 +465,27 @@ export function ContextToolbar({
                       <Type size={12} />
                       <span>{currentStyles.fontSize ? currentStyles.fontSize.replace("px", "") : "—"}</span>
                     </button>
-                    {showFontSizePicker && (
-                      <div className="absolute top-full mt-2 left-0 p-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-[100] flex flex-col gap-0.5 w-24">
-                        {FONT_SIZES.map((sz) => (
-                          <button
-                            key={sz.label}
-                            onClick={() => handleSetFontSize(sz.value)}
-                            className={`px-2 py-1 text-left text-xs rounded-lg hover:bg-indigo-600 hover:text-white transition-colors flex items-center justify-between ${currentStyles.fontSize === sz.value ? "bg-indigo-600/30 text-indigo-200" : "text-slate-300"}`}
-                          >
-                            <span>{sz.label}</span>
-                            <span className="text-[10px] text-slate-500 font-mono">{sz.value}</span>
-                          </button>
-                        ))}
-                      </div>
+                    {showFontSizePicker && typeof window !== "undefined" && createPortal(
+                      <>
+                        <div className="fixed inset-0 z-[9998]" onClick={() => setShowFontSizePicker(false)} />
+                        <div
+                          className="fixed p-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-[9999] flex flex-col gap-0.5 w-24"
+                          style={{ top: fontSizePos.top, left: fontSizePos.left }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          {FONT_SIZES.map((sz) => (
+                            <button
+                              key={sz.label}
+                              onClick={() => handleSetFontSize(sz.value)}
+                              className={`px-2 py-1 text-left text-xs rounded-lg hover:bg-indigo-600 hover:text-white transition-colors flex items-center justify-between ${currentStyles.fontSize === sz.value ? "bg-indigo-600/30 text-indigo-200" : "text-slate-300"}`}
+                            >
+                              <span>{sz.label}</span>
+                              <span className="text-[10px] text-slate-500 font-mono">{sz.value}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>,
+                      document.body
                     )}
                   </div>
                 </>

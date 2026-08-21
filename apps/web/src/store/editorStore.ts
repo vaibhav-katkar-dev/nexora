@@ -227,10 +227,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       if (sec.id !== sectionId) return sec;
 
       const normalizedKey = elementKey.replace(/^content\./, "");
-      const topLevelKeys = new Set(["badge", "title", "subtitle"]);
+      const topLevelKeys = new Set(["badge", "title", "subtitle", "logoImage", "logo", "image", "avatar", "backgroundImage", "bgImage"]);
 
       if (topLevelKeys.has(normalizedKey)) {
-        return { ...sec, [normalizedKey]: value } as any;
+        const nextContent = { ...(sec.content || {}), [normalizedKey]: value };
+        return { ...sec, [normalizedKey]: value, content: nextContent } as any;
       }
 
       const nextContent = (sec.content || {}) as Record<string, any>;
@@ -242,7 +243,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         const isLast = index === pathParts.length - 1;
         if (isLast) {
           if (typeof cursor[part] === "object" && cursor[part] !== null && !Array.isArray(cursor[part])) {
-            cursor[part] = { ...cursor[part], label: value, title: value, name: value };
+            if (cursor[part].url !== undefined || /image|avatar|logo|photo|thumb|poster/i.test(part)) {
+              cursor[part] = { ...cursor[part], url: value, image: value, src: value };
+            } else {
+              cursor[part] = { ...cursor[part], label: value, title: value, name: value };
+            }
           } else {
             cursor[part] = value;
           }

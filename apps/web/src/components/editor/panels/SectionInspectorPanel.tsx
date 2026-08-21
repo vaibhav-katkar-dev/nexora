@@ -114,7 +114,6 @@ export function SectionInspectorPanel({
   const config = useEditorStore((state) => state.config);
   const sectionId = useEditorStore((state) => state.activeSectionId);
   const selectedElementKey = useEditorStore((state) => state.selectedElementKey);
-  const viewport = useEditorStore((state) => state.viewport);
   const updateSection = useEditorStore((state) => state.updateSection);
   const removeSection = useEditorStore((state) => state.removeSection);
   const setSelectedElementKey = useEditorStore((state) => state.setSelectedElementKey);
@@ -284,14 +283,7 @@ const removeArrayItem = (key: string, index: number) => {
         </button>
       </div>
 
-      {viewport === "mobile" && (
-        <div className="mx-4 mt-2 px-3 py-1.5 rounded-lg bg-amber-950/40 border border-amber-800/40 text-[10px] text-amber-300 font-medium flex items-center gap-1.5">
-          <span>📱</span>
-          <span>Mobile View Mode: Edit fields here for exact responsiveness.</span>
-        </div>
-      )}
-
-{/* Element editing banner */}
+      {/* Element editing banner */}
       {selectedElementKey && (
         <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -405,78 +397,111 @@ const removeArrayItem = (key: string, index: number) => {
 
       {/* Form Controls */}
       <div ref={panelScrollRef} className="flex-1 overflow-y-auto p-4 space-y-5">
-        {/* Core Properties */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
-            Header Text
-          </h3>
-          <div data-field-path="badge">
-            <label className={labelClass}>Badge / Kicker</label>
-            <input
-              type="text"
-              value={section.badge || ""}
-              onChange={(e) => updateSection(section.id, { badge: e.target.value })}
-              placeholder="e.g. Featured Project"
-              className={inputClass}
-            />
-          </div>
+        {/* Core Header Properties (Only show supported fields per section) */}
+        {(() => {
+          const supportsBadge = [
+            "hero",
+            "features",
+            "services",
+            "products",
+            "menu_list",
+            "pricing",
+            "team",
+            "testimonials",
+            "contact",
+            "cta",
+            "about",
+          ].includes(section.type);
 
-          <div data-field-path="title">
-            <label className={labelClass}>Title</label>
-            <input
-              type="text"
-              value={section.title || ""}
-              onChange={(e) => updateSection(section.id, { title: e.target.value })}
-              placeholder="Main Title"
-              className={inputClass}
-            />
-          </div>
+          const supportsTitle = section.type !== "custom_code";
+          const supportsSubtitle = !["navbar", "custom_code"].includes(section.type);
+          const hasHeaderFields = supportsBadge || supportsTitle || supportsSubtitle;
 
-          <div data-field-path="subtitle">
-            <label className={labelClass}>Subtitle / Description</label>
-            <textarea
-              rows={3}
-              value={section.subtitle || ""}
-              onChange={(e) => updateSection(section.id, { subtitle: e.target.value })}
-              placeholder="Supporting description paragraph..."
-              className={`${inputClass} resize-none`}
-            />
-          </div>
+          if (!hasHeaderFields) return null;
 
-          {/* Section Layout Format selector */}
-          {["menu_list", "products", "services", "features", "portfolio_grid", "pricing", "team", "testimonials"].includes(section.type) && (
-            <div data-field-path="variant" className="pt-2 border-t border-slate-800">
-              <label className={labelClass}>Layout Display Format</label>
-              <div className="grid grid-cols-3 gap-1.5 mt-1.5">
-                {[
-                  { id: "list", label: "Classic List" },
-                  { id: "grid", label: "Photo Grid" },
-                  { id: "compact", label: "Compact" },
-                ].map((l) => {
-                  const currentVariant = section.variant || (content as any)?.layout || "list";
-                  const isActive = currentVariant === l.id;
-                  return (
-                    <button
-                      key={l.id}
-                      type="button"
-                      onClick={() => {
-                        updateSection(section.id, { variant: l.id });
-                        handleFieldChange("layout", l.id);
-                      }}
-                      className={`px-2 py-1.5 rounded-lg border text-[11px] font-bold transition-all text-center ${
-                        isActive
-                          ? "bg-indigo-600/30 border-indigo-500 text-indigo-200 shadow-sm"
-                          : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900"
-                      }`}
-                    >
-                      {l.label}
-                    </button>
-                  );
-                })}
-              </div>
+          return (
+            <div className="space-y-4">
+              <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+                {section.type === "navbar" ? "Brand Identity" : "Header & Titles"}
+              </h3>
+
+              {supportsBadge && (
+                <div data-field-path="badge">
+                  <label className={labelClass}>Badge / Kicker</label>
+                  <input
+                    type="text"
+                    value={section.badge || ""}
+                    onChange={(e) => updateSection(section.id, { badge: e.target.value })}
+                    placeholder="e.g. Featured / Menu / Special"
+                    className={inputClass}
+                  />
+                </div>
+              )}
+
+              {supportsTitle && (
+                <div data-field-path="title">
+                  <label className={labelClass}>
+                    {section.type === "navbar" ? "Brand / Business Name" : "Section Title"}
+                  </label>
+                  <input
+                    type="text"
+                    value={section.title || ""}
+                    onChange={(e) => updateSection(section.id, { title: e.target.value })}
+                    placeholder={section.type === "navbar" ? "e.g. My Brand" : "Main Title"}
+                    className={inputClass}
+                  />
+                </div>
+              )}
+
+              {supportsSubtitle && (
+                <div data-field-path="subtitle">
+                  <label className={labelClass}>Subtitle / Description</label>
+                  <textarea
+                    rows={3}
+                    value={section.subtitle || ""}
+                    onChange={(e) => updateSection(section.id, { subtitle: e.target.value })}
+                    placeholder="Supporting description paragraph..."
+                    className={`${inputClass} resize-none`}
+                  />
+                </div>
+              )}
+
+              {/* Section Layout Format selector */}
+              {["menu_list", "products", "services", "features", "portfolio_grid", "pricing", "team", "testimonials"].includes(section.type) && (
+                <div data-field-path="variant" className="pt-2 border-t border-slate-800">
+                  <label className={labelClass}>Layout Display Format</label>
+                  <div className="grid grid-cols-3 gap-1.5 mt-1.5">
+                    {[
+                      { id: "list", label: "Classic List" },
+                      { id: "grid", label: "Photo Grid" },
+                      { id: "compact", label: "Compact" },
+                    ].map((l) => {
+                      const currentVariant = section.variant || (content as any)?.layout || "list";
+                      const isActive = currentVariant === l.id;
+                      return (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => {
+                            updateSection(section.id, { variant: l.id });
+                            handleFieldChange("layout", l.id);
+                          }}
+                          className={`px-2 py-1.5 rounded-lg border text-[11px] font-bold transition-all text-center ${
+                            isActive
+                              ? "bg-indigo-600/30 border-indigo-500 text-indigo-200 shadow-sm"
+                              : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900"
+                          }`}
+                        >
+                          {l.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* ── ABOUT SPECIAL PANEL ────────────────────────────────────────── */}
         {section.type === "about" && (
@@ -484,6 +509,56 @@ const removeArrayItem = (key: string, index: number) => {
             <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <span className="text-indigo-400">◈</span> About & Experience Info
             </h3>
+
+            {/* Profile Photo — Visual Card */}
+            <div data-field-path="image" className="space-y-2">
+              <label className={labelClass}>📷 Profile / Section Photo</label>
+              {(content.image || content.avatar) ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-700">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-800 border-2 border-indigo-600/40 flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={content.image || content.avatar}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                    <p className="text-[10px] text-slate-400">Photo uploaded ✓</p>
+                    {onOpenImagePicker && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenImagePicker(content.image || content.avatar || "", (url) => handleFieldChange("image", url))}
+                        className="text-[11px] font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-700/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+                      >
+                        <ImageIcon size={11} /> Replace Photo
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { handleFieldChange("image", ""); handleFieldChange("avatar", ""); }}
+                      className="text-[11px] font-bold text-slate-500 hover:text-rose-400 bg-slate-900 hover:bg-rose-950/30 border border-slate-800 hover:border-rose-800/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+                    >
+                      <X size={11} /> Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {onOpenImagePicker && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenImagePicker("", (url) => handleFieldChange("image", url))}
+                      className="w-full flex flex-col items-center justify-center gap-2 py-4 rounded-xl border-2 border-dashed border-indigo-700/50 hover:border-indigo-500 bg-indigo-950/20 hover:bg-indigo-950/40 text-indigo-300 hover:text-indigo-200 transition-all cursor-pointer"
+                    >
+                      <ImageIcon size={22} className="opacity-70" />
+                      <span className="text-[11px] font-bold">Upload Profile Photo</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Bio */}
             <div data-field-path="bio" className="space-y-1">
@@ -601,27 +676,64 @@ const removeArrayItem = (key: string, index: number) => {
               <span className="text-indigo-400">◈</span> Hero Background Image
             </h3>
 
-            {/* Background Image URL + Picker */}
+            {/* Background Image — Visual Card */}
             <div className="space-y-2">
-              <label className={labelClass}>Background Image</label>
-              <div className="flex gap-1.5">
-                <input
-                  type="text"
-                  value={content.backgroundImage || content.bgImage || ""}
-                  onChange={(e) => handleFieldChange("backgroundImage", e.target.value)}
-                  placeholder="https://... (leave empty for solid color)"
-                  className={inputClass}
-                />
-                {onOpenImagePicker && (
-                  <button
-                    onClick={() => onOpenImagePicker(content.backgroundImage || content.bgImage || "", (url) => handleFieldChange("backgroundImage", url))}
-                    className="px-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg border border-slate-700 flex items-center justify-center flex-shrink-0"
-                    title="Pick Background Image"
-                  >
-                    <ImageIcon size={14} />
-                  </button>
-                )}
-              </div>
+              <label className={labelClass}>🖼️ Background Image</label>
+
+              {(content.backgroundImage || content.bgImage) ? (
+                <div className="rounded-xl overflow-hidden border border-slate-700 relative group">
+                  {/* Thumbnail preview */}
+                  <div className="w-full h-24 bg-slate-800 relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={content.backgroundImage || content.bgImage}
+                      alt="Background"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
+                    />
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-3 py-2 gap-2 bg-gradient-to-t from-black/80 to-transparent">
+                      {onOpenImagePicker && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenImagePicker(content.backgroundImage || content.bgImage || "", (url) => handleFieldChange("backgroundImage", url))}
+                          className="text-[10px] font-bold text-indigo-300 hover:text-white bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                        >
+                          <ImageIcon size={10} /> Replace
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleFieldChange("backgroundImage", "")}
+                        className="text-[10px] font-bold text-slate-400 hover:text-rose-300 bg-slate-900/80 hover:bg-rose-950/80 border border-slate-700 hover:border-rose-700/50 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                      >
+                        <X size={10} /> Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {onOpenImagePicker && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenImagePicker("", (url) => handleFieldChange("backgroundImage", url))}
+                      className="w-full flex flex-col items-center justify-center gap-2 py-5 rounded-xl border-2 border-dashed border-indigo-700/50 hover:border-indigo-500 bg-indigo-950/20 hover:bg-indigo-950/40 text-indigo-300 hover:text-indigo-200 transition-all cursor-pointer"
+                    >
+                      <ImageIcon size={22} className="opacity-70" />
+                      <span className="text-[11px] font-bold">Upload / Pick Background Photo</span>
+                      <span className="text-[10px] text-slate-500">Leave empty for a solid color background</span>
+                    </button>
+                  )}
+                  <input
+                    type="text"
+                    value={content.backgroundImage || content.bgImage || ""}
+                    onChange={(e) => handleFieldChange("backgroundImage", e.target.value)}
+                    placeholder="Or paste image URL here..."
+                    className={inputClass}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Focal Point Picker — 9-cell grid */}
@@ -823,17 +935,38 @@ const removeArrayItem = (key: string, index: number) => {
               <input type="text" value={content.location || ""} onChange={(e) => handleFieldChange("location", e.target.value)} placeholder="e.g. New York, USA" className={inputClass} />
             </div>
 
-            {/* Avatar */}
-            <div data-field-path="avatar">
-              <label className={labelClass}>Avatar / Profile Photo URL</label>
-              <div className="flex gap-1.5">
-                <input type="text" value={content.avatar || ""} onChange={(e) => handleFieldChange("avatar", e.target.value)} placeholder="https://..." className={inputClass} />
-                {onOpenImagePicker && (
-                  <button onClick={() => onOpenImagePicker(content.avatar || "", (url) => handleFieldChange("avatar", url))} className="px-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg border border-slate-700 flex items-center justify-center" title="Pick Image">
-                    <ImageIcon size={14} />
-                  </button>
-                )}
-              </div>
+            {/* Avatar — Visual Card */}
+            <div data-field-path="avatar" className="space-y-2">
+              <label className={labelClass}>📷 Profile Photo / Avatar</label>
+              {content.avatar ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-700">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-800 border-2 border-indigo-600/40 flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={content.avatar} alt="Avatar" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  </div>
+                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                    <p className="text-[10px] text-slate-400">Photo uploaded ✓</p>
+                    {onOpenImagePicker && (
+                      <button type="button" onClick={() => onOpenImagePicker(content.avatar || "", (url) => handleFieldChange("avatar", url))} className="text-[11px] font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-700/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                        <ImageIcon size={11} /> Replace Photo
+                      </button>
+                    )}
+                    <button type="button" onClick={() => handleFieldChange("avatar", "")} className="text-[11px] font-bold text-slate-500 hover:text-rose-400 bg-slate-900 hover:bg-rose-950/30 border border-slate-800 hover:border-rose-800/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                      <X size={11} /> Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {onOpenImagePicker && (
+                    <button type="button" onClick={() => onOpenImagePicker("", (url) => handleFieldChange("avatar", url))} className="w-full flex flex-col items-center justify-center gap-2 py-4 rounded-xl border-2 border-dashed border-indigo-700/50 hover:border-indigo-500 bg-indigo-950/20 hover:bg-indigo-950/40 text-indigo-300 hover:text-indigo-200 transition-all cursor-pointer">
+                      <ImageIcon size={22} className="opacity-70" />
+                      <span className="text-[11px] font-bold">Upload Profile Photo</span>
+                    </button>
+                  )}
+                  <input type="text" value={content.avatar || ""} onChange={(e) => handleFieldChange("avatar", e.target.value)} placeholder="Or paste image URL..." className={inputClass} />
+                </div>
+              )}
             </div>
 
             {/* CTA Button */}
@@ -1522,39 +1655,71 @@ const removeArrayItem = (key: string, index: number) => {
               <span className="text-indigo-400">◈</span> Navigation Bar Options
             </h3>
 
-            {/* Logo Image URL + Stock Picker */}
-            <div data-field-path="logoImage">
-              <label className={labelClass}>Image Logo (Optional)</label>
-              <div className="flex gap-1.5">
-                <input
-                  type="text"
-                  value={content.logoImage || content.logo || (section as any).logoImage || ""}
-                  onChange={(e) => {
-                    handleFieldChange("logoImage", e.target.value);
-                    updateSection(section.id, { logoImage: e.target.value });
-                  }}
-                  placeholder="https://example.com/logo.png"
-                  className={inputClass}
-                />
-                {onOpenImagePicker && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onOpenImagePicker(
-                        content.logoImage || content.logo || (section as any).logoImage || "",
-                        (url) => {
-                          handleFieldChange("logoImage", url);
-                          updateSection(section.id, { logoImage: url });
+            {/* Logo Image — Visual Card */}
+            <div data-field-path="logoImage" className="space-y-2">
+              <label className={labelClass}>🖼️ Navbar Logo</label>
+
+              {/* Thumbnail preview + upload button */}
+              {(content.logoImage || content.logo || (section as any).logoImage) ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-700">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={content.logoImage || content.logo || (section as any).logoImage}
+                      alt="Logo"
+                      className="w-full h-full object-contain"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                    <p className="text-[10px] text-slate-400 truncate">Logo uploaded ✓</p>
+                    {onOpenImagePicker && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenImagePicker(
+                            content.logoImage || content.logo || (section as any).logoImage || "",
+                            (url) => { handleFieldChange("logoImage", url); updateSection(section.id, { logoImage: url }); }
+                          )
                         }
-                      )
-                    }
-                    className="px-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg border border-slate-700 transition-colors flex items-center justify-center shrink-0"
-                    title="Pick / Search Stock Logo Image"
-                  >
-                    <ImageIcon size={14} />
-                  </button>
-                )}
-              </div>
+                        className="text-[11px] font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-700/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+                      >
+                        <ImageIcon size={11} /> Replace Logo
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { handleFieldChange("logoImage", ""); updateSection(section.id, { logoImage: "" }); }}
+                      className="text-[11px] font-bold text-slate-500 hover:text-rose-400 bg-slate-900 hover:bg-rose-950/30 border border-slate-800 hover:border-rose-800/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+                    >
+                      <X size={11} /> Remove Logo
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {onOpenImagePicker && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onOpenImagePicker("", (url) => { handleFieldChange("logoImage", url); updateSection(section.id, { logoImage: url }); })
+                      }
+                      className="w-full flex flex-col items-center justify-center gap-2 py-5 rounded-xl border-2 border-dashed border-indigo-700/50 hover:border-indigo-500 bg-indigo-950/20 hover:bg-indigo-950/40 text-indigo-300 hover:text-indigo-200 transition-all cursor-pointer"
+                    >
+                      <ImageIcon size={22} className="opacity-70" />
+                      <span className="text-[11px] font-bold">Upload / Pick Logo Image</span>
+                      <span className="text-[10px] text-slate-500">PNG, SVG, JPG recommended · transparent background works best</span>
+                    </button>
+                  )}
+                  <input
+                    type="text"
+                    value={content.logoImage || content.logo || (section as any).logoImage || ""}
+                    onChange={(e) => { handleFieldChange("logoImage", e.target.value); updateSection(section.id, { logoImage: e.target.value }); }}
+                    placeholder="Or paste image URL here..."
+                    className={inputClass}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Logo Size Adjustment */}
@@ -1710,31 +1875,55 @@ const removeArrayItem = (key: string, index: number) => {
           {Object.entries(content).map(([key, val]) => {
             // Strings
             if (typeof val === "string" || val === null || val === undefined) {
-              const isImage = key.toLowerCase().includes("image") || key.toLowerCase().includes("avatar") || key.toLowerCase().includes("logo") || key.toLowerCase().includes("photo");
+              const isImage = key.toLowerCase().includes("image") || key.toLowerCase().includes("avatar") || key.toLowerCase().includes("logo") || key.toLowerCase().includes("photo") || key.toLowerCase().includes("cover") || key.toLowerCase().includes("banner");
+              const humanLabel = key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
 
-return (
-                <div key={key} data-field-path={key}>
-                  <label className={labelClass}>{key.replace(/([A-Z])/g, " $1")}</label>
-                  <div className="flex gap-1.5">
-                    <input
-                      type="text"
-                      value={val || ""}
-                      onChange={(e) => handleFieldChange(key, e.target.value)}
-                      placeholder={`Enter ${key}...`}
-                      className={inputClass}
-                    />
-                    {isImage && onOpenImagePicker && (
-                      <button
-                        onClick={() =>
-                          onOpenImagePicker(val || "", (newUrl) => handleFieldChange(key, newUrl))
-                        }
-                        className="px-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg border border-slate-700 transition-colors flex items-center justify-center"
-                        title="Pick / Search Stock Image"
-                      >
-                        <ImageIcon size={14} />
-                      </button>
+              if (isImage) {
+                return (
+                  <div key={key} data-field-path={key} className="space-y-1.5">
+                    <label className={labelClass}>🖼️ {humanLabel}</label>
+                    {val ? (
+                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-700">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 border border-slate-700 flex-shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={val} alt={humanLabel} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        </div>
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                          {onOpenImagePicker && (
+                            <button type="button" onClick={() => onOpenImagePicker(val, (newUrl) => handleFieldChange(key, newUrl))} className="text-[10px] font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-700/50 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors w-fit">
+                              <ImageIcon size={10} /> Change Image
+                            </button>
+                          )}
+                          <button type="button" onClick={() => handleFieldChange(key, "")} className="text-[10px] text-slate-500 hover:text-rose-400 px-2 py-1 rounded-lg hover:bg-rose-950/30 border border-transparent hover:border-rose-800/30 flex items-center gap-1 transition-colors w-fit">
+                            <X size={10} /> Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {onOpenImagePicker && (
+                          <button type="button" onClick={() => onOpenImagePicker("", (newUrl) => handleFieldChange(key, newUrl))} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-slate-950 hover:bg-indigo-950/20 text-slate-500 hover:text-indigo-300 transition-all cursor-pointer">
+                            <ImageIcon size={14} />
+                            <span className="text-[10px] font-bold">Upload {humanLabel}</span>
+                          </button>
+                        )}
+                        <input type="text" value={val || ""} onChange={(e) => handleFieldChange(key, e.target.value)} placeholder="Or paste image URL..." className={inputClass} />
+                      </div>
                     )}
                   </div>
+                );
+              }
+
+              return (
+                <div key={key} data-field-path={key}>
+                  <label className={labelClass}>{humanLabel}</label>
+                  <input
+                    type="text"
+                    value={val || ""}
+                    onChange={(e) => handleFieldChange(key, e.target.value)}
+                    placeholder={`Enter ${humanLabel.toLowerCase()}...`}
+                    className={inputClass}
+                  />
                 </div>
               );
             }
@@ -1950,6 +2139,44 @@ return (
                               }
 
                               const isSubLink = subKey.toLowerCase().includes("url") || subKey.toLowerCase().includes("link");
+                              const subHumanLabel = subKey.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+
+                              // Visual image card for image-type fields
+                              if (isSubImage) {
+                                const imgVal = String(subVal || "");
+                                return (
+                                  <div key={subKey} data-field-path={`${key}.${i}.${subKey}`} className="space-y-1">
+                                    <span className="text-[10px] text-slate-400 capitalize block">🖼️ {subHumanLabel}</span>
+                                    {imgVal ? (
+                                      <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-700">
+                                        <div className="w-10 h-10 rounded overflow-hidden bg-slate-800 border border-slate-700 flex-shrink-0">
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img src={imgVal} alt={subHumanLabel} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                        </div>
+                                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                                          {onOpenImagePicker && (
+                                            <button type="button" onClick={() => onOpenImagePicker(imgVal, (newUrl) => { const next = [...val]; next[i] = { ...next[i], [subKey]: newUrl }; handleFieldChange(key, next); })} className="text-[10px] font-bold text-indigo-300 hover:text-white bg-indigo-950/50 hover:bg-indigo-900/60 border border-indigo-700/50 px-1.5 py-0.5 rounded flex items-center gap-1 w-fit transition-colors">
+                                              <ImageIcon size={9} /> Change
+                                            </button>
+                                          )}
+                                          <button type="button" onClick={() => { const next = [...val]; next[i] = { ...next[i], [subKey]: "" }; handleFieldChange(key, next); }} className="text-[10px] text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded flex items-center gap-1 w-fit transition-colors">
+                                            <X size={9} /> Remove
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="flex gap-1">
+                                        {onOpenImagePicker && (
+                                          <button type="button" onClick={() => onOpenImagePicker("", (newUrl) => { const next = [...val]; next[i] = { ...next[i], [subKey]: newUrl }; handleFieldChange(key, next); })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-slate-700 hover:border-indigo-500 bg-slate-950 hover:bg-indigo-950/20 text-slate-500 hover:text-indigo-300 text-[10px] font-bold transition-all">
+                                            <ImageIcon size={11} /> Upload Photo
+                                          </button>
+                                        )}
+                                        <input type="text" value={imgVal} onChange={(e) => { const next = [...val]; next[i] = { ...next[i], [subKey]: e.target.value }; handleFieldChange(key, next); }} placeholder="URL..." className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white" />
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              }
 
                               return (
                                 <div key={subKey} data-field-path={`${key}.${i}.${subKey}`}>
@@ -1979,21 +2206,6 @@ return (
                                         title="Configure WhatsApp or Link"
                                       >
                                         <MessageCircle size={12} /> WhatsApp
-                                      </button>
-                                    )}
-                                    {isSubImage && onOpenImagePicker && (
-                                      <button
-                                        onClick={() =>
-                                          onOpenImagePicker(String(subVal || ""), (newUrl) => {
-                                            const next = [...val];
-                                            next[i] = { ...next[i], [subKey]: newUrl };
-                                            handleFieldChange(key, next);
-                                          })
-                                        }
-                                        className="px-2 bg-slate-900 border border-slate-800 text-indigo-400 rounded-lg hover:bg-slate-800"
-                                        title="Pick Image"
-                                      >
-                                        <ImageIcon size={13} />
                                       </button>
                                     )}
                                   </div>

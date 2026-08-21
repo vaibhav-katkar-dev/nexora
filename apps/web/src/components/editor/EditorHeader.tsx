@@ -6,9 +6,6 @@ import {
   ArrowLeft,
   Eye,
   Code2,
-  Monitor,
-  Tablet,
-  Smartphone,
   Undo2,
   Redo2,
   Save,
@@ -35,8 +32,6 @@ export function EditorHeader({
     projectSlug,
     viewMode,
     setViewMode,
-    viewport,
-    setViewport,
     isDirty,
     isSaving,
     saveError,
@@ -137,38 +132,6 @@ export function EditorHeader({
             <span className="hidden md:inline">Preview</span>
           </button>
         </div>
-
-        {!compactPreview && viewMode === "visual" && (
-          <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-full p-0.5 text-xs">
-            <button
-              onClick={() => setViewport("desktop")}
-              className={`p-1.5 rounded-full transition-all ${
-                viewport === "desktop" ? "bg-slate-800 text-indigo-400" : "text-slate-400 hover:text-white"
-              }`}
-              title="Desktop view"
-            >
-              <Monitor size={14} />
-            </button>
-            <button
-              onClick={() => setViewport("tablet")}
-              className={`p-1.5 rounded-full transition-all ${
-                viewport === "tablet" ? "bg-slate-800 text-indigo-400" : "text-slate-400 hover:text-white"
-              }`}
-              title="Tablet view (768px)"
-            >
-              <Tablet size={14} />
-            </button>
-            <button
-              onClick={() => setViewport("mobile")}
-              className={`p-1.5 rounded-full transition-all ${
-                viewport === "mobile" ? "bg-slate-800 text-indigo-400" : "text-slate-400 hover:text-white"
-              }`}
-              title="Mobile view (375px)"
-            >
-              <Smartphone size={14} />
-            </button>
-          </div>
-        )}
       </div>
 
       {/* ── Right: History, Developer Mode Toggle, Save & Publish ──────────── */}

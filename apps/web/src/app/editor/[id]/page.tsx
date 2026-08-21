@@ -47,6 +47,7 @@ export default function EditorPage() {
   const selectSection = useEditorStore((state) => state.selectSection);
   const selectElement = useEditorStore((state) => state.selectElement);
   const updateElementValue = useEditorStore((state) => state.updateElementValue);
+  const updateSection = useEditorStore((state) => state.updateSection);
   const undo = useEditorStore((state) => state.undo);
   const redo = useEditorStore((state) => state.redo);
 
@@ -201,8 +202,39 @@ export default function EditorPage() {
   };
 
   const handleSelectElement = (elementKey: string, sectionId: string) => {
+    selectSection(sectionId);
     selectElement(sectionId, elementKey);
     setActiveTab("inspector");
+  };
+
+  const handleRequestImageEdit = (sectionId: string, elementKey: string) => {
+    selectSection(sectionId);
+    selectElement(sectionId, elementKey);
+    setActiveTab("inspector");
+
+    const section = config?.sections.find((item) => item.id === sectionId);
+    if (!section) return;
+
+    const currentValue = resolveElementValue(section, elementKey);
+    setImagePickerState({
+      isOpen: true,
+      currentUrl: typeof currentValue === "string" ? currentValue : "",
+      onSelect: (url) => {
+        updateElementValue(sectionId, elementKey, url);
+        if (elementKey === "content.logoImage" || elementKey === "logoImage") {
+          updateSection(sectionId, {
+            logoImage: url,
+            content: { ...(section.content || {}), logoImage: url },
+          });
+        }
+        if (elementKey === "content.backgroundImage" || elementKey === "backgroundImage" || elementKey === "bgImage") {
+          updateSection(sectionId, {
+            backgroundImage: url,
+            content: { ...(section.content || {}), backgroundImage: url },
+          });
+        }
+      },
+    });
   };
 
   // Auto-sync activeSectionId: if current activeSectionId does not exist in config.sections, fallback to first section or null
@@ -325,20 +357,7 @@ export default function EditorPage() {
     window.addEventListener("mouseup", handleMouseUp);
   };
 
-  const handleRequestImageEdit = (sectionId: string, elementKey: string) => {
-    const section = config?.sections.find((item) => item.id === sectionId);
-    if (!section) return;
 
-    const currentValue = resolveElementValue(section, elementKey);
-    setImagePickerState({
-      isOpen: true,
-      currentUrl: typeof currentValue === "string" ? currentValue : "",
-      onSelect: (url) => {
-        updateElementValue(sectionId, elementKey, url);
-        setImagePickerState({ isOpen: false, currentUrl: "" });
-      },
-    });
-  };
 
   const activeSection = config?.sections.find((s) => s.id === activeSectionId);
   const showSidebar = viewMode !== "preview";
