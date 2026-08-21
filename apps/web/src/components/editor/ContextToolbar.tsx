@@ -84,19 +84,13 @@ export function ContextToolbar({
   const [colorPickerPos, setColorPickerPos] = useState({ top: 0, left: 0 });
   const [fontSizePos, setFontSizePos] = useState({ top: 0, left: 0 });
 
-  const getDropdownPos = useCallback((ref: React.RefObject<HTMLButtonElement | null>) => {
+  const getDropdownPos = useCallback((ref: React.RefObject<HTMLButtonElement | null>, width = 180) => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return { top: 0, left: 0 };
-    return { top: rect.bottom + 8, left: rect.left };
-  }, []);
-
-  // Detect actual mobile screen
-  const [isMobileScreen, setIsMobileScreen] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobileScreen(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    const maxLeft = typeof window !== "undefined" ? Math.max(10, window.innerWidth - width - 10) : rect.left;
+    const left = Math.min(Math.max(10, rect.left), maxLeft);
+    const top = rect.bottom + 8;
+    return { top, left };
   }, []);
 
   // Close dropdowns when selection changes
@@ -124,7 +118,7 @@ export function ContextToolbar({
   const section = config?.sections.find((s) => s.id === activeSectionId);
   const sectionIdx = config?.sections.findIndex((s) => s.id === activeSectionId) ?? -1;
 
-  if (!section || isMobileScreen) return null;
+  if (!section) return null;
 
   // Determine element type
   const isImage = !!selectedElementKey && /img|image|avatar|photo|logo|thumbnail|banner/i.test(selectedElementKey);
@@ -308,7 +302,7 @@ export function ContextToolbar({
                         setShowAiMenu(next);
                         setShowColorPicker(false);
                         setShowFontSizePicker(false);
-                        if (next) setAiMenuPos(getDropdownPos(aiMenuBtnRef));
+                        if (next) setAiMenuPos(getDropdownPos(aiMenuBtnRef, 180));
                       }}
                       disabled={isAiRewriting}
                       className="px-2.5 py-1 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-lg flex items-center gap-1 font-semibold text-xs transition-all disabled:opacity-50 shadow-sm"
@@ -402,7 +396,7 @@ export function ContextToolbar({
                         setShowColorPicker(next);
                         setShowAiMenu(false);
                         setShowFontSizePicker(false);
-                        if (next) setColorPickerPos(getDropdownPos(colorPickerBtnRef));
+                        if (next) setColorPickerPos(getDropdownPos(colorPickerBtnRef, 210));
                       }}
                       className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 flex items-center gap-1"
                       title="Text Color"
@@ -416,7 +410,7 @@ export function ContextToolbar({
                       <>
                         <div className="fixed inset-0 z-[9998]" onClick={() => setShowColorPicker(false)} />
                         <div
-                          className="fixed p-2.5 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-[9999] w-52"
+                          className="fixed p-2.5 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-[9999] w-52 max-w-[calc(100vw-24px)]"
                           style={{ top: colorPickerPos.top, left: colorPickerPos.left }}
                           onMouseDown={(e) => e.stopPropagation()}
                         >
@@ -457,7 +451,7 @@ export function ContextToolbar({
                         setShowFontSizePicker(next);
                         setShowColorPicker(false);
                         setShowAiMenu(false);
-                        if (next) setFontSizePos(getDropdownPos(fontSizeBtnRef));
+                        if (next) setFontSizePos(getDropdownPos(fontSizeBtnRef, 100));
                       }}
                       className="px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 font-mono text-[11px] flex items-center gap-1"
                       title="Font Size"

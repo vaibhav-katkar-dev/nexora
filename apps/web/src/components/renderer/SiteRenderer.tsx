@@ -47,6 +47,7 @@ import {
   Send,
   X,
   Menu,
+  Plus,
 } from "lucide-react";
 import { useEditorStore } from "@/store/editorStore";
 import { formsApi } from "@/lib/api";
@@ -691,12 +692,22 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
   const [mobileMenuOffset, setMobileMenuOffset] = useState(0);
   const navRef = useRef<HTMLElement | null>(null);
   const menuAccent = theme.primaryColor || "#3B82F6";
-  const mobileMenuItemCount = Math.max(links.length, 1) + (content.ctaText ? 1 : 0);
-  const mobileMenuDesiredHeight = mobileMenuItemCount * 54 + 20;
+  const mobileMenuItemCount = Math.max(links.length, 1) + (content.ctaText ? 1 : 0) + (interactive ? 1 : 0);
+  const mobileMenuDesiredHeight = mobileMenuItemCount * 54 + 30;
 
   const logoImage = content.logoImage || content.logo || (section as any).logoImage;
   const logoWidth = content.logoWidth || (section as any).logoWidth || 36;
   const logoHeight = content.logoHeight || (section as any).logoHeight || "auto";
+
+  const handleAddLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    useEditorStore.getState().pushHistorySnapshot();
+    const cur = [...(content.links || [])];
+    const next = [...cur, { label: `Link ${cur.length + 1}`, url: "#" }];
+    useEditorStore.getState().updateSection(section.id, {
+      content: { ...content, links: next },
+    });
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -704,7 +715,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
-    if (mobileMenuOpen) {
+    if (mobileMenuOpen && !interactive) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -712,7 +723,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, interactive]);
 
   useEffect(() => {
     if (!isMounted || !mobileMenuOpen) return;
@@ -754,7 +765,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
               className="fixed left-0 right-0 md:hidden flex flex-col gap-2 overflow-y-auto overscroll-contain rounded-b-2xl border p-3 sm:p-4 shadow-2xl"
               style={{
                 top: mobileMenuOffset + 8,
-                maxHeight: `min(${mobileMenuDesiredHeight}px, 50dvh, calc(100dvh - ${mobileMenuOffset + 20}px))`,
+                maxHeight: `min(${mobileMenuDesiredHeight}px, 60dvh, calc(100dvh - ${mobileMenuOffset + 20}px))`,
                 zIndex: 10000,
                 backgroundColor: isDark ? "rgba(15, 23, 42, 0.96)" : "rgba(255, 255, 255, 0.96)",
                 borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(15, 23, 42, 0.10)",
@@ -773,7 +784,11 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
                       key={i}
                       {...sel(itemKey)}
                       href={linkUrl}
-                      onClick={() => setMobileMenuOpen(false)}
+                      onClick={(e) => {
+                        if (!interactive) {
+                          setMobileMenuOpen(false);
+                        }
+                      }}
                       className={`flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors active:scale-[0.99] touch-manipulation ${
                         isDark
                           ? "bg-white/5 border border-white/10 text-white hover:bg-white/10"
@@ -796,12 +811,26 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
                 </div>
               )}
 
+              {/* Mobile Editor Add Link Button */}
+              {interactive && (
+                <button
+                  type="button"
+                  onClick={handleAddLink}
+                  className="w-full py-2 px-3 rounded-xl border border-dashed border-indigo-500/50 bg-indigo-950/40 hover:bg-indigo-950/70 text-indigo-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Plus size={13} />
+                  <span>Add Nav Link</span>
+                </button>
+              )}
+
               {/* Mobile CTA */}
               {content.ctaText && (
                 <a
                   {...sel("content.ctaText")}
                   href={content.ctaLink || "#"}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    if (!interactive) setMobileMenuOpen(false);
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105 text-center touch-manipulation"
                   style={{ background: theme.primaryColor, boxShadow: `0 14px 28px ${menuAccent}33` }}
                 >
@@ -820,14 +849,14 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
         ref={navRef}
         id={section.id}
         data-section-id={section.id}
-        className="sticky top-0 z-50 backdrop-blur-md px-3 sm:px-6 py-2 sm:py-3 border-b flex items-center justify-between gap-2"
+        className="sticky top-0 z-50 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 border-b flex items-center justify-between gap-3"
         style={{
           backgroundColor: isDark ? "rgba(11, 15, 25, 0.75)" : "rgba(255, 255, 255, 0.85)",
           borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
           color: "var(--text)",
         }}
       >
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3 shrink-0">
           {logoImage ? (
             <img
               {...sel("content.logoImage")}
@@ -888,7 +917,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
           ) : null}
           <span
             {...sel("title")}
-            className="min-w-0 max-w-[56vw] truncate font-extrabold text-base sm:text-xl tracking-tight"
+            className="min-w-0 max-w-[50vw] sm:max-w-[280px] truncate font-extrabold text-base sm:text-xl tracking-tight"
             style={{
               fontFamily: "var(--font-heading)",
               color: isDark ? "#ffffff" : "var(--text)",
@@ -923,26 +952,28 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
           )}
         </div>
 
-        {/* Desktop CTA */}
-        {content.ctaText && (
-          <a
-            {...sel("content.ctaText")}
-            href={content.ctaLink || "#"}
-            className="hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
-            style={{ background: theme.primaryColor, ...getNavElementStyle(section, "content.ctaText") }}
-          >
-            {content.ctaText}
-          </a>
-        )}
+        {/* Desktop CTA & Mobile Toggle */}
+        <div className="flex items-center gap-2 shrink-0">
+          {content.ctaText && (
+            <a
+              {...sel("content.ctaText")}
+              href={content.ctaLink || "#"}
+              className="hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
+              style={{ background: theme.primaryColor, ...getNavElementStyle(section, "content.ctaText") }}
+            >
+              {content.ctaText}
+            </a>
+          )}
 
-        {/* Mobile Menu Toggle */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors touch-manipulation"
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors touch-manipulation"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </nav>
       {mobileMenuPortal}
     </>
