@@ -66,12 +66,16 @@ export function CanvasPreview({
     const el = canvasContentRef.current;
     if (!el) return;
 
-    // Clamp
     const cz = Math.min(200, Math.max(30, z));
 
-    // During gesture — override transition to none for zero-latency response
     if (animate) {
-      el.style.transition = "transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94), width 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+      // Force a reflow so the browser registers the new transition even if
+      // the previous gesture left transition:"none" baked in.
+      el.style.transition = "none";
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      el.offsetHeight; // trigger reflow
+      el.style.transition =
+        "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), width 0.35s cubic-bezier(0.22, 1, 0.36, 1)";
     } else {
       el.style.transition = "none";
     }
@@ -82,7 +86,7 @@ export function CanvasPreview({
 
   // ── Batch RAF — called every animation frame during gesture ──────────────
   const scheduleApply = useCallback(() => {
-    if (rafRef.current !== null) return; // already scheduled
+    if (rafRef.current !== null) return;
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
       applyTransform(zoomRef.current, panRef.current, false);
@@ -95,7 +99,6 @@ export function CanvasPreview({
     zoomRef.current = finalZoom;
     setDisplayZoom(finalZoom);
     setHasPan(panRef.current.x !== 0 || panRef.current.y !== 0);
-    // Apply with smooth spring-back snap
     applyTransform(finalZoom, panRef.current, false);
   }, [applyTransform]);
 
@@ -105,20 +108,21 @@ export function CanvasPreview({
     panRef.current = { x: 0, y: 0 };
     setDisplayZoom(100);
     setHasPan(false);
-    applyTransform(100, { x: 0, y: 0 }, true);
+    applyTransform(100, { x: 0, y: 0 }, true); // animated spring back
   }, [applyTransform]);
 
   const fitToScreen = useCallback(() => {
     if (!scrollContainerRef.current) return;
     const containerWidth = scrollContainerRef.current.clientWidth;
-    const optimalZoom = containerWidth < 768
-      ? Math.min(100, Math.max(40, Math.round((containerWidth / 420) * 100)))
-      : 100;
+    const optimalZoom =
+      containerWidth < 768
+        ? Math.min(100, Math.max(40, Math.round((containerWidth / 420) * 100)))
+        : 100;
     zoomRef.current = optimalZoom;
     panRef.current = { x: 0, y: 0 };
     setDisplayZoom(optimalZoom);
     setHasPan(false);
-    applyTransform(optimalZoom, { x: 0, y: 0 }, true);
+    applyTransform(optimalZoom, { x: 0, y: 0 }, true); // animated spring
   }, [applyTransform]);
 
   const stepZoom = useCallback((delta: number) => {

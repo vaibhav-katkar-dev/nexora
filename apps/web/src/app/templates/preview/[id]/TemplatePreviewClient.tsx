@@ -8,6 +8,8 @@ import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { DeviceFrame, DeviceFrameViewport } from "@/components/editor/DeviceFrame";
 import { projectsApi, templatesApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
+import { BusinessProfile, injectBusinessProfileIntoConfig } from "@/lib/businessProfile";
 import {
   ArrowLeft,
   Sparkles,
@@ -36,6 +38,7 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
 
   const [viewport, setViewport] = useState<DeviceFrameViewport>("desktop");
   const [isCreating, setIsCreating] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
   const [templateData, setTemplateData] = useState<{
     config: SiteConfigJSON | null;
     name: string;
@@ -107,11 +110,15 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
       .finally(() => setLoading(false));
   }, [id, templateData.config]);
 
-  const handleUseTemplate = async () => {
+  const handleUseTemplate = async (profile?: BusinessProfile | null) => {
     if (!templateData.config) return;
     setIsCreating(true);
-    const cfg = templateData.config;
-    const projName = templateData.name || cfg.meta?.title || "My Digital Presence";
+
+    let cfg = templateData.config;
+    if (profile) {
+      cfg = injectBusinessProfileIntoConfig(cfg, profile);
+    }
+    const projName = profile?.brandName?.trim() || templateData.name || cfg.meta?.title || "My Digital Presence";
 
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
@@ -123,7 +130,7 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
           JSON.stringify({
             name: projName,
             slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
-            category: templateData.category || "portfolio",
+            category: profile?.category || templateData.category || "portfolio",
             config: cfg,
           })
         );
@@ -133,7 +140,7 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
 
       const res = await projectsApi.create({
         name: projName,
-        category: templateData.category || "portfolio",
+        category: (profile?.category || templateData.category || "portfolio") as any,
         config: cfg,
       });
 
@@ -156,7 +163,7 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
         JSON.stringify({
           name: projName,
           slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
-          category: templateData.category || "portfolio",
+          category: profile?.category || templateData.category || "portfolio",
           config: cfg,
         })
       );
@@ -262,7 +269,7 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
         {/* Right: Actions */}
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={handleUseTemplate}
+            onClick={() => setShowSetupModal(true)}
             disabled={isCreating}
             className="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 disabled:opacity-50"
           >
@@ -290,6 +297,22 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
           </div>
         )}
       </main>
+
+      {/* ── Quick Business Setup Wizard Modal ── */}
+      <QuickBusinessSetupModal
+        isOpen={showSetupModal}
+        onClose={() => setShowSetupModal(false)}
+        templateName={templateData.name || "Template"}
+        onSubmit={(profile) => {
+          setShowSetupModal(false);
+          handleUseTemplate(profile);
+        }}
+        onSkip={() => {
+          setShowSetupModal(false);
+          handleUseTemplate(null);
+        }}
+        isSubmitting={isCreating}
+      />
     </div>
   );
 }

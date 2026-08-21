@@ -7,6 +7,8 @@ import { projectsApi, authApi, formsApi, analyticsApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { SiteConfigJSON } from "@ai-platform/shared";
 import { Navbar } from "@/components/navigation/Navbar";
+import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
+import { BusinessProfile, injectBusinessProfileIntoConfig } from "@/lib/businessProfile";
 import {
   Globe,
   Plus,
@@ -195,12 +197,15 @@ export default function DashboardPage() {
     }).catch(() => {});
   }, []);
 
+  const [showCreateBlankModal, setShowCreateBlankModal] = useState(false);
+
   // Handle Blank site creation
-  const handleCreateBlank = async () => {
+  const handleCreateBlank = async (profile?: BusinessProfile | null) => {
     setIsCreating(true);
     try {
-      const blankConfig: SiteConfigJSON = {
-        meta: { title: "Blank Canvas Site", category: "blank", description: "Start from a clean canvas" },
+      const projName = profile?.brandName?.trim() || "Blank Canvas Site";
+      let blankConfig: SiteConfigJSON = {
+        meta: { title: projName, category: (profile?.category || "blank") as any, description: profile?.tagline || "Start from a clean canvas" },
         theme: {
           primaryColor: "#4F46E5",
           secondaryColor: "#8B5CF6",
@@ -223,10 +228,12 @@ export default function DashboardPage() {
             id: "hero-blank",
             type: "hero",
             variant: "centered",
-            title: "Welcome to Your New Site",
-            subtitle: "Click any section in the sidebar to start customizing your design.",
+            title: projName,
+            subtitle: profile?.tagline || "Click any section in the sidebar to start customizing your design.",
             visible: true,
-            content: {},
+            content: {
+              ctaText: profile?.ctaText || "Get in Touch",
+            },
           },
           {
             id: "contact-blank",
@@ -236,19 +243,30 @@ export default function DashboardPage() {
             subtitle: "Send us a message or inquiry.",
             visible: true,
             content: {
+              phone: profile?.phone || "",
+              whatsapp: profile?.whatsapp || profile?.phone || "",
+              email: profile?.email || "",
+              address: profile?.location || "",
               formConfig: {
                 enabled: true,
                 destination: "both",
                 submitButtonText: "Send Message",
                 successMessage: "Thank you! Your message has been received.",
+                whatsappNumber: profile?.whatsapp || profile?.phone || "",
+                notifyEmail: profile?.email || "",
               },
             },
           },
         ],
       };
+
+      if (profile) {
+        blankConfig = injectBusinessProfileIntoConfig(blankConfig, profile);
+      }
+
       const res = await projectsApi.create({
-        name: "Blank Canvas Site",
-        category: "blank",
+        name: projName,
+        category: (profile?.category || "blank") as any,
         config: blankConfig,
       });
       if (res.data?._id) router.push(`/editor/${res.data._id}`);
@@ -485,7 +503,7 @@ export default function DashboardPage() {
 
               {/* Start From Blank Card */}
               <div
-                onClick={handleCreateBlank}
+                onClick={() => setShowCreateBlankModal(true)}
                 className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 flex flex-col justify-between hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group"
               >
                 <div className="space-y-2.5">
@@ -1429,6 +1447,22 @@ export default function DashboardPage() {
         cancelText="Cancel"
         variant="danger"
         isLoading={isDeleting}
+      />
+
+      {/* ── Quick Business Setup Wizard Modal ── */}
+      <QuickBusinessSetupModal
+        isOpen={showCreateBlankModal}
+        onClose={() => setShowCreateBlankModal(false)}
+        templateName="Blank Canvas Site"
+        onSubmit={(profile) => {
+          setShowCreateBlankModal(false);
+          handleCreateBlank(profile);
+        }}
+        onSkip={() => {
+          setShowCreateBlankModal(false);
+          handleCreateBlank(null);
+        }}
+        isSubmitting={isCreating}
       />
     </div>
   );

@@ -45,6 +45,7 @@ import {
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import { SiteCreationModal } from "@/components/common/SiteCreationModal";
 import { projectsApi, templatesApi } from "@/lib/api";
+import { BusinessProfile, injectBusinessProfileIntoConfig } from "@/lib/businessProfile";
 
 // Continuous Marquee items highlighting digital presence scope
 const MARQUEE_ITEMS = [
@@ -205,7 +206,7 @@ export default function LandingPage() {
 
   const canProceed = cleanSlug.length >= 2;
 
-  const launchEditor = async (templateId: string | null) => {
+  const launchEditor = async (templateId: string | null, profile?: BusinessProfile | null) => {
     setIsRedirecting(true);
     try {
       let customConfig: any;
@@ -213,41 +214,74 @@ export default function LandingPage() {
         ? dbTemplates.find((t) => (t._id === templateId || t.slug === templateId || t.id === templateId))
         : null;
 
+      const effectiveName = profile?.brandName?.trim() || displayName;
+
       if (tpl) {
         const rawConfig = tpl.defaultConfig || tpl.config || {};
         customConfig = JSON.parse(JSON.stringify(rawConfig));
-        if (customConfig.meta) customConfig.meta.title = displayName;
+        if (customConfig.meta) customConfig.meta.title = effectiveName;
         const s0 = customConfig.sections?.[0];
         if (s0?.content) {
-          if (s0.content.title) s0.content.title = displayName;
-          if (s0.content.name) s0.content.name = displayName;
+          if (s0.content.title) s0.content.title = effectiveName;
+          if (s0.content.name) s0.content.name = effectiveName;
         }
       } else {
         customConfig = {
-          meta: { title: displayName, category: "portfolio", description: "Digital Presence" },
+          meta: { title: effectiveName, category: profile?.category || "portfolio", description: profile?.tagline || "Digital Presence" },
           theme: { primaryColor: "#4F46E5", backgroundColor: "#0F172A", textColor: "#F8FAFC", fontFamily: "Inter", borderRadius: "16px" },
           sections: [
             {
               id: "hero-1",
               type: "hero",
-              title: displayName,
-              subtitle: "Welcome to my official digital presence.",
+              title: effectiveName,
+              subtitle: profile?.tagline || "Welcome to my official digital presence.",
               badge: "✦ Digital Presence",
-              content: { ctaText: "Get Started", ctaLink: "#contact" }
+              content: { ctaText: profile?.ctaText || "Get Started", ctaLink: "#contact" }
+            },
+            {
+              id: "contact-1",
+              type: "contact",
+              title: "Get in Touch",
+              subtitle: "Send us a message or reach out directly.",
+              content: {
+                phone: profile?.phone || "",
+                whatsapp: profile?.whatsapp || profile?.phone || "",
+                email: profile?.email || "",
+                address: profile?.location || "",
+                formConfig: {
+                  enabled: true,
+                  destination: "both",
+                  whatsappNumber: profile?.whatsapp || profile?.phone || "",
+                  notifyEmail: profile?.email || "",
+                }
+              }
             }
           ]
         };
+      }
+
+      // If business profile was provided, inject it across all template sections
+      if (profile) {
+        customConfig = injectBusinessProfileIntoConfig(customConfig, profile);
       }
 
       const token =
         typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
       if (token) {
         const res = await projectsApi.create({
-          name: displayName,
-          category: (tpl?.category ?? "portfolio") as any,
+          name: effectiveName,
+          category: (profile?.category ?? tpl?.category ?? "portfolio") as any,
           config: customConfig,
         });
         if (res.data?._id) {
+          try {
+            sessionStorage.setItem(
+              `nexora-pending-project:${res.data._id}`,
+              JSON.stringify(res.data)
+            );
+          } catch {
+            /* ignore quota */
+          }
           router.push(`/editor/${res.data._id}`);
           return;
         }
@@ -256,9 +290,9 @@ export default function LandingPage() {
       sessionStorage.setItem(
         "nexora-quick-start-draft",
         JSON.stringify({
-          name: displayName,
+          name: effectiveName,
           slug: cleanSlug,
-          category: tpl?.category ?? "portfolio",
+          category: profile?.category ?? tpl?.category ?? "portfolio",
           config: customConfig,
         })
       );
@@ -1009,7 +1043,7 @@ export default function LandingPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         username={usernameInput || "my-brand"}
-        onLaunch={(templateId) => launchEditor(templateId)}
+        onLaunch={(templateId, profile) => launchEditor(templateId, profile)}
         isRedirecting={isRedirecting}
       />
     </div>

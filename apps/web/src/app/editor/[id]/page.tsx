@@ -18,6 +18,8 @@ import { AddSectionPanel } from "@/components/editor/panels/AddSectionPanel";
 import { CanvasPreview } from "@/components/editor/CanvasPreview";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { AiCanvasPromptBar } from "@/components/editor/AiCanvasPromptBar";
+import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
+import { BusinessProfile, injectBusinessProfileIntoConfig, saveBusinessProfile } from "@/lib/businessProfile";
 import { Loader2, Sparkles, Globe, ArrowRight, Layers, SlidersHorizontal, Palette, Plus } from "lucide-react";
 
 // Lazy-load heavy panels and modals to keep initial bundle size lightweight
@@ -48,6 +50,7 @@ export default function EditorPage() {
   const selectElement = useEditorStore((state) => state.selectElement);
   const updateElementValue = useEditorStore((state) => state.updateElementValue);
   const updateSection = useEditorStore((state) => state.updateSection);
+  const setConfig = useEditorStore((state) => state.setConfig);
   const undo = useEditorStore((state) => state.undo);
   const redo = useEditorStore((state) => state.redo);
 
@@ -56,6 +59,7 @@ export default function EditorPage() {
   const [developerMode, setDeveloperMode] = useState(false);
   const [showSlugModal, setShowSlugModal] = useState(false);
   const [showQuickStartAuthModal, setShowQuickStartAuthModal] = useState(false);
+  const [showBusinessSetupModal, setShowBusinessSetupModal] = useState(false);
   const [isGuestQuickStart, setIsGuestQuickStart] = useState(false);
   const [currentSlug, setCurrentSlug] = useState("");
 
@@ -404,6 +408,7 @@ export default function EditorPage() {
         }}
         developerMode={developerMode}
         onToggleDeveloperMode={() => setDeveloperMode(!developerMode)}
+        onOpenBusinessSetup={() => setShowBusinessSetupModal(true)}
       />
 
       {/* Main Workspace Layout */}
@@ -665,6 +670,24 @@ export default function EditorPage() {
       )}
       {/* AI Assistant — fixed-position, non-intrusive, desktop only */}
       <AiCanvasPromptBar />
+
+      {/* Quick Business Profile Modal (Edit Mode) */}
+      <QuickBusinessSetupModal
+        isOpen={showBusinessSetupModal}
+        onClose={() => setShowBusinessSetupModal(false)}
+        templateName={projectName || "Site"}
+        mode="edit"
+        onSubmit={(profile) => {
+          if (config) {
+            const patched = injectBusinessProfileIntoConfig(config, profile);
+            setConfig(patched, true);
+            saveBusinessProfile(profile);
+            toastRef.current.success("Business profile applied!", "Updated your details across the site.");
+          }
+          setShowBusinessSetupModal(false);
+        }}
+        onSkip={() => setShowBusinessSetupModal(false)}
+      />
     </div>
   );
 }

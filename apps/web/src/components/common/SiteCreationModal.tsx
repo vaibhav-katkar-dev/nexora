@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import { templatesApi } from "@/lib/api";
+import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
+import { BusinessProfile } from "@/lib/businessProfile";
 
 // ─── Category icon map ────────────────────────────────────────────────────────
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
@@ -64,7 +66,7 @@ export interface SiteCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   username: string;
-  onLaunch: (templateId: string | null) => void;
+  onLaunch: (templateId: string | null, profile?: BusinessProfile | null) => void;
   isRedirecting: boolean;
 }
 
@@ -79,6 +81,8 @@ export function SiteCreationModal({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [pendingLaunchTemplateId, setPendingLaunchTemplateId] = useState<string | null>(null);
 
   // Templates state drawn strictly from backend API
   const [allTemplates, setAllTemplates] = useState<any[]>([]);
@@ -311,10 +315,13 @@ export function SiteCreationModal({
                 </div>
               </button>
 
-              {/* Option B: Start from Scratch */}
+                {/* Option B: Start from Scratch */}
               <button
                 type="button"
-                onClick={() => onLaunch(null)}
+                onClick={() => {
+                  setPendingLaunchTemplateId(null);
+                  setShowSetupModal(true);
+                }}
                 disabled={isRedirecting}
                 className="group text-left p-6 rounded-3xl border-2 border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50/80 hover:shadow-lg transition-all duration-200 flex flex-col justify-between touch-manipulation"
               >
@@ -450,7 +457,11 @@ export function SiteCreationModal({
                       <div
                         key={tpl.id}
                         onClick={() => setSelectedTemplateId(tpl.id)}
-                        onDoubleClick={() => onLaunch(tpl.id)}
+                        onDoubleClick={() => {
+                          setSelectedTemplateId(tpl.id);
+                          setPendingLaunchTemplateId(tpl.id);
+                          setShowSetupModal(true);
+                        }}
                         className={`group relative text-left rounded-3xl border-2 bg-white overflow-hidden transition-all duration-200 cursor-pointer flex flex-col justify-between touch-manipulation ${
                           isSelected
                             ? "border-indigo-600 ring-4 ring-indigo-600/15 shadow-xl shadow-indigo-600/10 -translate-y-1"
@@ -560,7 +571,8 @@ export function SiteCreationModal({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedTemplateId(tpl.id);
-                                  onLaunch(tpl.id);
+                                  setPendingLaunchTemplateId(tpl.id);
+                                  setShowSetupModal(true);
                                 }}
                                 disabled={isRedirecting}
                                 className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1 shrink-0 ${
@@ -628,7 +640,10 @@ export function SiteCreationModal({
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
                   type="button"
-                  onClick={() => onLaunch(null)}
+                  onClick={() => {
+                    setPendingLaunchTemplateId(null);
+                    setShowSetupModal(true);
+                  }}
                   disabled={isRedirecting}
                   className="px-4 py-2.5 min-h-[44px] rounded-2xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors touch-manipulation"
                 >
@@ -637,7 +652,11 @@ export function SiteCreationModal({
 
                 <button
                   type="button"
-                  onClick={() => onLaunch(selectedTemplateId)}
+                  onClick={() => {
+                    if (!selectedTemplateId) return;
+                    setPendingLaunchTemplateId(selectedTemplateId);
+                    setShowSetupModal(true);
+                  }}
                   disabled={!selectedTemplateId || isRedirecting}
                   className="flex-1 sm:flex-none px-6 py-2.5 min-h-[44px] rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/25 touch-manipulation"
                 >
@@ -655,6 +674,26 @@ export function SiteCreationModal({
           </div>
         )}
       </div>
+
+      {/* ── Quick Business Info Setup Wizard Modal ── */}
+      <QuickBusinessSetupModal
+        isOpen={showSetupModal}
+        onClose={() => setShowSetupModal(false)}
+        templateName={
+          pendingLaunchTemplateId
+            ? allTemplates.find((t) => t.id === pendingLaunchTemplateId)?.name || "Template"
+            : "Blank Canvas"
+        }
+        onSubmit={(profile) => {
+          setShowSetupModal(false);
+          onLaunch(pendingLaunchTemplateId, profile);
+        }}
+        onSkip={() => {
+          setShowSetupModal(false);
+          onLaunch(pendingLaunchTemplateId, null);
+        }}
+        isSubmitting={isRedirecting}
+      />
     </div>
   );
 }
