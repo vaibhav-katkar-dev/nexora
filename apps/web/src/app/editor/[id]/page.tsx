@@ -570,7 +570,7 @@ export default function EditorPage() {
           </>
         )}
 
-        <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-slate-950 max-md:pb-24">
+        <div className={`flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-slate-950 ${showSidebar ? "max-md:pb-14" : ""}`}>
           {showCodeEditor ? (
             <CodeEditorPanel />
           ) : viewMode === "preview" ? (

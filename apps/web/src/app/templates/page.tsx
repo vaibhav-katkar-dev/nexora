@@ -507,17 +507,15 @@ export default function TemplateGalleryPage() {
             </div>
 
             {/* Live Render Area */}
-            <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden bg-slate-950 p-2 sm:p-6 flex flex-col items-center custom-scrollbar">
+            <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden bg-slate-950 p-2 sm:p-4 flex flex-col items-center custom-scrollbar">
               {previewViewport === "desktop" ? (
                 <div className="w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-black">
                   <SiteRenderer config={previewTemplate.config} />
                 </div>
               ) : (
-                <div className="my-auto py-2">
-                  <DeviceFrame viewport={previewViewport}>
-                    <SiteRenderer config={previewTemplate.config} />
-                  </DeviceFrame>
-                </div>
+                <DeviceFrame viewport={previewViewport}>
+                  <SiteRenderer config={previewTemplate.config} />
+                </DeviceFrame>
               )}
             </div>
           </div>

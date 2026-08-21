@@ -284,17 +284,15 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
       </header>
 
       {/* ── Main Preview Area ──────────────────────────────────────────────── */}
-      <main className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden p-2 sm:p-6 bg-slate-950 flex flex-col items-center custom-scrollbar">
+      <main className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden p-2 sm:p-4 bg-slate-950 flex flex-col items-center custom-scrollbar">
         {viewport === "desktop" ? (
           <div className="w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800/80 bg-black">
             <SiteRenderer config={templateData.config} />
           </div>
         ) : (
-          <div className="my-auto py-4">
-            <DeviceFrame viewport={viewport}>
-              <SiteRenderer config={templateData.config} />
-            </DeviceFrame>
-          </div>
+          <DeviceFrame viewport={viewport}>
+            <SiteRenderer config={templateData.config} />
+          </DeviceFrame>
         )}
       </main>
 

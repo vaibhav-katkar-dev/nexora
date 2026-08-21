@@ -70,7 +70,7 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
   // ── Tablet: realistic tablet shell ─────────────────────────────────────
   if (viewport === "tablet") {
     return (
-      <div className="flex flex-col items-center justify-center p-2 sm:p-4 my-auto max-w-full">
+      <div className="flex flex-col items-center justify-center p-1 sm:p-3 my-auto max-w-full">
         <div className="bg-slate-900/90 rounded-[2.4rem] p-2 sm:p-2.5 shadow-2xl border border-slate-700 max-w-full">
           <div className="bg-slate-950 rounded-[1.9rem] p-1.5 sm:p-2 max-w-full">
             <div className="relative bg-black rounded-[1.5rem] overflow-hidden max-w-full">
@@ -108,7 +108,7 @@ export function DeviceFrame({ viewport, children, scrollRef }: DeviceFrameProps)
 
   // ── Mobile: authentic Android phone ────────────────────────────────────
   return (
-    <div className="flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 my-auto max-w-full">
+    <div className="flex flex-col items-center justify-center p-1 sm:p-3 my-auto max-w-full">
       <div className="relative bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[2.8rem] sm:rounded-[3rem] p-[10px] sm:p-[12px] lg:p-[14px] shadow-2xl border border-slate-700/80 max-w-full">
         {/* Hardware side buttons */}
         <div className="absolute -left-[3px] top-24 sm:top-28 w-[3px] h-12 sm:h-14 rounded-l bg-slate-700/90" />

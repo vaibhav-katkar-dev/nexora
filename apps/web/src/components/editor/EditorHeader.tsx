@@ -49,85 +49,86 @@ export function EditorHeader({
   const compactPreview = viewMode === "preview";
 
   return (
-    <header className="h-12 bg-slate-950/95 border-b border-slate-800/80 px-2 flex items-center gap-2 z-40 select-none flex-shrink-0 backdrop-blur">
-      {/* ── Left: Back & Project Name ─────────────────────────────── */}
-      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-        <Link
-          href="/dashboard"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
-          title="Back to Dashboard"
-        >
-          <ArrowLeft size={14} />
-        </Link>
+    <header className="h-12 bg-slate-950/95 border-b border-slate-800/80 px-2 flex items-center z-40 select-none flex-shrink-0 backdrop-blur overflow-x-auto overscroll-x-contain no-scrollbar touch-manipulation">
+      <div className="flex items-center justify-between gap-2 min-w-max w-full">
+        {/* ── Left: Back & Project Name ─────────────────────────────── */}
+        <div className="flex items-center gap-1.5 min-w-0 flex-1 shrink-0">
+          <Link
+            href="/dashboard"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+            title="Back to Dashboard"
+          >
+            <ArrowLeft size={14} />
+          </Link>
 
-        <span className="font-semibold text-xs text-white truncate max-w-[80px] sm:max-w-[150px] shrink-0">
-          {projectName || "Untitled"}
-        </span>
+          <span className="font-semibold text-xs text-white truncate max-w-[80px] sm:max-w-[150px] shrink-0">
+            {projectName || "Untitled"}
+          </span>
 
-        {/* Save status dot */}
-        <div className="flex items-center shrink-0">
-          {isSaving ? (
-            <span className="inline-flex items-center gap-1 text-amber-400 text-[10px] font-medium">
-              <Loader2 size={9} className="animate-spin" />
-              <span className="hidden sm:inline">Saving</span>
-            </span>
-          ) : saveError ? (
-            <span className="inline-flex items-center gap-1 text-rose-400 text-[10px]" title={saveError}>
-              <AlertCircle size={9} />
-            </span>
-          ) : isDirty ? (
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Unsaved changes" />
-          ) : (
-            <CheckCircle2 size={10} className="text-emerald-400 shrink-0" />
-          )}
+          {/* Save status dot */}
+          <div className="flex items-center shrink-0">
+            {isSaving ? (
+              <span className="inline-flex items-center gap-1 text-amber-400 text-[10px] font-medium">
+                <Loader2 size={9} className="animate-spin" />
+                <span className="hidden sm:inline">Saving</span>
+              </span>
+            ) : saveError ? (
+              <span className="inline-flex items-center gap-1 text-rose-400 text-[10px]" title={saveError}>
+                <AlertCircle size={9} />
+              </span>
+            ) : isDirty ? (
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Unsaved changes" />
+            ) : (
+              <CheckCircle2 size={10} className="text-emerald-400 shrink-0" />
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ── Center: View Mode Tabs ─────────────────────────────────── */}
-      <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-full p-0.5 text-[11px] font-semibold shrink-0">
-        <button
-          onClick={() => setViewMode("visual")}
-          className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all ${
-            viewMode === "visual"
-              ? "bg-indigo-600 text-white shadow-sm"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          <Eye size={11} />
-          <span>Edit</span>
-        </button>
-
-        {developerMode && (
+        {/* ── Center: View Mode Tabs ─────────────────────────────────── */}
+        <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-full p-0.5 text-[11px] font-semibold shrink-0">
           <button
-            onClick={() => setViewMode("code")}
+            onClick={() => setViewMode("visual")}
             className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all ${
-              viewMode === "code"
+              viewMode === "visual"
                 ? "bg-indigo-600 text-white shadow-sm"
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            <Code2 size={11} />
-            <span>Code</span>
+            <Eye size={11} />
+            <span>Edit</span>
           </button>
-        )}
 
-        <button
-          onClick={() => setViewMode("preview")}
-          className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all ${
-            viewMode === "preview"
-              ? "bg-indigo-600 text-white shadow-sm"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          <Globe size={11} />
-          <span>Preview</span>
-        </button>
-      </div>
+          {developerMode && (
+            <button
+              onClick={() => setViewMode("code")}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all ${
+                viewMode === "code"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Code2 size={11} />
+              <span>Code</span>
+            </button>
+          )}
 
-      {/* ── Right: Undo/Redo, Dev, Save, Publish ──────────────────── */}
-      <div className="flex items-center gap-1 shrink-0">
-        {/* Undo / Redo — icon only on small */}
-        {!compactPreview && (
+          <button
+            onClick={() => setViewMode("preview")}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all ${
+              viewMode === "preview"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <Globe size={11} />
+            <span>Preview</span>
+          </button>
+        </div>
+
+        {/* ── Right: Undo/Redo, Dev, Save, Publish ──────────────────── */}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Undo / Redo — icon only on small */}
+          {!compactPreview && (
           <>
             <button
               onClick={undo}
@@ -203,6 +204,7 @@ export function EditorHeader({
             </>
           )}
         </button>
+        </div>
       </div>
     </header>
   );
