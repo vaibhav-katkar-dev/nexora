@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useEditorStore } from "@/store/editorStore";
@@ -156,8 +156,8 @@ export function CanvasPreview({
       `[data-element-key="${selectedElementKey}"]`
     ) as HTMLElement | null;
     if (!el) return;
-    el.classList.add("nexora-el-pulse");
-    const timer = setTimeout(() => el.classList.remove("nexora-el-pulse"), 1500);
+    el.classList.add("Oninsite-el-pulse");
+    const timer = setTimeout(() => el.classList.remove("Oninsite-el-pulse"), 1500);
     return () => clearTimeout(timer);
   }, [selectedElementKey]);
 

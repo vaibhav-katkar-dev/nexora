@@ -1,11 +1,11 @@
-{
+﻿{
   "meta": {
     "id": "product-showcase",
     "slug": "product-showcase",
     "title": "Hardware & Product Landing",
     "description": "Vibrant product landing page with feature deep-dives, specs comparison, and direct checkout callouts.",
     "category": "product_landing",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "version": "2.0.0",
     "tags": ["Product", "Hardware", "Landing", "E-commerce", "Showcase"],
     "popularity": 93,

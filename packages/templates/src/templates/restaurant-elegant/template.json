@@ -1,11 +1,11 @@
-{
+﻿{
   "meta": {
     "id": "restaurant-elegant",
     "slug": "restaurant-elegant",
     "title": "Elegant Restaurant & Culinary Bistro",
     "description": "Sophisticated, mouth-watering restaurant digital menu and reservation showcase with curated dietary tags and contact info.",
     "category": "restaurant_menu",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "version": "2.0.0",
     "tags": ["Restaurant", "Food", "Menu", "Culinary", "Luxury"],
     "popularity": 96,

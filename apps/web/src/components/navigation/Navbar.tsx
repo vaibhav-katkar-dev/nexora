@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -108,7 +108,7 @@ export function Navbar({
             N
           </div>
           <span className="font-extrabold text-slate-900 tracking-tight text-sm sm:text-base hidden sm:inline">
-            Nexora <span className="text-indigo-600 font-semibold">Studio</span>
+            Oninsite <span className="text-indigo-600 font-semibold">Studio</span>
           </span>
         </Link>
 

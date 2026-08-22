@@ -1,11 +1,11 @@
-{
+﻿{
   "meta": {
     "id": "event-premium",
     "slug": "event-premium",
     "title": "Global Tech Summit & Conference",
     "description": "High-impact event registration and speaker showcase template designed for summits, keynotes, webinars, and expos.",
     "category": "event",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "version": "2.0.0",
     "tags": ["Event", "Conference", "Summit", "Speakers", "Registration"],
     "popularity": 92,

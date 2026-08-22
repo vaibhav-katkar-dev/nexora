@@ -1,11 +1,11 @@
-{
+﻿{
   "meta": {
     "id": "portfolio-modern",
     "slug": "portfolio-modern",
     "title": "Modern Developer & Designer Portfolio",
     "description": "Sleek, high-converting portfolio template designed for software engineers, designers, and creative professionals.",
     "category": "portfolio",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "version": "2.0.0",
     "tags": ["Developer", "Designer", "Modern", "Dark Mode", "Interactive"],
     "popularity": 98,
@@ -93,7 +93,7 @@
       "content": {
         "projects": [
           {
-            "name": "Nexora AI Assistant Platform",
+            "name": "Oninsite AI Assistant Platform",
             "desc": "Next-generation workspace with dynamic context management and instant code rendering.",
             "tag": "Next.js & AI",
             "url": "https://example.com",

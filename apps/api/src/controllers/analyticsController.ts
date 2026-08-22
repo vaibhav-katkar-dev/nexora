@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+﻿import { Request, Response } from "express";
 import crypto from "crypto";
 import { Types } from "mongoose";
 import { Project } from "../models/Project.js";
@@ -78,7 +78,7 @@ function cleanReferrerDomain(referrer?: string): string {
 function getIpHash(ip: string | undefined): string {
   if (!ip) return "";
   const dateSalt = new Date().toISOString().slice(0, 10);
-  return crypto.createHash("sha256").update(`${ip}-${dateSalt}-nexora-analytics`).digest("hex").slice(0, 16);
+  return crypto.createHash("sha256").update(`${ip}-${dateSalt}-Oninsite-analytics`).digest("hex").slice(0, 16);
 }
 
 function getTodayDateString(): string {

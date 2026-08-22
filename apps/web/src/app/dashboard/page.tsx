@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -926,7 +926,7 @@ export default function DashboardPage() {
                       )}
 
                       <a
-                        href={`mailto:${lead.email}?subject=Regarding your inquiry on ${lead.projectName || "Nexora"}`}
+                        href={`mailto:${lead.email}?subject=Regarding your inquiry on ${lead.projectName || "Oninsite"}`}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all flex items-center gap-1.5"
                         title="Reply via email"
                       >

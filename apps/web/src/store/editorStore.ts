@@ -1,4 +1,4 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { SiteConfigJSON } from "@ai-platform/shared";
 import { projectsApi } from "@/lib/api";
 
@@ -334,7 +334,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   addSection: (section) => {
     const { config } = get();
     const baseConfig = config || {
-      meta: { title: "My Digital Presence", description: "Created with Nexora Platform", category: "custom" },
+      meta: { title: "My Digital Presence", description: "Created with Oninsite Platform", category: "custom" },
       theme: {
         primaryColor: "#3B82F6",
         secondaryColor: "#8B5CF6",

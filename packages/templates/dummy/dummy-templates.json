@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "_id": "6a7958443d9d88727541faa2",
     "name": "Stronger Studio — Personal Fitness Coach",
@@ -14,7 +14,7 @@
         "title": "Stronger Studio — Personal Fitness Coach",
         "description": "A bold fitness coach template with programs, testimonials, pricing, a location map and direct WhatsApp conversion.",
         "category": "business",
-        "author": "Nexora Design Studio",
+        "author": "Oninsite Design Studio",
         "version": "1.1.0",
         "tags": ["Fitness", "Coach", "Gym", "Bold", "Dark", "WhatsApp", "Responsive", "Map"],
         "popularity": 95,
@@ -80,7 +80,7 @@
       ]
     },
     "version": "1.1.0",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "isPublic": true,
     "status": "published"
   }

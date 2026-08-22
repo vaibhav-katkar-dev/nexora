@@ -1,4 +1,4 @@
-import { IProjectDocument } from "../models/Project.js";
+﻿import { IProjectDocument } from "../models/Project.js";
 import {
   SiteConfigJSON,
   Section,
@@ -407,7 +407,7 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
     case "footer":
       return `
         <footer id="${section.id}" data-section-id="${section.id}" class="footer-section">
-          <p data-element-key="title">© ${new Date().getFullYear()} ${section.title || "Nexora AI"}. All rights reserved.</p>
+          <p data-element-key="title">© ${new Date().getFullYear()} ${section.title || "Oninsite AI"}. All rights reserved.</p>
         </footer>`;
 
     case "links":

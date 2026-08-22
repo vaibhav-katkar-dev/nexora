@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -205,7 +205,7 @@ export default function TemplateGalleryPage() {
 
       if (!token) {
         // Guest mode — jump straight into visual studio quick-start without forcing login
-        sessionStorage.setItem("nexora-quick-start-draft", JSON.stringify({
+        sessionStorage.setItem("Oninsite-quick-start-draft", JSON.stringify({
           name: projName,
           slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
           category: templateConfig.meta.category || "portfolio",
@@ -227,7 +227,7 @@ export default function TemplateGalleryPage() {
         // second network fetch right after navigating.
         try {
           sessionStorage.setItem(
-            `nexora-pending-project:${res.data._id}`,
+            `Oninsite-pending-project:${res.data._id}`,
             JSON.stringify(res.data)
           );
         } catch {
@@ -238,7 +238,7 @@ export default function TemplateGalleryPage() {
     } catch (err: any) {
       // Fallback for network error — allow guest editing anyway
       const projName = name || templateConfig.meta.title || "My Digital Presence";
-      sessionStorage.setItem("nexora-quick-start-draft", JSON.stringify({
+      sessionStorage.setItem("Oninsite-quick-start-draft", JSON.stringify({
         name: projName,
         slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
         category: templateConfig.meta.category || "portfolio",
@@ -259,7 +259,7 @@ export default function TemplateGalleryPage() {
     const targetKey = template.slug || template.id;
     try {
       sessionStorage.setItem(
-        `nexora-tpl-preview:${targetKey}`,
+        `Oninsite-tpl-preview:${targetKey}`,
         JSON.stringify({
           config: template.config,
           name: template.name,

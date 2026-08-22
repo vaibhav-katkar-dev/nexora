@@ -1,4 +1,4 @@
-import { SiteConfigJSON } from "@ai-platform/shared";
+﻿import { SiteConfigJSON } from "@ai-platform/shared";
 import { buildPublishedSiteUrl } from "./siteUrl";
 
 export interface SeoMetadataOptions {
@@ -24,7 +24,7 @@ export interface SeoMetadataOptions {
 export function generateJsonLdSchema(options: SeoMetadataOptions): Record<string, any> {
   const { config, seo, slug, projectName, canonicalUrl } = options;
   const title = seo?.metaTitle || config?.meta?.title || projectName || "Digital Presence";
-  const description = seo?.metaDescription || config?.meta?.description || "Built with Nexora AI Platform";
+  const description = seo?.metaDescription || config?.meta?.description || "Built with Oninsite AI Platform";
   const url = canonicalUrl || (seo?.canonicalUrl) || (slug ? buildPublishedSiteUrl(slug) : typeof window !== "undefined" ? window.location.href : "");
   const category = config?.meta?.category || "custom";
 
@@ -88,7 +88,7 @@ export function generateJsonLdSchema(options: SeoMetadataOptions): Record<string
         "url": url,
         "publisher": {
           "@type": "Organization",
-          "name": "Nexora Digital Presence Platform",
+          "name": "Oninsite Digital Presence Platform",
         },
       };
   }
@@ -103,9 +103,9 @@ export function injectSeoHeadTags(options: SeoMetadataOptions): void {
   const { config, seo, slug, projectName } = options;
 
   const title = seo?.metaTitle || config?.meta?.title || projectName || "Digital Presence";
-  const description = seo?.metaDescription || config?.meta?.description || "Created with Nexora Platform";
+  const description = seo?.metaDescription || config?.meta?.description || "Created with Oninsite Platform";
   const keywords = (seo?.keywords && seo.keywords.length > 0 ? seo.keywords : config?.meta?.tags || []).join(", ");
-  const ogImage = seo?.ogImage || (config?.meta as any)?.ogImage || "https://nexora.site/og-default.png";
+  const ogImage = seo?.ogImage || (config?.meta as any)?.ogImage || "https://Oninsite.site/og-default.png";
   
   const computedCanonical = options.canonicalUrl || seo?.canonicalUrl || (slug ? buildPublishedSiteUrl(slug) : window.location.href);
 
@@ -137,7 +137,7 @@ export function injectSeoHeadTags(options: SeoMetadataOptions): void {
   setMetaTag("meta[property='og:description']", "property", "og:description", description);
   setMetaTag("meta[property='og:type']", "property", "og:type", "website");
   setMetaTag("meta[property='og:url']", "property", "og:url", computedCanonical);
-  setMetaTag("meta[property='og:site_name']", "property", "og:site_name", "Nexora Digital Presence");
+  setMetaTag("meta[property='og:site_name']", "property", "og:site_name", "Oninsite Digital Presence");
   if (ogImage) setMetaTag("meta[property='og:image']", "property", "og:image", ogImage);
 
   // 4. Twitter Card Tags
@@ -168,10 +168,10 @@ export function injectSeoHeadTags(options: SeoMetadataOptions): void {
 
   // 7. JSON-LD Schema.org Microdata Script
   const jsonLdData = generateJsonLdSchema({ ...options, canonicalUrl: computedCanonical });
-  let jsonLdScript = document.getElementById("nexora-jsonld-schema") as HTMLScriptElement | null;
+  let jsonLdScript = document.getElementById("Oninsite-jsonld-schema") as HTMLScriptElement | null;
   if (!jsonLdScript) {
     jsonLdScript = document.createElement("script");
-    jsonLdScript.id = "nexora-jsonld-schema";
+    jsonLdScript.id = "Oninsite-jsonld-schema";
     jsonLdScript.type = "application/ld+json";
     document.head.appendChild(jsonLdScript);
   }

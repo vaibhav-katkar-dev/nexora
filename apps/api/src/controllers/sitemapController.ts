@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+﻿import { Request, Response } from "express";
 import { Project } from "../models/Project.js";
 import { Domain } from "../models/Domain.js";
 import { evaluateProjectQuality } from "../services/qualityChecker.js";
@@ -10,7 +10,7 @@ const PAGE_SIZE = 1000;
  */
 export const getSitemapEntriesJson = async (req: Request, res: Response) => {
   try {
-    const hostBase = process.env.CLIENT_URL || "https://nexora.site";
+    const hostBase = process.env.CLIENT_URL || "https://Oninsite.site";
 
     const projects = await Project.find({
       status: "published",
@@ -61,7 +61,7 @@ export const getSitemapEntriesJson = async (req: Request, res: Response) => {
  */
 export const getSitemapXml = async (req: Request, res: Response) => {
   try {
-    const hostBase = process.env.CLIENT_URL || "https://nexora.site";
+    const hostBase = process.env.CLIENT_URL || "https://Oninsite.site";
 
     // Query indexable candidate sites
     const filter = {
@@ -108,7 +108,7 @@ export const getSitemapXml = async (req: Request, res: Response) => {
 export const getSitemapPageXml = async (req: Request, res: Response) => {
   try {
     const pageNum = parseInt(req.params.page, 10) || 1;
-    const hostBase = process.env.CLIENT_URL || "https://nexora.site";
+    const hostBase = process.env.CLIENT_URL || "https://Oninsite.site";
     const xml = await buildSitemapPageXml(pageNum, hostBase);
 
     res.setHeader("Content-Type", "application/xml; charset=utf-8");
@@ -124,9 +124,9 @@ export const getSitemapPageXml = async (req: Request, res: Response) => {
  * GET /robots.txt — Dynamic robots.txt
  */
 export const getRobotsTxt = (req: Request, res: Response) => {
-  const hostBase = process.env.CLIENT_URL || "https://nexora.site";
+  const hostBase = process.env.CLIENT_URL || "https://Oninsite.site";
   const content = [
-    "# Nexora Robots Directive",
+    "# Oninsite Robots Directive",
     "User-agent: *",
     "Allow: /",
     "Disallow: /admin/",

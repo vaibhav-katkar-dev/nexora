@@ -1,11 +1,11 @@
-{
+﻿{
   "meta": {
     "id": "personal-creative",
     "slug": "personal-creative",
     "title": "Creative Personal Brand Hub",
     "description": "Expressive personal site for writers, podcasts hosts, researchers, and thought leaders.",
     "category": "personal",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "version": "2.0.0",
     "tags": ["Personal", "Brand", "Writer", "Podcast", "Creative"],
     "popularity": 89,

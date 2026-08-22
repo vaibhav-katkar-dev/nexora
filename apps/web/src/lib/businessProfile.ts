@@ -1,4 +1,4 @@
-import { SiteConfigJSON } from "@ai-platform/shared";
+﻿import { SiteConfigJSON } from "@ai-platform/shared";
 
 export interface BusinessProfile {
   brandName: string;
@@ -28,7 +28,7 @@ export const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
   ctaText: "Get in Touch",
 };
 
-const STORAGE_KEY = "nexora_business_profile_v1";
+const STORAGE_KEY = "Oninsite_business_profile_v1";
 
 /**
  * Retrieve saved business profile from localStorage

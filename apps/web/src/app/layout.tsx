@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
 
@@ -12,9 +12,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Nexora — Build & Publish Your Website in Seconds. No Code.",
+  title: "Oninsite — Build & Publish Your Website in Seconds. No Code.",
   description:
-    "Nexora is the fastest way to launch a professional website. Choose a username, pick a template, and publish your portfolio, restaurant menu, startup landing page or digital card — free, no signup required to start.",
+    "Oninsite is the fastest way to launch a professional website. Choose a username, pick a template, and publish your portfolio, restaurant menu, startup landing page or digital card — free, no signup required to start.",
   keywords: [
     "website builder",
     "free website builder",
@@ -28,23 +28,23 @@ export const metadata: Metadata = {
     "resume website builder",
     "link in bio website",
   ],
-  authors: [{ name: "Nexora" }],
-  creator: "Nexora Studio",
-  metadataBase: new URL("https://nexora.site"),
+  authors: [{ name: "Oninsite" }],
+  creator: "Oninsite Studio",
+  metadataBase: new URL("https://Oninsite.site"),
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Nexora — Build & Publish Your Website in Seconds",
+    title: "Oninsite — Build & Publish Your Website in Seconds",
     description:
       "The fastest way to launch a professional website. Username → Template → Live. Free, no signup required to start.",
     type: "website",
-    url: "https://nexora.site",
-    siteName: "Nexora Studio",
+    url: "https://Oninsite.site",
+    siteName: "Oninsite Studio",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nexora — Your Website Live in Seconds",
+    title: "Oninsite — Your Website Live in Seconds",
     description: "Choose username, pick a template, publish. Free website builder with instant global hosting.",
-    creator: "@nexorastudio",
+    creator: "@Oninsitestudio",
   },
   robots: {
     index: true,

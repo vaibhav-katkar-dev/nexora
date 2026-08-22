@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useMemo, useEffect } from "react";
 import {
@@ -236,7 +236,7 @@ export function SiteCreationModal({
               </div>
             )}
             <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 font-semibold truncate max-w-[200px] sm:max-w-xs">
-              nexora.site/{cleanSlug}
+              Oninsite.site/{cleanSlug}
             </span>
           </div>
 

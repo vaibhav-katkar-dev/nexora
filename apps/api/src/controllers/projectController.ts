@@ -1,4 +1,4 @@
-import { Response } from "express";
+﻿import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import { Project } from "../models/Project.js";
 import { Domain } from "../models/Domain.js";
@@ -112,7 +112,7 @@ export const getPublicProject = async (req: AuthenticatedRequest, res: Response)
     const primaryDomain = await Domain.findOne({ siteId: project._id, isPrimary: true }).lean();
     const activeDomain = primaryDomain || (await Domain.findOne({ siteId: project._id, status: "active" }).lean());
 
-    const hostBase = process.env.CLIENT_URL || "https://nexora.site";
+    const hostBase = process.env.CLIENT_URL || "https://Oninsite.site";
     const canonicalUrl = activeDomain
       ? `https://${activeDomain.normalizedDomain}/`
       : `${hostBase.replace(/\/$/, "")}/${project.slug}`;

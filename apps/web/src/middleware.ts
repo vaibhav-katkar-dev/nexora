@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Reserved platform hostnames that should never trigger custom domain rewrites
 const RESERVED_HOSTS = new Set([
   "localhost",
   "127.0.0.1",
-  "nexora.com",
-  "www.nexora.com",
-  "nexora.site",
-  "www.nexora.site",
-  "api.nexora.com",
-  "admin.nexora.com",
-  "app.nexora.com",
-  "nexorav.vercel.app",
+  "Oninsite.com",
+  "www.Oninsite.com",
+  "Oninsite.site",
+  "www.Oninsite.site",
+  "api.Oninsite.com",
+  "admin.Oninsite.com",
+  "app.Oninsite.com",
+  "Oninsitev.vercel.app",
 ]);
 
 // Excluded URL pathname prefixes that must bypass custom domain rewriting

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   SiteConfigJSON,
@@ -929,7 +929,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
         </div>
 
         {/* Desktop Navigation */}
-        <div className="nexora-nav-links hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
+        <div className="Oninsite-nav-links hidden md:flex items-center gap-6 text-sm font-medium opacity-80">
           {links && links.length > 0 ? (
             links.map((l: any, i: number) => {
               const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
@@ -958,7 +958,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
             <a
               {...sel("content.ctaText")}
               href={content.ctaLink || "#"}
-              className="nexora-nav-cta hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105 whitespace-nowrap"
+              className="Oninsite-nav-cta hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105 whitespace-nowrap"
               style={{ background: theme.primaryColor, ...getNavElementStyle(section, "content.ctaText") }}
             >
               {content.ctaText}
@@ -968,7 +968,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="nexora-nav-toggle md:hidden min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors touch-manipulation"
+            className="Oninsite-nav-toggle md:hidden min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors touch-manipulation"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -1058,7 +1058,7 @@ function HeroSection({ section, theme, selectedElementKey, interactive, onSelect
 
         {/* Foreground Hero Image / Avatar (if not used as background) */}
         {!bgImage && (content.avatarUrl || content.image || content.imageUrl) && (
-          <div className="w-full max-w-3xl mb-16 nexora-hero-image-wrapper">
+          <div className="w-full max-w-3xl mb-16 Oninsite-hero-image-wrapper">
             <InteractiveImageWrapper
               sectionId={section.id}
               elementKey="content.image"
@@ -1073,7 +1073,7 @@ function HeroSection({ section, theme, selectedElementKey, interactive, onSelect
                 alt={section.title || "Hero"}
                 loading="lazy"
                 decoding="async"
-                className="nexora-hero-image w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
+                className="Oninsite-hero-image w-full h-72 sm:h-96 object-cover rounded-2xl shadow-2xl"
                 style={{ borderRadius: "var(--radius)" }}
               />
             </InteractiveImageWrapper>
@@ -1658,7 +1658,7 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
           <div
             key={i}
             {...sel(`content.items.${i}`)}
-            className={`rounded-2xl border backdrop-blur-sm flex overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl nexora-card-glow ${
+            className={`rounded-2xl border backdrop-blur-sm flex overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl Oninsite-card-glow ${
               layout === "list" ? "flex-col sm:flex-row items-start sm:items-center gap-6 p-6" : "flex-col"
             }`}
             style={{ backgroundColor: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.08)", borderRadius: "var(--radius)" }}
@@ -1929,7 +1929,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                     <div
                       key={ii}
                       {...sel(`content.categories.${ci}.items.${ii}`)}
-                      className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl nexora-card-glow"
+                      className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl Oninsite-card-glow"
                       style={{ backgroundColor: "rgba(255, 255, 255, 0.03)", borderColor: "rgba(255, 255, 255, 0.08)", borderRadius: "var(--radius)" }}
                     >
                       {item.image && (
@@ -2756,7 +2756,7 @@ function FooterSection({ section, theme, selectedElementKey, interactive }: Sect
   return (
     <footer id={section.id} data-section-id={section.id} className="py-12 px-6 border-t border-white/10 text-center text-xs opacity-80 space-y-4">
       <SocialLinksRow socials={socials} theme={theme} sel={sel} className="justify-center" />
-      <p className="opacity-60">© {new Date().getFullYear()} <span {...sel("title")}>{section.title || "Nexora AI"}</span>. All rights reserved.</p>
+      <p className="opacity-60">© {new Date().getFullYear()} <span {...sel("title")}>{section.title || "Oninsite AI"}</span>. All rights reserved.</p>
     </footer>
   );
 }
@@ -3037,10 +3037,10 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
     <section
       id={section.id}
       data-section-id={section.id}
-      className="nexora-cta-section relative py-20 px-6 max-w-6xl mx-auto overflow-hidden"
+      className="Oninsite-cta-section relative py-20 px-6 max-w-6xl mx-auto overflow-hidden"
     >
       <div
-        className="nexora-cta-container rounded-3xl p-8 sm:p-14 border backdrop-blur-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10 shadow-2xl"
+        className="Oninsite-cta-container rounded-3xl p-8 sm:p-14 border backdrop-blur-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10 shadow-2xl"
         style={{
           backgroundColor: isDark ? "rgba(15, 23, 42, 0.6)" : "rgba(255, 255, 255, 0.8)",
           borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)",
@@ -3056,7 +3056,7 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
           {section.badge && (
             <span
               {...sel("badge")}
-              className="nexora-cta-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider border"
+              className="Oninsite-cta-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider border"
               style={{
                 borderColor: `${theme.primaryColor}40`,
                 background: `${theme.primaryColor}15`,
@@ -3070,7 +3070,7 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
           {section.title && (
             <h2
               {...sel("title")}
-              className="nexora-cta-title text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight"
+              className="Oninsite-cta-title text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               {section.title}
@@ -3078,7 +3078,7 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
           )}
 
           {description && (
-            <p {...sel("content.bio")} className="nexora-cta-desc text-base sm:text-lg opacity-80 leading-relaxed max-w-xl">
+            <p {...sel("content.bio")} className="Oninsite-cta-desc text-base sm:text-lg opacity-80 leading-relaxed max-w-xl">
               {description}
             </p>
           )}
@@ -3088,7 +3088,7 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
               <a
                 {...sel("content.ctaText")}
                 href={content.ctaLink || "#"}
-                className="nexora-cta-btn-primary px-8 py-3.5 rounded-xl text-sm font-extrabold text-white shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-2xl"
+                className="Oninsite-cta-btn-primary px-8 py-3.5 rounded-xl text-sm font-extrabold text-white shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-2xl"
                 style={{
                   background: `linear-gradient(135deg, ${theme.primaryColor || "#3B82F6"}, ${theme.secondaryColor || theme.primaryColor || "#8B5CF6"})`,
                   borderRadius: "var(--radius)",
@@ -3102,7 +3102,7 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
               <a
                 {...sel("content.secondaryCtaText")}
                 href={content.secondaryCtaLink || "#"}
-                className="nexora-cta-btn-secondary px-6 py-3.5 rounded-xl text-sm font-bold border transition-all duration-300 hover:bg-white/10"
+                className="Oninsite-cta-btn-secondary px-6 py-3.5 rounded-xl text-sm font-bold border transition-all duration-300 hover:bg-white/10"
                 style={{
                   borderColor: isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)",
                   borderRadius: "var(--radius)",
@@ -3115,7 +3115,7 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
         </div>
 
         {ctaImage && (
-          <div className="nexora-cta-image-wrapper relative shrink-0 z-10 max-w-xs lg:max-w-md w-full">
+          <div className="Oninsite-cta-image-wrapper relative shrink-0 z-10 max-w-xs lg:max-w-md w-full">
             <InteractiveImageWrapper
               sectionId={section.id}
               elementKey="content.image"
@@ -3125,14 +3125,14 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
               badgeLabel="Change Photo"
             >
               <div
-                className="nexora-cta-image-card p-3 bg-white/10 dark:bg-slate-900/60 border border-white/20 rounded-2xl shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500"
+                className="Oninsite-cta-image-card p-3 bg-white/10 dark:bg-slate-900/60 border border-white/20 rounded-2xl shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500"
                 style={{ borderRadius: "var(--radius)" }}
               >
                 <img
                   {...sel("content.image")}
                   src={ctaImage}
                   alt={section.title || "CTA image"}
-                  className="nexora-cta-image w-full h-64 lg:h-72 object-cover rounded-xl shadow-inner"
+                  className="Oninsite-cta-image w-full h-64 lg:h-72 object-cover rounded-xl shadow-inner"
                   loading="lazy"
                 />
                 {content.caption && (
@@ -3345,12 +3345,12 @@ export function SiteRenderer({
         new Function(snippet);
         validSnippets.push(snippet);
       } catch (err: any) {
-        console.warn("[Nexora Custom JS Syntax Error in custom code]:", err?.message);
+        console.warn("[Oninsite Custom JS Syntax Error in custom code]:", err?.message);
       }
     }
 
     if (validSnippets.length === 0) {
-      const prev = document.querySelector("script[data-nexora-custom]");
+      const prev = document.querySelector("script[data-Oninsite-custom]");
       if (prev) prev.remove();
       return;
     }
@@ -3359,14 +3359,14 @@ export function SiteRenderer({
 
     const timer = setTimeout(() => {
       try {
-        const prev = document.querySelector("script[data-nexora-custom]");
+        const prev = document.querySelector("script[data-Oninsite-custom]");
         if (prev) prev.remove();
         const script = document.createElement("script");
-        script.setAttribute("data-nexora-custom", "true");
-        script.textContent = `(function(){\ntry{\n${combinedJs}\n}catch(e){console.warn("[Nexora Custom JS]:", e.message);}\n})();`;
+        script.setAttribute("data-Oninsite-custom", "true");
+        script.textContent = `(function(){\ntry{\n${combinedJs}\n}catch(e){console.warn("[Oninsite Custom JS]:", e.message);}\n})();`;
         document.body.appendChild(script);
       } catch (e) {
-        console.warn("[Nexora Custom JS inject error]:", e);
+        console.warn("[Oninsite Custom JS inject error]:", e);
       }
 }, 200);
     return () => clearTimeout(timer);
@@ -3527,14 +3527,14 @@ containerSelector
               container-type: inline-size;
             }
             @container (min-width: 768px) {
-              .${containerClass} .nexora-nav-links { display: flex !important; }
-              .${containerClass} .nexora-nav-cta { display: block !important; }
-              .${containerClass} .nexora-nav-toggle { display: none !important; }
+              .${containerClass} .Oninsite-nav-links { display: flex !important; }
+              .${containerClass} .Oninsite-nav-cta { display: block !important; }
+              .${containerClass} .Oninsite-nav-toggle { display: none !important; }
             }
             @container (max-width: 767px) {
-              .${containerClass} .nexora-nav-links { display: none !important; }
-              .${containerClass} .nexora-nav-cta { display: none !important; }
-              .${containerClass} .nexora-nav-toggle { display: flex !important; }
+              .${containerClass} .Oninsite-nav-links { display: none !important; }
+              .${containerClass} .Oninsite-nav-cta { display: none !important; }
+              .${containerClass} .Oninsite-nav-toggle { display: flex !important; }
             }
           `,
         }}

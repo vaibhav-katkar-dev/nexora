@@ -1,17 +1,17 @@
-// Reserved platform domains that can never be attached as user custom domains
+﻿// Reserved platform domains that can never be attached as user custom domains
 const RESERVED_DOMAINS = new Set([
-  "nexora.com",
-  "www.nexora.com",
-  "api.nexora.com",
-  "admin.nexora.com",
-  "app.nexora.com",
-  "dashboard.nexora.com",
-  "nexora.site",
-  "www.nexora.site",
+  "Oninsite.com",
+  "www.Oninsite.com",
+  "api.Oninsite.com",
+  "admin.Oninsite.com",
+  "app.Oninsite.com",
+  "dashboard.Oninsite.com",
+  "Oninsite.site",
+  "www.Oninsite.site",
   "localhost",
   "127.0.0.1",
   "vercel.app",
-  "nexorav.vercel.app",
+  "Oninsitev.vercel.app",
 ]);
 
 /**
@@ -54,10 +54,10 @@ export function isReservedDomain(domain: string): boolean {
 
   if (RESERVED_DOMAINS.has(normalized)) return true;
 
-  // Subdomains of nexora.com / vercel.app
+  // Subdomains of Oninsite.com / vercel.app
   if (
-    normalized.endsWith(".nexora.com") ||
-    normalized.endsWith(".nexora.site") ||
+    normalized.endsWith(".Oninsite.com") ||
+    normalized.endsWith(".Oninsite.site") ||
     normalized.endsWith(".vercel.app")
   ) {
     return true;

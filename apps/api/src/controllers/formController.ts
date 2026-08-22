@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+﻿import { Request, Response } from "express";
 import crypto from "crypto";
 import { Types } from "mongoose";
 import { Project } from "../models/Project.js";
@@ -10,7 +10,7 @@ import { Domain } from "../models/Domain.js";
 function getIpHash(ip: string | undefined): string {
   if (!ip) return "";
   const dateSalt = new Date().toISOString().slice(0, 10);
-  return crypto.createHash("sha256").update(`${ip}-${dateSalt}-nexora-salt`).digest("hex").slice(0, 16);
+  return crypto.createHash("sha256").update(`${ip}-${dateSalt}-Oninsite-salt`).digest("hex").slice(0, 16);
 }
 
 function getTodayString(): string {

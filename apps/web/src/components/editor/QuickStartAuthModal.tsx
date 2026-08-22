@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { X, Lock, Mail, User, KeyRound, Globe, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -81,7 +81,7 @@ export function QuickStartAuthModal({
       // Publish the project
       await projectsApi.publish(newProjId);
 
-      sessionStorage.removeItem("nexora-quick-start-draft");
+      sessionStorage.removeItem("Oninsite-quick-start-draft");
       toast.success("Site Published Successfully", `${getPublishedBaseLabel()}/${draftSlug}`);
       onSuccess(newProjId, draftSlug);
     } catch (err: any) {

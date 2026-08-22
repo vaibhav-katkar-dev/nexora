@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
@@ -21,9 +21,9 @@ import {
   Zap,
 } from "lucide-react";
 
-const FULL_AI_GUIDE_TEXT = `# NEXORA AI TEMPLATE CREATION & RETENTION SYSTEM SPECIFICATION
+const FULL_AI_GUIDE_TEXT = `# Oninsite AI TEMPLATE CREATION & RETENTION SYSTEM SPECIFICATION
 
-You are an AI Template Creator for the Nexora AI Digital Presence platform.
+You are an AI Template Creator for the Oninsite AI Digital Presence platform.
 When generating a template configuration, output ONLY a strictly valid SiteConfigJSON object.
 
 ---
@@ -33,8 +33,8 @@ When generating a template configuration, output ONLY a strictly valid SiteConfi
 2. No JSON Comments: Comments (// or /* */) are forbidden in JSON.
 3. Strict Double Quotes: All keys and string values must be double-quoted ("key": "value").
 4. No Trailing Commas: Objects and arrays must NOT end with trailing commas.
-5. CSS Scoping: Write selectors with body.tpl-<slug>. They will be auto-scoped to .nexora-tpl-<slug> by the renderer.
-6. JS Scoping (CRITICAL): In customCode.js, ALWAYS use document.querySelector('.nexora-tpl-<slug>') with a DOT prefix to select the container. NEVER use 'body.tpl-<slug>' — body never receives the template class. Wrong selector = null root = all sections stuck at opacity:0.
+5. CSS Scoping: Write selectors with body.tpl-<slug>. They will be auto-scoped to .Oninsite-tpl-<slug> by the renderer.
+6. JS Scoping (CRITICAL): In customCode.js, ALWAYS use document.querySelector('.Oninsite-tpl-<slug>') with a DOT prefix to select the container. NEVER use 'body.tpl-<slug>' — body never receives the template class. Wrong selector = null root = all sections stuck at opacity:0.
 7. JS Scroll Animations: Always wrap in IIFE. Always include an else branch that restores opacity:1 if IntersectionObserver is unavailable or fails.
 
 ---
@@ -47,7 +47,7 @@ When generating a template configuration, output ONLY a strictly valid SiteConfi
     "title": "Template Title",
     "category": "portfolio | resume | digital_card | restaurant_menu | business | product_landing | startup_landing | personal | event | link_in_bio | blank",
     "description": "Short summary of template style",
-    "author": "Nexora AI",
+    "author": "Oninsite AI",
     "version": "1.0.0",
     "tags": ["modern", "clean"],
     "status": "published"
@@ -152,7 +152,7 @@ The visual editor matches elements to state using data-element-key:
     { "id": "nav-1", "type": "navbar", "content": { "links": [{ "label": "Home", "url": "#" }], "ctaText": "Contact", "ctaLink": "#contact" } }
 
 20. footer (Footer Bar):
-    { "id": "foot-1", "type": "footer", "title": "Nexora Inc" }
+    { "id": "foot-1", "type": "footer", "title": "Oninsite Inc" }
 
 21. about (About Me & Skills):
     { "id": "about-1", "type": "about", "title": "About Me", "content": { "bio": "...", "avatar": "https://...", "skills": ["React", "Node"] } }
@@ -173,7 +173,7 @@ The visual editor matches elements to state using data-element-key:
     "title": "Minimal Demo",
     "category": "business",
     "description": "Clean, high-performance one-pager.",
-    "author": "Nexora AI",
+    "author": "Oninsite AI",
     "version": "1.0.0",
     "tags": ["clean", "business"],
     "status": "published"
@@ -192,8 +192,8 @@ The visual editor matches elements to state using data-element-key:
   },
   "sections": [
     { "id": "nav-1", "type": "navbar", "content": { "links": [{ "label": "Services", "url": "#services" }], "ctaText": "Contact", "ctaLink": "#contact" } },
-    { "id": "hero-1", "type": "hero", "title": "Welcome to Nexora", "subtitle": "AI Digital Presence Platform.", "content": { "ctaText": "Get Started", "ctaLink": "#contact" } },
-    { "id": "foot-1", "type": "footer", "title": "Nexora Inc" }
+    { "id": "hero-1", "type": "hero", "title": "Welcome to Oninsite", "subtitle": "AI Digital Presence Platform.", "content": { "ctaText": "Get Started", "ctaLink": "#contact" } },
+    { "id": "foot-1", "type": "footer", "title": "Oninsite Inc" }
   ],
   "customCode": { "html": "", "css": "body.tpl-minimal-demo h1 { text-shadow: 0 0 20px rgba(59,130,246,0.5); }", "js": "" }
 }
@@ -254,7 +254,7 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
                 Template Creation & Visual Editor Retention Guide
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Exact schema specifications, element binding keys, and theme tokens for Nexora AI &amp; template authors.
+                Exact schema specifications, element binding keys, and theme tokens for Oninsite AI &amp; template authors.
               </p>
             </div>
           </div>
@@ -372,7 +372,7 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
                   </h4>
                   <ul className="text-xs text-slate-300 space-y-2.5 list-disc pl-4 leading-relaxed">
                     <li>
-                      <b className="text-white">Unique <code className="text-sky-300">meta.slug</code>:</b> Slugs are used as unique identifiers and HTML container classes (<code className="text-sky-300">nexora-tpl-{"<slug>"}</code>).
+                      <b className="text-white">Unique <code className="text-sky-300">meta.slug</code>:</b> Slugs are used as unique identifiers and HTML container classes (<code className="text-sky-300">Oninsite-tpl-{"<slug>"}</code>).
                     </li>
                     <li>
                       <b className="text-white">CSS Scoping:</b> Write custom CSS using <code className="text-sky-300">body.tpl-{"<slug>"}</code> or bare <code className="text-sky-300">body</code> prefixes. The renderer automatically sanitizes and rewrites selectors to target the container element cleanly.
@@ -400,7 +400,7 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
                               title: "Sample Template",
                               category: "portfolio",
                               description: "A clean modern template.",
-                              author: "Nexora AI",
+                              author: "Oninsite AI",
                               version: "1.0.0",
                               tags: ["modern", "clean"],
                               popularity: 90,
@@ -446,7 +446,7 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
     "title": "Sample Template",
     "category": "portfolio",         // portfolio, resume, digital_card, restaurant_menu, business, product_landing, startup_landing, personal, event, link_in_bio, blank
     "description": "Short description",
-    "author": "Nexora AI",
+    "author": "Oninsite AI",
     "version": "1.0.0",
     "tags": ["modern", "clean"],
     "status": "published"
@@ -466,7 +466,7 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
             <div className="space-y-6 animate-fade-in">
               <div className="p-4 rounded-2xl bg-sky-950/40 border border-sky-700/40 text-xs text-sky-200 leading-relaxed">
                 <b className="text-sky-100 font-extrabold text-sm block mb-1">Theme Tokens &amp; Auto-Luminance Engine</b>
-                Nexora's theme system injects CSS variables (<code className="text-emerald-300">--primary</code>, <code className="text-emerald-300">--bg</code>, <code className="text-emerald-300">--text</code>, <code className="text-emerald-300">--surface</code>, <code className="text-emerald-300">--border</code>). When a user or template specifies a custom <code className="text-sky-300">backgroundColor</code> (e.g. cream <code className="text-emerald-300">#FBF7EE</code> or dark <code className="text-emerald-300">#090D16</code>), the renderer automatically calculates luminance and adapts cards, borders, and text contrast dynamically!
+                Oninsite's theme system injects CSS variables (<code className="text-emerald-300">--primary</code>, <code className="text-emerald-300">--bg</code>, <code className="text-emerald-300">--text</code>, <code className="text-emerald-300">--surface</code>, <code className="text-emerald-300">--border</code>). When a user or template specifies a custom <code className="text-sky-300">backgroundColor</code> (e.g. cream <code className="text-emerald-300">#FBF7EE</code> or dark <code className="text-emerald-300">#090D16</code>), the renderer automatically calculates luminance and adapts cards, borders, and text contrast dynamically!
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -905,7 +905,7 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
                                 title: "Digital Card Pro",
                                 category: "digital_card",
                                 description: "NFC digital contact card with quick socials & map links.",
-                                author: "Nexora Design Studio",
+                                author: "Oninsite Design Studio",
                                 version: "2.0.0",
                                 tags: ["Digital Card", "Contact", "NFC"],
                                 status: "published",

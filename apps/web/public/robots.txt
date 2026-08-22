@@ -1,4 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /dashboard/
@@ -7,4 +7,4 @@ Disallow: /settings/
 Disallow: /api/
 Disallow: /publish/
 
-Sitemap: https://nexora.site/sitemap.xml
+Sitemap: https://Oninsite.site/sitemap.xml

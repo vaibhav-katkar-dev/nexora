@@ -1,4 +1,4 @@
-import { Section, SiteTheme } from "@ai-platform/shared";
+﻿import { Section, SiteTheme } from "@ai-platform/shared";
 
 /**
  * Converts template JSON sections into clean, semantic HTML code.
@@ -370,7 +370,7 @@ export function generateHtmlFromSections(sections: Section[]): string {
       case "footer": {
         htmlBlocks.push(
           `<footer id="${id}" class="site-footer">\n` +
-          `  <p>&copy; ${new Date().getFullYear()} ${title || "Nexora AI"}. All rights reserved.</p>\n` +
+          `  <p>&copy; ${new Date().getFullYear()} ${title || "Oninsite AI"}. All rights reserved.</p>\n` +
           `</footer>`
         );
         break;
@@ -398,7 +398,7 @@ export function generateThemeCss(theme: SiteTheme): string {
   const isDark = theme.mode === "dark" || theme.mode === "glassmorphism";
 
   return [
-    `/* ═══ Nexora Template CSS Engine ════════════════════════════════ */`,
+    `/* ═══ Oninsite Template CSS Engine ════════════════════════════════ */`,
     `/* Auto-generated matching your visual template theme settings    */`,
     ``,
     `:root {`,
@@ -432,11 +432,11 @@ export function generateInteractiveJs(sections: Section[]): string {
   const hasNavbar = sections.some((s) => s.type === "navbar");
 
   return [
-    `/* ═══ Nexora Interactive JS Snippet ═══════════════════════════ */`,
+    `/* ═══ Oninsite Interactive JS Snippet ═══════════════════════════ */`,
     `/* Auto-tailored to your template sections                       */`,
     ``,
     `document.addEventListener('DOMContentLoaded', () => {`,
-    `  console.log('⚡ Nexora Site Script initialized!');`,
+    `  console.log('⚡ Oninsite Site Script initialized!');`,
     ``,
     `  // 1. Smooth Scroll for all nav links`,
     `  document.querySelectorAll('a[href^="#"]').forEach(anchor => {`,

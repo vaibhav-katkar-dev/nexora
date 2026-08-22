@@ -1,11 +1,11 @@
-{
+﻿{
   "meta": {
     "id": "startup-launch",
     "slug": "startup-launch",
     "title": "AI Startup Launch & Waitlist",
     "description": "High-conversion product landing page for tech startups, SaaS apps, early access waitlists, and feature showcases.",
     "category": "startup_landing",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "version": "2.0.0",
     "tags": ["Startup", "SaaS", "Launch", "Waitlist", "AI"],
     "popularity": 97,
@@ -33,7 +33,7 @@
       "id": "navbar",
       "type": "navbar",
       "variant": "solid",
-      "title": "Nexora AI",
+      "title": "Oninsite AI",
       "content": {
         "links": [
           { "label": "Features", "url": "#features" },

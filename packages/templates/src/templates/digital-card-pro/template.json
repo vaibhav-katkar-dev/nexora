@@ -1,11 +1,11 @@
-{
+﻿{
   "meta": {
     "id": "digital-card-pro",
     "slug": "digital-card-pro",
     "title": "Digital Business Card Pro",
     "description": "Interactive, mobile-first NFC and digital business card profile with quick contacts, location, and social links.",
     "category": "digital_card",
-    "author": "Nexora Design Studio",
+    "author": "Oninsite Design Studio",
     "version": "2.0.0",
     "tags": ["Digital Card", "Contact", "NFC", "Networking", "Mobile"],
     "popularity": 99,

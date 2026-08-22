@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -119,7 +119,7 @@ const EMPTY_FORM: FormState = {
   previewUrl: "",
   tags: "",
   version: "1.0.0",
-  author: "Nexora AI",
+  author: "Oninsite AI",
   isPublic: true,
   isFeatured: false,
   isPremium: false,
@@ -301,7 +301,7 @@ const [formErrors, setFormErrors] = useState<string[]>([]);
             imageUrl: doc.imageUrl || "",
             previewUrl: doc.previewUrl || "",
             version: doc.version || "1.0.0",
-            author: doc.author || "Nexora AI",
+            author: doc.author || "Oninsite AI",
             isPublic: doc.isPublic ?? true,
             isFeatured: doc.isFeatured || false,
             isPremium: doc.isPremium || false,
@@ -648,7 +648,7 @@ const setFormField = (key: keyof FormState, value: any) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `nexora-templates-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `Oninsite-templates-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1240,7 +1240,7 @@ const setFormField = (key: keyof FormState, value: any) => {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Author</label>
-                  <input value={form.author} onChange={(e) => setFormField("author", e.target.value)} placeholder="Nexora AI" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500" />
+                  <input value={form.author} onChange={(e) => setFormField("author", e.target.value)} placeholder="Oninsite AI" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500" />
                 </div>
 <div>
                   <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Featured Order</label>

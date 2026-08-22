@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { normalizeElementKey, resolveElementValue } from "@/lib/editorElements";
 import { useEditorStore } from "@/store/editorStore";
@@ -145,10 +145,10 @@ export function SectionInspectorPanel({
       ) as HTMLElement | null;
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.classList.add("nexora-field-flash");
+        el.classList.add("Oninsite-field-flash");
         setFlashedKey(fieldPath);
         const clearTimer = setTimeout(() => {
-          el.classList.remove("nexora-field-flash");
+          el.classList.remove("Oninsite-field-flash");
           setFlashedKey(null);
         }, 1400);
         return () => clearTimeout(clearTimer);
@@ -1189,7 +1189,7 @@ const removeArrayItem = (key: string, index: number) => {
 
             <div className="p-3 rounded-xl bg-red-950/20 border border-red-800/30 text-[11px] text-red-300 font-medium flex items-start gap-2">
               <span className="text-base leading-none shrink-0">🎬</span>
-              <span>Paste any YouTube video link, Shorts URL, or youtu.be share link below. Nexora will embed it automatically as a responsive player.</span>
+              <span>Paste any YouTube video link, Shorts URL, or youtu.be share link below. Oninsite will embed it automatically as a responsive player.</span>
             </div>
 
             <div data-field-path="youtubeUrl">

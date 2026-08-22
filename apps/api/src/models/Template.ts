@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+﻿import { Schema, model, Document } from "mongoose";
 import { SiteConfigJSON } from "@ai-platform/shared";
 
 export type TemplateStatus = "draft" | "published" | "archived";
@@ -38,7 +38,7 @@ const TemplateSchema = new Schema<ITemplateDocument>(
     tags: { type: [String], default: [] },
     defaultConfig: { type: Schema.Types.Mixed, required: true },
     version: { type: String, default: "1.0.0" },
-    author: { type: String, default: "Nexora AI" },
+    author: { type: String, default: "Oninsite AI" },
     isPublic: { type: Boolean, default: true, index: true },
     isFeatured: { type: Boolean, default: false },
     isPremium: { type: Boolean, default: false },

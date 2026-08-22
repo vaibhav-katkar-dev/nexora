@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 // ==========================================
 // Category & Enum Definitions
@@ -145,7 +145,7 @@ export const TemplateMetadataSchema = z.object({
   category: z.string(),
   description: z.string(),
   tags: z.array(z.string()).default([]),
-  author: z.string().default("Nexora AI"),
+  author: z.string().default("Oninsite AI"),
   version: z.string().default("1.0.0"),
   status: z.enum(["published", "draft", "archived"]).default("published"),
   popularity: z.number().default(90),
@@ -310,7 +310,7 @@ export function sanitizeTemplateCss(css: string | undefined | null, containerSel
   if (!css || !css.trim()) return "";
   if (DANGEROUS_CSS_PATTERNS.some((re) => re.test(css))) return "";
   const safeContainer = containerSelector.replace(/[^:.a-zA-Z0-9_-]/g, "").trim();
-  const container = safeContainer || ".nexora-template";
+  const container = safeContainer || ".Oninsite-template";
   return scopeCss(css, container).trim();
 }
 
@@ -319,7 +319,7 @@ export function resolveTemplateContainerClass(
   config: { meta?: { slug?: string; id?: string } } | null | undefined
 ): string {
   const id = config?.meta?.slug || config?.meta?.id || "site";
-  return `nexora-tpl-${id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  return `Oninsite-tpl-${id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 }
 
 // ==========================================

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -154,7 +154,7 @@ const DIFFERENTIATION = [
     solution: "Claim your own address. A place on the internet that actually belongs to you.",
   },
   {
-    type: "Nexora",
+    type: "Oninsite",
     issue: "It usually costs money to get started.",
     solution: "Start for free. No credit card, no trials, no hidden fees.",
   },
@@ -163,7 +163,7 @@ const DIFFERENTIATION = [
 const SOCIAL_PROOF = [
   { name: "Sofia Marin", role: "UI/UX Designer", text: "Created my digital presence in 90 seconds. Sent my link to a client the same afternoon and landed the project.", avatar: "SM" },
   { name: "Raj Kapoor", role: "Restaurant Owner", text: "Our digital menu is live and indexed on Google. Customers scan our QR code at tables. Setup took 2 minutes.", avatar: "RK" },
-  { name: "Emma Liu", role: "Product Creator", text: "I replaced my old bio link with a complete Nexora presence. My newsletter subscribers doubled in the first month.", avatar: "EL" },
+  { name: "Emma Liu", role: "Product Creator", text: "I replaced my old bio link with a complete Oninsite presence. My newsletter subscribers doubled in the first month.", avatar: "EL" },
   { name: "Lucas Ferreira", role: "Indie Maker", text: "Launched my startup landing page with waitlist form in under 3 minutes. Zero coding or server hassle.", avatar: "LF" },
 ];
 
@@ -276,7 +276,7 @@ export default function LandingPage() {
         if (res.data?._id) {
           try {
             sessionStorage.setItem(
-              `nexora-pending-project:${res.data._id}`,
+              `Oninsite-pending-project:${res.data._id}`,
               JSON.stringify(res.data)
             );
           } catch {
@@ -288,7 +288,7 @@ export default function LandingPage() {
       }
 
       sessionStorage.setItem(
-        "nexora-quick-start-draft",
+        "Oninsite-quick-start-draft",
         JSON.stringify({
           name: effectiveName,
           slug: cleanSlug,
@@ -309,7 +309,7 @@ export default function LandingPage() {
   const jsonLdData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Nexora Studio",
+    name: "Oninsite Studio",
     operatingSystem: "All",
     applicationCategory: "BusinessApplication",
     offers: {
@@ -319,7 +319,7 @@ export default function LandingPage() {
     },
     description:
       "Get your digital presence live in under 3 minutes. Create a professional online presence for your business, brand, portfolio, creator profile, link-in-bio, restaurant, product, or yourself.",
-    url: "https://nexora.site",
+    url: "https://Oninsite.site",
   };
 
   const stepIndex = step === "username" ? 0 : step === "mode" ? 1 : 2;
@@ -335,7 +335,7 @@ export default function LandingPage() {
 
       {/* ── SEO: rich structured headings + invisible crawlable content ── */}
       <div className="sr-only">
-        <h1>Nexora — Your Digital Presence. Live in Under 3 Minutes.</h1>
+        <h1>Oninsite — Your Digital Presence. Live in Under 3 Minutes.</h1>
         <p>
           Create a professional digital presence for your business, brand, portfolio, creator profile, link-in-bio, restaurant, product, or yourself. No coding. No hosting setup. No complicated tools.
         </p>
@@ -355,7 +355,7 @@ export default function LandingPage() {
             >
               <span className="text-white text-sm font-black tracking-tighter">N</span>
             </div>
-            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900">Nexora</span>
+            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900">Oninsite</span>
             <span className="hidden sm:inline-block text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
               For everyone
             </span>
@@ -367,7 +367,7 @@ export default function LandingPage() {
             <Link href="/templates" className="btn btn-ghost text-xs">Templates</Link>
             <a href="#how-it-works" className="btn btn-ghost text-xs">3-Min Flow</a>
             <a href="#presences" className="btn btn-ghost text-xs">Presences</a>
-            <a href="#differentiation" className="btn btn-ghost text-xs">Why Nexora</a>
+            <a href="#differentiation" className="btn btn-ghost text-xs">Why Oninsite</a>
           </div>
 
           {/* Right CTAs */}
@@ -407,7 +407,7 @@ export default function LandingPage() {
               <Link href="/templates" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Templates</Link>
               <a href="#how-it-works" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">3-Minute Flow</a>
               <a href="#presences" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Digital Presences</a>
-              <a href="#differentiation" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Why Nexora</a>
+              <a href="#differentiation" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors touch-manipulation">Why Oninsite</a>
               <div className="border-t border-slate-100 mt-1 pt-2 flex flex-col gap-1.5">
                 <Link href="/login" onClick={() => setMobileNavOpen(false)} className="w-full flex items-center justify-center px-4 py-3 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors touch-manipulation">Sign in</Link>
                 <button type="button" onClick={() => { setMobileNavOpen(false); setIsModalOpen(true); }} className="w-full flex items-center justify-center px-4 py-3 min-h-[48px] rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors touch-manipulation">Get Started Free →</button>
@@ -507,7 +507,7 @@ export default function LandingPage() {
               {/* Trust strip under CTA */}
               <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-semibold text-slate-600">
                 {[
-                  "Free Nexora link included",
+                  "Free Oninsite link included",
                   "Fast hosting built-in",
                   "Free SSL security",
                   "100% Mobile responsive",
@@ -552,7 +552,7 @@ export default function LandingPage() {
                     </label>
                     <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all">
                       <span className="text-sm font-semibold text-slate-400 select-none whitespace-nowrap pr-1.5 font-mono">
-                        nexora.site /
+                        Oninsite.site /
                       </span>
                       <input
                         id="slug-input"
@@ -572,7 +572,7 @@ export default function LandingPage() {
                     </div>
                     {canProceed ? (
                       <p className="text-[11px] text-emerald-600 font-semibold mt-2 flex items-center gap-1">
-                        <Check size={12} className="font-bold" /> nexora.site/{cleanSlug} is ready to claim!
+                        <Check size={12} className="font-bold" /> Oninsite.site/{cleanSlug} is ready to claim!
                       </p>
                     ) : (
                       <p className="text-[11px] text-slate-400 mt-2">
@@ -632,7 +632,7 @@ export default function LandingPage() {
             <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between relative group">
               <div>
                 <div className="text-3xl font-black text-indigo-400 mb-4 font-mono">01 — Choose</div>
-                <h3 className="text-xl font-bold text-white mb-2">Tell Nexora what you're creating.</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Tell Oninsite what you're creating.</h3>
                 <p className="text-xs text-slate-400 leading-relaxed mb-6">
                   Select your purpose: Business, Creator, Portfolio, Link in Bio, Restaurant, Product, Resume, or Personal.
                 </p>
@@ -664,7 +664,7 @@ export default function LandingPage() {
             <div className="p-8 rounded-3xl bg-gradient-to-b from-indigo-900/40 to-slate-900 border-2 border-indigo-500 shadow-xl flex flex-col justify-between relative group">
               <div>
                 <div className="text-3xl font-black text-emerald-400 mb-4 font-mono">03 — Go Live</div>
-                <h3 className="text-xl font-bold text-white mb-2">Click Go Live. Nexora handles the rest.</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Click Go Live. Oninsite handles the rest.</h3>
                 <p className="text-xs text-slate-300 leading-relaxed mb-6">
                   Automatic hosting, SSL encryption, global CDN delivery, mobile optimization, and basic SEO.
                 </p>
@@ -689,7 +689,7 @@ export default function LandingPage() {
       <section className="py-24 bg-white border-y border-slate-200">
         <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-xs font-extrabold uppercase tracking-wider">
-            Core Nexora Philosophy
+            Core Oninsite Philosophy
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
@@ -722,7 +722,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-xs text-slate-500 max-w-lg mx-auto font-medium">
-            Nexora gives you that presence without the complexity of traditional website builders.
+            Oninsite gives you that presence without the complexity of traditional website builders.
           </p>
         </div>
       </section>
@@ -744,7 +744,7 @@ export default function LandingPage() {
               id="presences-heading"
               className="text-3xl sm:text-5xl font-black text-white tracking-tight max-w-3xl mx-auto leading-tight"
             >
-              One Nexora. Every kind of digital presence.
+              One Oninsite. Every kind of digital presence.
             </h2>
             <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed">
               Select what you are creating today. All presences come ready-to-edit with zero coding required.
@@ -888,7 +888,7 @@ export default function LandingPage() {
               Live everywhere. Automatically.
             </h2>
             <p className="text-slate-500 text-base max-w-xl mx-auto leading-relaxed">
-              You create it. Nexora handles all the technical stuff behind the scenes.
+              You create it. Oninsite handles all the technical stuff behind the scenes.
             </p>
           </div>
 
@@ -937,7 +937,7 @@ export default function LandingPage() {
               ))}
             </div>
             <h2 id="testimonials-heading" className="text-3xl font-extrabold text-slate-900">
-              Creators & business owners who launched with Nexora
+              Creators & business owners who launched with Oninsite
             </h2>
             <p className="text-slate-500 text-sm">Real people, real presences, instant results.</p>
           </div>
@@ -973,7 +973,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-6 text-center space-y-7">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-xs font-bold">
             <Zap size={14} className="text-amber-400" />
-            <span>Nexora Studio</span>
+            <span>Oninsite Studio</span>
           </div>
 
           <h2
@@ -1020,10 +1020,10 @@ export default function LandingPage() {
             <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
               N
             </div>
-            <span className="font-bold text-slate-100 text-sm">Nexora Studio</span>
+            <span className="font-bold text-slate-100 text-sm">Oninsite Studio</span>
             <span className="text-slate-600">— Your Digital Presence Platform.</span>
           </div>
-          <p className="text-slate-600">© 2026 Nexora Digital Presence. All rights reserved.</p>
+          <p className="text-slate-600">© 2026 Oninsite Digital Presence. All rights reserved.</p>
           <nav aria-label="Footer navigation" className="flex gap-5">
             <Link href="/templates" className="hover:text-slate-300 transition-colors">
               Templates

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { domainsApi, projectsApi, mediaApi } from "@/lib/api";
@@ -209,7 +209,7 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
   const primaryDomain = domains.find((d) => d.isPrimary) || domains.find((d) => d.status === "active");
   const canonicalUrl = primaryDomain
     ? `https://${primaryDomain.normalizedDomain}/`
-    : `https://nexora.site/${site.slug}`;
+    : `https://Oninsite.site/${site.slug}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
@@ -264,21 +264,21 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
           {/* ════ DOMAINS TAB ════ */}
           {activeTab === "domains" && (
             <div className="space-y-6">
-              {/* Default Nexora Subdomain Card */}
+              {/* Default Oninsite Subdomain Card */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">nexora.site/{site.slug}</span>
+                    <span className="text-xs font-bold text-slate-900">Oninsite.site/{site.slug}</span>
                     <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
                       Default Subdomain
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Free permanent web address hosted on Nexora global CDN.
+                    Free permanent web address hosted on Oninsite global CDN.
                   </p>
                 </div>
                 <a
-                  href={`https://nexora.site/${site.slug}`}
+                  href={`https://Oninsite.site/${site.slug}`}
                   target="_blank"
                   rel="noreferrer"
                   className="p-2 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white border border-slate-200 transition-colors"

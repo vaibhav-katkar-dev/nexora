@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+﻿import { writeFileSync } from "node:fs";
 
 // ─── Velora Salon & Spa v2.0 — Premium Motion System ─────────────────────
 // The CSS is written as a JS template literal. Serializing with JSON.stringify
@@ -431,7 +431,7 @@ const template = {
     title: "Velora Salon & Spa",
     description: "A premium emerald-and-gold salon experience with editorial typography, refined glass surfaces, elegant service cards, luxury imagery, subtle motion, and a sophisticated booking experience.",
     category: "business",
-    author: "Nexora Design Studio",
+    author: "Oninsite Design Studio",
     version: "2.0.0",
     tags: ["Salon", "Luxury", "Emerald & Gold", "Premium", "Elegant", "Animated"],
     popularity: 98,

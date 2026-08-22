@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useEditorStore } from "@/store/editorStore";
@@ -74,7 +74,7 @@ export function AiCopilotPanel() {
       <div className="p-4 border-b border-slate-800 space-y-2">
         <h2 className="text-sm font-extrabold text-white flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <Sparkles size={16} className="text-amber-400" /> Nexora AI Copilot
+            <Sparkles size={16} className="text-amber-400" /> Oninsite AI Copilot
           </span>
           <span className="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800/60 px-2 py-0.5 rounded-full font-mono">
             v2.5

@@ -39,7 +39,9 @@ app.use(helmet());
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
-  "https://nexorav.vercel.app",
+  "https://Oninsitev.vercel.app",
+  "https://okinsite.com",
+  "https://www.okinsite.com",
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",

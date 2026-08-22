@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -49,7 +49,7 @@ export default function RegisterPage() {
           <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
             <span className="text-white font-black text-base">N</span>
           </div>
-          <span className="font-bold text-white text-lg tracking-tight">Nexora</span>
+          <span className="font-bold text-white text-lg tracking-tight">Oninsite</span>
         </div>
 
         {/* Main copy */}
@@ -67,7 +67,7 @@ export default function RegisterPage() {
           <div className="space-y-3 pt-2">
             {[
               { icon: Zap,          text: "Live in under 3 minutes, seriously" },
-              { icon: Globe,        text: "Your own address at nexora.site/you" },
+              { icon: Globe,        text: "Your own address at Oninsite.site/you" },
               { icon: CheckCircle2, text: "Free — no credit card, ever" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3 text-sm text-indigo-100/90">
@@ -104,7 +104,7 @@ export default function RegisterPage() {
             <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
               <span className="text-white font-black text-sm">N</span>
             </div>
-            <span className="font-bold text-slate-900 text-lg">Nexora</span>
+            <span className="font-bold text-slate-900 text-lg">Oninsite</span>
           </div>
 
           {/* Header */}
