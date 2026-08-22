@@ -1,4 +1,4 @@
-﻿import type { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
 
@@ -30,14 +30,14 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Oninsite" }],
   creator: "Oninsite Studio",
-  metadataBase: new URL("https://Oninsite.site"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   alternates: { canonical: "/" },
   openGraph: {
     title: "Oninsite — Build & Publish Your Website in Seconds",
     description:
       "The fastest way to launch a professional website. Username → Template → Live. Free, no signup required to start.",
     type: "website",
-    url: "https://Oninsite.site",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
     siteName: "Oninsite Studio",
   },
   twitter: {

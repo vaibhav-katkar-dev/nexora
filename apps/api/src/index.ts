@@ -37,16 +37,10 @@ connectDB();
 // Security Middlewares
 app.use(helmet());
 
+// Build allowed origins from env — comma-separated ALLOWED_ORIGINS + CLIENT_URL
 const allowedOrigins = [
   process.env.CLIENT_URL,
-  "https://Oninsitev.vercel.app",
-  "https://okinsite.com",
-  "https://www.okinsite.com",
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:3002",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:3001",
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()) : []),
 ].filter(Boolean) as string[];
 
 app.use(

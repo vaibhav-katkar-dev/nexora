@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { domainsApi, projectsApi, mediaApi } from "@/lib/api";
@@ -209,7 +209,7 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
   const primaryDomain = domains.find((d) => d.isPrimary) || domains.find((d) => d.status === "active");
   const canonicalUrl = primaryDomain
     ? `https://${primaryDomain.normalizedDomain}/`
-    : `https://Oninsite.site/${site.slug}`;
+    : `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${site.slug}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
@@ -278,7 +278,7 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
                   </p>
                 </div>
                 <a
-                  href={`https://Oninsite.site/${site.slug}`}
+                  href={`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${site.slug}`}
                   target="_blank"
                   rel="noreferrer"
                   className="p-2 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white border border-slate-200 transition-colors"

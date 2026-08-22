@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -319,7 +319,7 @@ export default function LandingPage() {
     },
     description:
       "Get your digital presence live in under 3 minutes. Create a professional online presence for your business, brand, portfolio, creator profile, link-in-bio, restaurant, product, or yourself.",
-    url: "https://Oninsite.site",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   };
 
   const stepIndex = step === "username" ? 0 : step === "mode" ? 1 : 2;
