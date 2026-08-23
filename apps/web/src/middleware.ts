@@ -1,19 +1,45 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Reserved platform hostnames that should never trigger custom domain rewrites
 const RESERVED_HOSTS = new Set([
   "localhost",
   "127.0.0.1",
-  "Oninsite.com",
-  "www.Oninsite.com",
-  "Oninsite.site",
-  "www.Oninsite.site",
-  "api.Oninsite.com",
-  "admin.Oninsite.com",
-  "app.Oninsite.com",
-  "Oninsitev.vercel.app",
+  "okinsite.com",
+  "www.okinsite.com",
+  "api.okinsite.com",
+  "admin.okinsite.com",
+  "app.okinsite.com",
+  "dashboard.okinsite.com",
+  "okinsite.site",
+  "www.okinsite.site",
+  "oninsite.com",
+  "www.oninsite.com",
+  "api.oninsite.com",
+  "admin.oninsite.com",
+  "app.oninsite.com",
+  "dashboard.oninsite.com",
+  "oninsite.site",
+  "www.oninsite.site",
 ]);
+
+// Dynamically register hostname from NEXT_PUBLIC_SITE_URL if configured
+if (process.env.NEXT_PUBLIC_SITE_URL) {
+  try {
+    const parsedUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL);
+    const envHost = parsedUrl.hostname.toLowerCase();
+    if (envHost) {
+      RESERVED_HOSTS.add(envHost);
+      if (envHost.startsWith("www.")) {
+        RESERVED_HOSTS.add(envHost.replace(/^www\./, ""));
+      } else {
+        RESERVED_HOSTS.add(`www.${envHost}`);
+      }
+    }
+  } catch {
+    // Ignore invalid URL
+  }
+}
 
 // Excluded URL pathname prefixes that must bypass custom domain rewriting
 const EXCLUDED_PATH_PREFIXES = [

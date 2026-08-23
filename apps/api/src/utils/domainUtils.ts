@@ -1,18 +1,37 @@
-﻿// Reserved platform domains that can never be attached as user custom domains
+// Reserved platform domains that can never be attached as user custom domains
 const RESERVED_DOMAINS = new Set([
-  "Oninsite.com",
-  "www.Oninsite.com",
-  "api.Oninsite.com",
-  "admin.Oninsite.com",
-  "app.Oninsite.com",
-  "dashboard.Oninsite.com",
-  "Oninsite.site",
-  "www.Oninsite.site",
+  "okinsite.com",
+  "www.okinsite.com",
+  "api.okinsite.com",
+  "admin.okinsite.com",
+  "app.okinsite.com",
+  "dashboard.okinsite.com",
+  "okinsite.site",
+  "www.okinsite.site",
+  "oninsite.com",
+  "www.oninsite.com",
+  "api.oninsite.com",
+  "admin.oninsite.com",
+  "app.oninsite.com",
+  "dashboard.oninsite.com",
+  "oninsite.site",
+  "www.oninsite.site",
   "localhost",
   "127.0.0.1",
   "vercel.app",
-  "Oninsitev.vercel.app",
 ]);
+
+// Dynamically register environment hostnames
+[process.env.CLIENT_URL, process.env.SITE_BASE_URL].filter(Boolean).forEach((url) => {
+  try {
+    const host = new URL(url!).hostname.toLowerCase();
+    if (host) {
+      RESERVED_DOMAINS.add(host);
+      if (host.startsWith("www.")) RESERVED_DOMAINS.add(host.replace(/^www\./, ""));
+      else RESERVED_DOMAINS.add(`www.${host}`);
+    }
+  } catch {}
+});
 
 /**
  * Normalizes a user-input domain string into a clean hostname.
@@ -54,10 +73,12 @@ export function isReservedDomain(domain: string): boolean {
 
   if (RESERVED_DOMAINS.has(normalized)) return true;
 
-  // Subdomains of Oninsite.com / vercel.app
+  // Subdomains of platform domains
   if (
-    normalized.endsWith(".Oninsite.com") ||
-    normalized.endsWith(".Oninsite.site") ||
+    normalized.endsWith(".okinsite.com") ||
+    normalized.endsWith(".okinsite.site") ||
+    normalized.endsWith(".oninsite.com") ||
+    normalized.endsWith(".oninsite.site") ||
     normalized.endsWith(".vercel.app")
   ) {
     return true;
