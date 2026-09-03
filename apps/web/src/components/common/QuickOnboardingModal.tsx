@@ -266,20 +266,11 @@ export function QuickOnboardingModal({
         }}
       >
         {/* Wordmark */}
-        <div className="flex items-center gap-2.5">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm shrink-0"
-            style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)" }}
-          >
-            N
-          </div>
-          <div className="leading-none">
-            <div className="text-[13px] font-bold text-slate-900 tracking-tight">Oninsite</div>
-            <div className="text-[10px] font-semibold text-slate-400 tracking-widest uppercase">
-              Setup
-            </div>
-          </div>
-        </div>
+        <img
+          src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+          alt="OkiNSITE"
+          className="h-7 w-auto object-contain shrink-0"
+        />
 
         {/* Step indicators — desktop */}
         <div className="hidden sm:flex items-center gap-2">

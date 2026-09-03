@@ -104,12 +104,11 @@ export function Navbar({
       {/* ── Brand + Desktop Nav ── */}
       <div className="flex items-center gap-3 sm:gap-6 min-w-0">
         <Link href="/dashboard" className="flex items-center gap-2 group shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-extrabold text-base shadow-sm group-hover:bg-indigo-700 transition-colors">
-            N
-          </div>
-          <span className="font-extrabold text-slate-900 tracking-tight text-sm sm:text-base hidden sm:inline">
-            Oninsite <span className="text-indigo-600 font-semibold">Studio</span>
-          </span>
+          <img
+            src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+            alt="OkiNSITE"
+            className="h-7 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity"
+          />
         </Link>
 
         {/* Desktop Nav Items */}

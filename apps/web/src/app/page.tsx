@@ -348,17 +348,12 @@ export default function LandingPage() {
         style={{ borderColor: "var(--border-light)" }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className="w-8 h-8 rounded-xl bg-indigo-600 shadow-md shadow-indigo-600/20 flex items-center justify-center animate-pulse-glow"
-              aria-hidden
-            >
-              <span className="text-white text-sm font-black tracking-tighter">N</span>
-            </div>
-            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900">Oninsite</span>
-            <span className="hidden sm:inline-block text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-              For everyone
-            </span>
+          <div className="flex items-center gap-2.5">
+            <img
+              src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+              alt="OkiNSITE"
+              className="h-8 w-auto object-contain shrink-0"
+            />
           </div>
 
           {/* Desktop Nav Links */}
@@ -439,19 +434,20 @@ export default function LandingPage() {
       <section
         id="start"
         aria-labelledby="hero-heading"
-        className="relative overflow-hidden pt-10 sm:pt-16 pb-14 sm:pb-24"
+        className="relative overflow-hidden pt-10 sm:pt-16 pb-14 sm:pb-24 bg-white"
       >
-        {/* Ambient Lighting Orbs */}
-        <div className="orb orb-brand w-[550px] h-[550px] -top-32 right-[2%] opacity-20 animate-spin-slow" />
-        <div className="orb orb-violet w-[420px] h-[420px] bottom-0 left-[4%] opacity-20 animate-pulse-glow" />
+        {/* Subtle ambient orbs — brand colors */}
+        <div className="orb orb-brand w-[500px] h-[500px] -top-24 right-[0%] opacity-10 animate-spin-slow" />
+        <div className="orb orb-warm w-[380px] h-[380px] bottom-0 left-[2%] opacity-10 animate-pulse-glow" />
+        <div className="orb orb-teal w-[300px] h-[300px] top-20 left-[40%] opacity-[0.07]" />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 sm:gap-12 lg:gap-16">
             {/* ── Left: Main Hero Copy ── */}
             <div className="flex-1 space-y-5 sm:space-y-6 pt-2">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-xs animate-float-smooth">
-                <Clock size={14} className="text-indigo-600 animate-sparkle" />
-                <span>Live in under 3 minutes</span>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-bold shadow-xs animate-float-smooth" style={{ background: "#EBF4FF", borderColor: "#BFDBFE", color: "#1558B0" }}>
+                <Clock size={14} style={{ color: "#1A73E8" }} className="animate-sparkle" />
+                <span>Smart. Simple. Solutions.</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               </div>
 
@@ -474,15 +470,15 @@ export default function LandingPage() {
               {/* Simple 3-step pills */}
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700 pt-1">
                 <span className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">1</span> Pick a style
+                  <span className="w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold" style={{ background: "#1A73E8" }}>1</span> Pick a style
                 </span>
                 <span className="text-slate-400 font-bold">→</span>
                 <span className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">2</span> Add details
+                  <span className="w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold" style={{ background: "#F4511E" }}>2</span> Add details
                 </span>
                 <span className="text-slate-400 font-bold">→</span>
-                <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] flex items-center justify-center font-bold">3</span> Go live free
+                <span className="px-3 py-1.5 rounded-xl flex items-center gap-1.5" style={{ background: "#F0FDF4", borderColor: "#BBF7D0", border: "1px solid #BBF7D0", color: "#166534" }}>
+                  <span className="w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold" style={{ background: "#34A853" }}>3</span> Go live free
                 </span>
               </div>
 
@@ -490,7 +486,8 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="px-7 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                  className="px-7 py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+                  style={{ background: "#1A73E8", boxShadow: "0 4px 16px rgba(26,115,232,0.30)" }}
                 >
                   <span>Get Started Free</span>
                   <ArrowRight size={16} />
@@ -507,7 +504,7 @@ export default function LandingPage() {
               {/* Trust strip under CTA */}
               <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-semibold text-slate-600">
                 {[
-                  "Free Oninsite link included",
+                  "Free OkiNSITE link included",
                   "Fast hosting built-in",
                   "Free SSL security",
                   "100% Mobile responsive",
@@ -515,7 +512,7 @@ export default function LandingPage() {
                   "Publish in 1-click",
                 ].map((item) => (
                   <span key={item} className="flex items-center gap-1.5">
-                    <Check size={13} className="text-emerald-600 shrink-0 font-bold" />
+                    <Check size={13} style={{ color: "#34A853" }} className="shrink-0 font-bold" />
                     <span>{item}</span>
                   </span>
                 ))}

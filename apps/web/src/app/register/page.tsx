@@ -46,11 +46,12 @@ export default function RegisterPage() {
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-16 -translate-y-16" />
 
         {/* Logo */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-            <span className="text-white font-black text-base">N</span>
-          </div>
-          <span className="font-bold text-white text-lg tracking-tight">Oninsite</span>
+        <div className="relative z-10">
+          <img
+            src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+            alt="OkiNSITE"
+            className="h-9 w-auto object-contain brightness-0 invert"
+          />
         </div>
 
         {/* Main copy */}

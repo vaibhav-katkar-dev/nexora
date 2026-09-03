@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,9 +11,9 @@
 
 :root {
   /* Core Backgrounds */
-  --bg:             #F8FAFC;
+  --bg:             #F9FAFB;
   --surface:        #FFFFFF;
-  --surface-2:      #F1F5F9;
+  --surface-2:      #F3F4F6;
   --surface-hover:  #F1F5F9;
   --surface-active: #E2E8F0;
 
@@ -27,18 +27,21 @@
   /* Borders & Dividers */
   --border:         #E5E7EB;
   --border-light:   #F3F4F6;
-  --border-focus:   #818CF8;
+  --border-focus:   #1A73E8;
 
-  /* Brand Accents */
-  --brand:          #4F46E5;
-  --brand-hover:    #4338CA;
-  --brand-light:    #EEF2FF;
-  --brand-border:   #C7D2FE;
+  /* OkiNSITE Brand Colors */
+  --brand:          #1A73E8;      /* Logo blue */
+  --brand-hover:    #1558B0;
+  --brand-light:    #EBF4FF;
+  --brand-border:   #BFDBFE;
+  --brand-orange:   #F4511E;      /* Logo orange */
+  --brand-yellow:   #F9AB00;      /* Logo yellow */
+  --brand-green:    #34A853;      /* Logo green */
 
   /* Feedback Colors */
-  --success:        #22C55E;
+  --success:        #34A853;
   --success-bg:     #F0FDF4;
-  --warning:        #F59E0B;
+  --warning:        #F9AB00;
   --warning-bg:     #FFFBEB;
   --error:          #EF4444;
   --error-bg:       #FEF2F2;
@@ -57,7 +60,7 @@
   --shadow-md:    0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.03);
   --shadow-lg:    0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.03);
   --shadow-xl:    0 20px 25px -5px rgba(0,0,0,0.07), 0 8px 10px -6px rgba(0,0,0,0.03);
-  --shadow-brand: 0 4px 14px 0 rgba(79,70,229,0.25);
+  --shadow-brand: 0 4px 14px 0 rgba(26,115,232,0.25);
 }
 
 /* ── Base Reset ── */
@@ -215,16 +218,16 @@ body {
   filter: blur(80px);
   will-change: transform;
 }
-.orb-brand  { background: radial-gradient(circle, rgba(99,102,241,0.55) 0%, transparent 70%); }
-.orb-violet { background: radial-gradient(circle, rgba(139,92,246,0.45) 0%, transparent 70%); }
-.orb-warm   { background: radial-gradient(circle, rgba(245,158,11,0.35) 0%, transparent 70%); }
-.orb-teal   { background: radial-gradient(circle, rgba(20,184,166,0.35) 0%, transparent 70%); }
+.orb-brand  { background: radial-gradient(circle, rgba(26,115,232,0.40) 0%, transparent 70%); }
+.orb-violet { background: radial-gradient(circle, rgba(244,81,30,0.30) 0%, transparent 70%); }
+.orb-warm   { background: radial-gradient(circle, rgba(249,171,0,0.30) 0%, transparent 70%); }
+.orb-teal   { background: radial-gradient(circle, rgba(52,168,83,0.28) 0%, transparent 70%); }
 
 /* ══════════════════════════════════════════════
-   TEXT GRADIENT
+   TEXT GRADIENT — OkiNSITE Brand
 ══════════════════════════════════════════════ */
 .text-gradient {
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #A855F7 100%);
+  background: linear-gradient(135deg, #1A73E8 0%, #F4511E 50%, #F9AB00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
