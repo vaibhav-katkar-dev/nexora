@@ -87,7 +87,10 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin || isAllowedOrigin(origin)) {
-        callback(null, true);
+        // Explicitly reflect the actual requesting origin (not boolean true)
+        // so that Vercel's edge cache never conflates two different origins
+        // into a single cached response with a wrong Access-Control-Allow-Origin header.
+        callback(null, origin || "*");
       } else {
         callback(new Error("Not allowed by CORS"));
       }
@@ -95,6 +98,14 @@ app.use(
     credentials: true,
   })
 );
+
+// Force Vary: Origin on every response so that Vercel's CDN (and any other
+// reverse-proxy / CDN in front of the API) caches CORS responses per unique
+// origin rather than serving a stale response meant for a different subdomain.
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.vary("Origin");
+  next();
+});
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cookieParser());
