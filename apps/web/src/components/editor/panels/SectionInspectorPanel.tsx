@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { normalizeElementKey, resolveElementValue } from "@/lib/editorElements";
 import { useEditorStore } from "@/store/editorStore";
@@ -19,6 +19,12 @@ import {
   RotateCcw,
   MessageCircle,
   Globe,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 // ─── Per-Element Custom Color -------------------------------------------------
@@ -129,6 +135,7 @@ export function SectionInspectorPanel({
   // Tracks whether the per-element color popup is open (Rules-of-Hooks:
   // must be declared here, before any early return).
   const [colorOpen, setColorOpen] = useState(false);
+  const [inspectorTab, setInspectorTab] = useState<"content" | "style" | "advanced">("content");
   const [linkModalState, setLinkModalState] = useState<{ isOpen: boolean; currentUrl: string; fieldPath: string }>({
     isOpen: false,
     currentUrl: "",
@@ -263,24 +270,47 @@ const removeArrayItem = (key: string, index: number) => {
     : null;
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 border-r border-slate-800 w-full flex-shrink-0 select-none overflow-hidden">
-      {/* Inspector Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-semibold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40">
-            {section.type}
-          </span>
-          <h2 className="text-sm font-extrabold text-white mt-1 truncate max-w-[180px]">
-            {section.title || "Untitled Section"}
+    <div className="flex flex-col h-full bg-[#0a0f1d] border-r border-slate-800/80 w-full flex-shrink-0 select-none overflow-hidden">
+      {/* ── Sub-tabs: Content | Style | Advanced ── */}
+      <div className="flex items-center border-b border-slate-800/80 bg-[#080d19] px-2 shrink-0">
+        {(["content", "style", "advanced"] as const).map((tab) => {
+          const isActive = inspectorTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setInspectorTab(tab)}
+              className={`flex-1 py-3 text-xs font-bold capitalize transition-all relative ${
+                isActive ? "text-indigo-400" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <span>{tab}</span>
+              {isActive && (
+                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500/50" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Section Header */}
+      <div className="px-4 py-3 border-b border-slate-800/80 bg-[#0a0f1d] flex items-center justify-between shrink-0">
+        <div className="min-w-0">
+          <h2 className="text-sm font-bold text-white truncate max-w-[170px]">
+            {section.title || section.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
           </h2>
         </div>
-        <button
-          onClick={() => removeSection(section.id)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
-          title="Delete section"
-        >
-          <Trash2 size={15} />
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[10px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md">
+            ID: #{section.id}
+          </span>
+          <button
+            onClick={() => removeSection(section.id)}
+            className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
+            title="Delete section"
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
       </div>
 
       {/* Element editing banner */}
@@ -395,8 +425,9 @@ const removeArrayItem = (key: string, index: number) => {
         </div>
       )}
 
-      {/* Form Controls */}
-      <div ref={panelScrollRef} className="flex-1 overflow-y-auto p-4 space-y-5">
+      {/* Form Controls (Content Tab) */}
+      {inspectorTab === "content" && (
+        <div ref={panelScrollRef} className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
         {/* Core Header Properties (Only show supported fields per section) */}
         {(() => {
           const supportsBadge = [
@@ -2332,7 +2363,170 @@ const removeArrayItem = (key: string, index: number) => {
         </div>
         )}
 
-      </div>
+        </div>
+      )}
+
+      {/* ── Style Tab ── */}
+      {inspectorTab === "style" && (
+        <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+          {/* Layout Alignment */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-300">Layout Alignment</label>
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+              {[
+                { id: "left", icon: AlignLeft, label: "Left" },
+                { id: "center", icon: AlignCenter, label: "Center" },
+                { id: "right", icon: AlignRight, label: "Right" },
+                { id: "stretch", icon: AlignJustify, label: "Full" },
+              ].map((item) => {
+                const Icon = item.icon;
+                const isSelected = (section.layout || "center") === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => updateSection(section.id, { layout: item.id })}
+                    className={`py-2 flex flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-semibold transition-all ${
+                      isSelected
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                    title={item.label}
+                  >
+                    <Icon size={15} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section Background Color */}
+          <div className="space-y-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Section Background Color</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={section.styling?.backgroundColor || "#0a0f1d"}
+                onChange={(e) =>
+                  updateSection(section.id, {
+                    styling: { ...(section.styling || {}), backgroundColor: e.target.value },
+                  })
+                }
+                className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer p-0.5"
+              />
+              <input
+                type="text"
+                value={section.styling?.backgroundColor || ""}
+                onChange={(e) =>
+                  updateSection(section.id, {
+                    styling: { ...(section.styling || {}), backgroundColor: e.target.value },
+                  })
+                }
+                placeholder="e.g. #FFFFFF or transparent"
+                className={inputClass}
+              />
+            </div>
+            <div className="grid grid-cols-8 gap-1.5 pt-1">
+              {COLOR_PRESETS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() =>
+                    updateSection(section.id, {
+                      styling: { ...(section.styling || {}), backgroundColor: c },
+                    })
+                  }
+                  className="w-5 h-5 rounded-md border border-slate-700 hover:scale-110 transition-transform"
+                  style={{ background: c }}
+                  title={c}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Vertical Spacing */}
+          <div className="space-y-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Vertical Spacing (Padding)</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-semibold text-slate-400 mb-1 block">Top Padding</label>
+                <input
+                  type="text"
+                  value={section.styling?.paddingTop || "4rem"}
+                  onChange={(e) =>
+                    updateSection(section.id, {
+                      styling: { ...(section.styling || {}), paddingTop: e.target.value },
+                    })
+                  }
+                  placeholder="4rem"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-slate-400 mb-1 block">Bottom Padding</label>
+                <input
+                  type="text"
+                  value={section.styling?.paddingBottom || "4rem"}
+                  onChange={(e) =>
+                    updateSection(section.id, {
+                      styling: { ...(section.styling || {}), paddingBottom: e.target.value },
+                    })
+                  }
+                  placeholder="4rem"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Advanced Tab ── */}
+      {inspectorTab === "advanced" && (
+        <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+          <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Section ID / Anchor</label>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Use this anchor for direct navigation in menus and links (e.g. #{section.id})
+            </p>
+            <input
+              type="text"
+              value={section.id}
+              disabled
+              className={`${inputClass} opacity-60 font-mono text-slate-400`}
+            />
+          </div>
+
+          <div className="space-y-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-xs font-bold text-white block">Section Visibility</label>
+                <p className="text-[11px] text-slate-400">Toggle whether this section appears on the live website</p>
+              </div>
+              <button
+                onClick={() => updateSection(section.id, { visible: section.visible === false })}
+                className={`p-2 rounded-xl border transition-all ${
+                  section.visible !== false
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                    : "bg-slate-900 text-slate-500 border-slate-800"
+                }`}
+                title={section.visible !== false ? "Visible" : "Hidden"}
+              >
+                {section.visible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={() => removeSection(section.id)}
+              className="w-full py-2.5 rounded-xl text-xs font-bold text-rose-400 bg-rose-950/30 border border-rose-800/40 hover:bg-rose-900/50 flex items-center justify-center gap-2 transition-all active:scale-98"
+            >
+              <Trash2 size={14} />
+              <span>Delete Section</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       <LinkBuilderModal
         isOpen={linkModalState.isOpen}

@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import { SiteConfigJSON } from "@ai-platform/shared";
 import { projectsApi } from "@/lib/api";
 
@@ -22,6 +22,7 @@ interface EditorState {
   isSaving: boolean;
   saveError: string | null;
   isPublishing: boolean;
+  published: boolean;
   viewMode: "visual" | "code" | "preview";
   viewport: "mobile" | "tablet" | "desktop";
 
@@ -117,6 +118,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   isSaving: false,
   saveError: null,
   isPublishing: false,
+  published: false,
   viewMode: "preview",
   viewport: "desktop",
   past: [],
@@ -128,6 +130,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       projectId: project._id,
       projectName: project.name,
       projectSlug: project.slug || "",
+      published: Boolean(project.published),
       config: project.config,
       activeSectionId: project.config?.sections?.[0]?.id || null,
       selectedElementKey: null,
@@ -476,7 +479,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     try {
       await get().save();
       const res = await projectsApi.publish(projectId);
-      set({ isPublishing: false });
+      set({ isPublishing: false, published: true });
       return res.data.staticUrl;
     } catch (err: any) {
       set({ isPublishing: false });

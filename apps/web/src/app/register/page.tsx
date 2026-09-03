@@ -50,7 +50,7 @@ export default function RegisterPage() {
           <img
             src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
             alt="OkiNSITE"
-            className="h-9 w-auto object-contain brightness-0 invert"
+            className="h-9 md:h-11 w-auto brightness-0 invert object-contain shrink-0"
           />
         </div>
 

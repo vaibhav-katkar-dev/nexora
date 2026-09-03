@@ -107,7 +107,7 @@ export function Navbar({
           <img
             src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
             alt="OkiNSITE"
-            className="h-7 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity"
+            className="h-7 md:h-8 lg:h-9 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity"
           />
         </Link>
 

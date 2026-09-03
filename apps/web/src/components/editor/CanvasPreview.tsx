@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useEditorStore } from "@/store/editorStore";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
 import { ContextToolbar } from "@/components/editor/ContextToolbar";
+import { DeviceFrame } from "@/components/editor/DeviceFrame";
 import {
   Layers,
   ZoomIn,
@@ -31,6 +32,7 @@ export function CanvasPreview({
 }: CanvasPreviewProps) {
   const config = useEditorStore((state) => state.config);
   const customCode = useEditorStore((state) => state.customCode);
+  const viewport = useEditorStore((state) => state.viewport);
 
   // Displayed state (drives React re-renders only for UI badge & buttons)
   const [displayZoom, setDisplayZoom] = useState(100);
@@ -398,16 +400,35 @@ export function CanvasPreview({
             }}
             className="origin-top"
           >
-            <SiteRenderer
-              config={config}
-              customCode={customCode}
-              selectedSectionId={selectedSectionId}
-              onSelectSection={onSelectSection}
-              selectedElementKey={selectedElementKey}
-              onSelectElement={onSelectElement}
-              onRequestImageEdit={onRequestImageEdit}
-              interactive={true}
-            />
+            {viewport === "desktop" ? (
+              <div className="w-full min-h-full">
+                <SiteRenderer
+                  config={config}
+                  customCode={customCode}
+                  selectedSectionId={selectedSectionId}
+                  onSelectSection={onSelectSection}
+                  selectedElementKey={selectedElementKey}
+                  onSelectElement={onSelectElement}
+                  onRequestImageEdit={onRequestImageEdit}
+                  interactive={true}
+                />
+              </div>
+            ) : (
+              <div className="py-4 sm:py-6 px-2 flex justify-center items-start min-h-full">
+                <DeviceFrame viewport={viewport}>
+                  <SiteRenderer
+                    config={config}
+                    customCode={customCode}
+                    selectedSectionId={selectedSectionId}
+                    onSelectSection={onSelectSection}
+                    selectedElementKey={selectedElementKey}
+                    onSelectElement={onSelectElement}
+                    onRequestImageEdit={onRequestImageEdit}
+                    interactive={true}
+                  />
+                </DeviceFrame>
+              </div>
+            )}
           </div>
         ) : (
           <div className="h-full min-h-[400px] flex flex-col items-center justify-center p-12 text-center text-slate-500 gap-3">

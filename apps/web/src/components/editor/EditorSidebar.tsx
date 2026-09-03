@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import {
   Layers,
-  Plus,
+  LayoutGrid,
   Palette,
-  Globe,
-  Sparkles,
-  Code2,
   SlidersHorizontal,
-  MoreHorizontal,
-  ChevronLeft,
+  Globe,
+  Code2,
+  HelpCircle,
 } from "lucide-react";
 
 export type SidebarTab = "sections" | "inspector" | "add" | "theme" | "seo" | "ai" | "code";
@@ -20,6 +17,7 @@ interface EditorSidebarProps {
   onTabChange: (tab: SidebarTab) => void;
   developerMode: boolean;
   activeSectionTitle?: string;
+  onHelpClick?: () => void;
 }
 
 export function EditorSidebar({
@@ -27,68 +25,27 @@ export function EditorSidebar({
   onTabChange,
   developerMode,
   activeSectionTitle,
+  onHelpClick,
 }: EditorSidebarProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  const primaryTabs = [
+  const tabs = [
     { id: "sections" as SidebarTab, label: "Sections", icon: Layers },
+    { id: "add" as SidebarTab, label: "Blocks", icon: LayoutGrid },
+    { id: "theme" as SidebarTab, label: "Design", icon: Palette },
     {
       id: "inspector" as SidebarTab,
-      label: "Inspector",
+      label: "Settings",
       icon: SlidersHorizontal,
       badge: activeSectionTitle ? "Active" : undefined,
     },
-  ];
-
-  const advancedTabs = [
-    { id: "add" as SidebarTab, label: "Add", icon: Plus },
-    { id: "theme" as SidebarTab, label: "Design", icon: Palette },
     { id: "seo" as SidebarTab, label: "SEO", icon: Globe },
-    // { id: "ai" as SidebarTab, label: "AI", icon: Sparkles }, // Hidden — coming soon
     ...(developerMode ? [{ id: "code" as SidebarTab, label: "Code", icon: Code2 }] : []),
   ];
 
   return (
-    <aside className="w-full md:w-16 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:h-14 max-md:z-50 bg-slate-950/95 border-t md:border-t-0 md:border-r border-slate-800/90 backdrop-blur flex flex-row md:flex-col items-center max-md:justify-start md:justify-start py-1.5 md:py-3 px-2 md:px-0 gap-1.5 md:gap-2 flex-shrink-0 select-none max-md:order-last max-md:overflow-x-auto max-md:no-scrollbar max-md:px-3 safe-bottom">
-      {primaryTabs.map((t) => {
-        const Icon = t.icon;
-        const isActive = activeTab === t.id;
-
-        return (
-          <button
-            key={t.id}
-            onClick={() => onTabChange(t.id)}
-            className={`relative group h-10 md:h-12 w-auto md:w-12 max-md:min-w-[62px] shrink-0 px-2 md:px-0 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 text-[11px] md:text-[10px] font-semibold transition-all ${
-              isActive
-                ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-md shadow-indigo-600/10"
-                : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
-            }`}
-            title={t.label}
-          >
-            <Icon size={16} className={isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-white"} />
-            <span className="leading-none">{t.label}</span>
-            {t.badge && (
-              <span className="hidden md:block absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
-            )}
-          </button>
-        );
-      })}
-
-      <button
-        onClick={() => setShowAdvanced((value) => !value)}
-        className={`h-10 md:h-12 w-auto md:w-12 max-md:min-w-[56px] shrink-0 px-2 md:px-0 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 text-[11px] md:text-[10px] font-semibold transition-all border ${
-          showAdvanced
-            ? "bg-slate-900 text-white border-slate-700"
-            : "text-slate-400 hover:text-white hover:bg-slate-900 border-transparent"
-        }`}
-        title={showAdvanced ? "Hide extra tools" : "Show more tools"}
-      >
-        {showAdvanced ? <ChevronLeft size={16} className="max-md:rotate-90" /> : <MoreHorizontal size={16} />}
-        <span className="leading-none">More</span>
-      </button>
-
-      {showAdvanced &&
-        advancedTabs.map((t) => {
+    <aside className="w-full md:w-16 max-md:hidden bg-[#070b14] border-r border-slate-800/80 flex flex-col items-center justify-between py-3 px-1.5 flex-shrink-0 select-none z-30">
+      {/* Top tabs */}
+      <div className="flex flex-col items-center gap-2 w-full">
+        {tabs.map((t) => {
           const Icon = t.icon;
           const isActive = activeTab === t.id;
 
@@ -96,18 +53,37 @@ export function EditorSidebar({
             <button
               key={t.id}
               onClick={() => onTabChange(t.id)}
-              className={`relative group h-10 md:h-12 w-auto md:w-12 max-md:min-w-[62px] shrink-0 px-2 md:px-0 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 text-[11px] md:text-[10px] font-semibold transition-all ${
+              className={`relative group w-full h-12 rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] font-semibold transition-all ${
                 isActive
-                  ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-md shadow-indigo-600/10"
-                  : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
+                  ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/80 border border-transparent"
               }`}
               title={t.label}
             >
-              <Icon size={16} className={isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-white"} />
-              <span className="leading-none">{t.label}</span>
+              <Icon
+                size={17}
+                className={isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-white transition-colors"}
+              />
+              <span className="leading-none text-[9px] tracking-tight">{t.label}</span>
+              {t.badge && (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400 ring-2 ring-[#070b14]" />
+              )}
             </button>
           );
         })}
+      </div>
+
+      {/* Bottom Help action */}
+      <div className="w-full pt-2 border-t border-slate-800/60 flex flex-col items-center">
+        <button
+          onClick={onHelpClick}
+          className="w-full h-11 rounded-xl flex flex-col items-center justify-center gap-1 text-[9px] font-semibold text-slate-400 hover:text-white hover:bg-slate-900/80 transition-all"
+          title="Need Help or Tips?"
+        >
+          <HelpCircle size={16} />
+          <span>Help</span>
+        </button>
+      </div>
     </aside>
   );
 }

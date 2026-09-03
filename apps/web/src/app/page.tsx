@@ -350,10 +350,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img
-              src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
-              alt="OkiNSITE"
-              className="h-8 w-auto object-contain shrink-0"
-            />
+            src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+            alt="OkiNSITE"
+            className="h-8 md:h-9 lg:h-10 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity"
+          />
           </div>
 
           {/* Desktop Nav Links */}

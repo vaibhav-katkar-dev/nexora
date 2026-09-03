@@ -214,13 +214,17 @@ export default function EditorPage() {
   // and open the Inspector tab so controls are accessible in both canvas and inspector panel.
   const handleSelectSection = (sectionId: string) => {
     selectSection(sectionId);
-    setActiveTab("inspector");
+    if (typeof window !== "undefined" && window.innerWidth < 1280) {
+      setActiveTab("inspector");
+    }
   };
 
   const handleSelectElement = (elementKey: string, sectionId: string) => {
     selectSection(sectionId);
     selectElement(sectionId, elementKey);
-    setActiveTab("inspector");
+    if (typeof window !== "undefined" && window.innerWidth < 1280) {
+      setActiveTab("inspector");
+    }
   };
 
   const handleRequestImageEdit = (sectionId: string, elementKey: string) => {
@@ -431,6 +435,12 @@ export default function EditorPage() {
             onTabChange={(t) => setActiveTab(t)}
             developerMode={developerMode}
             activeSectionTitle={activeSection?.title}
+            onHelpClick={() => {
+              toastRef.current.info(
+                "Visual Editor Tips",
+                "• Click sections or text on the canvas to edit.\n• Switch viewports (Desktop/Tablet/Mobile) in the top bar.\n• Customize Content, Style & Advanced settings in the Inspector."
+              );
+            }}
           />
         )}
 
@@ -610,13 +620,24 @@ export default function EditorPage() {
           )}
         </div>
 
+        {/* ── Desktop Right Inspector Panel (on xl: screens when activeTab is sections and section is selected) ── */}
+        {showSidebar && activeTab === "sections" && activeSectionId && (
+          <div className="hidden xl:flex w-[340px] 2xl:w-[380px] flex-shrink-0 relative h-full bg-[#0a0f1d] border-l border-slate-800/80 z-20 flex-col">
+            <SectionInspectorPanel
+              onOpenImagePicker={(url, onSelect) =>
+                setImagePickerState({ isOpen: true, currentUrl: url, onSelect })
+              }
+            />
+          </div>
+        )}
+
         {/* ── Mobile 4-tab bottom navigation bar ──────────────────────────── */}
         {showSidebar && (
-          <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-slate-900 border-t border-slate-700/80 flex items-stretch h-14">
+          <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-[#080d19] border-t border-slate-800 flex items-stretch h-14 safe-bottom">
             {([
               { tab: "sections", icon: Layers, label: "Sections" },
               { tab: "inspector", icon: SlidersHorizontal, label: "Edit" },
-              { tab: "theme", icon: Palette, label: "Theme" },
+              { tab: "theme", icon: Palette, label: "Design" },
               { tab: "add", icon: Plus, label: "Add" },
             ] as { tab: SidebarTab; icon: React.ElementType; label: string }[]).map(({ tab, icon: Icon, label }) => {
               const isActive = activeTab === tab;
