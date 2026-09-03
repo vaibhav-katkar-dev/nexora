@@ -34,11 +34,19 @@ export default function PublicSitePage() {
         if (res?.data) {
           if (
             res.data.redirectTo &&
-            typeof window !== "undefined" &&
-            window.location.hostname !== new URL(res.data.redirectTo).hostname
+            typeof window !== "undefined"
           ) {
-            window.location.replace(res.data.redirectTo);
-            return;
+            try {
+              const currentHost = window.location.hostname.toLowerCase();
+              const targetHost = new URL(res.data.redirectTo).hostname.toLowerCase();
+              // In production or custom domains, redirect to canonical host.
+              // In local dev, skip redirect if on plain localhost to allow easy testing.
+              const isLocalBypass = (currentHost === "localhost" || currentHost === "127.0.0.1") && targetHost.includes("localhost");
+              if (currentHost !== targetHost && !isLocalBypass) {
+                window.location.replace(res.data.redirectTo);
+                return;
+              }
+            } catch {}
           }
           setProject(res.data);
           injectSeoHeadTags({

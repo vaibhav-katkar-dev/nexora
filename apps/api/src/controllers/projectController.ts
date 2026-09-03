@@ -112,10 +112,27 @@ export const getPublicProject = async (req: AuthenticatedRequest, res: Response)
     const primaryDomain = await Domain.findOne({ siteId: project._id, isPrimary: true }).lean();
     const activeDomain = primaryDomain || (await Domain.findOne({ siteId: project._id, status: "active" }).lean());
 
-    const hostBase = process.env.CLIENT_URL || process.env.SITE_BASE_URL || "";
-    const canonicalUrl = activeDomain
-      ? `https://${activeDomain.normalizedDomain}/`
-      : `${hostBase.replace(/\/$/, "")}/${project.slug}`;
+    // Helper to compute public canonical URL (prefers custom domain, then subdomain)
+    const hostBase = process.env.CLIENT_URL || process.env.SITE_BASE_URL || "https://okinsite.com";
+    let platformRoot = "okinsite.com";
+    try {
+      const parsed = new URL(hostBase.startsWith("http") ? hostBase : `https://${hostBase}`);
+      platformRoot = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    } catch {}
+
+    const isLocal = platformRoot === "localhost" || platformRoot === "127.0.0.1";
+    const isVercelPreview = platformRoot.endsWith(".vercel.app");
+
+    let canonicalUrl: string;
+    if (activeDomain?.normalizedDomain) {
+      canonicalUrl = `https://${activeDomain.normalizedDomain}/`;
+    } else if (isLocal) {
+      canonicalUrl = `http://${project.slug}.localhost:3000/`;
+    } else if (isVercelPreview) {
+      canonicalUrl = `https://${platformRoot}/${project.slug}`;
+    } else {
+      canonicalUrl = `https://${project.slug}.${platformRoot}/`;
+    }
 
     // Evaluate Quality & Abuse Status
     const quality = evaluateProjectQuality(project as any);
@@ -125,9 +142,16 @@ export const getPublicProject = async (req: AuthenticatedRequest, res: Response)
       !project.seo?.noIndex &&
       quality.status === "legitimate";
 
-    // If accessed via slug URL but site has an active custom domain, provide redirect target
-    const shouldRedirect = activeDomain && identifier === project.slug;
-    const redirectTo = shouldRedirect ? `https://${activeDomain.normalizedDomain}/` : undefined;
+    // If site has a custom domain or canonical subdomain, guide client/crawler to the canonical host
+    const targetUrl = activeDomain?.normalizedDomain
+      ? `https://${activeDomain.normalizedDomain}/`
+      : isLocal
+      ? `http://${project.slug}.localhost:3000/`
+      : isVercelPreview
+      ? `https://${platformRoot}/${project.slug}`
+      : `https://${project.slug}.${platformRoot}/`;
+
+    const redirectTo = targetUrl;
 
     const responsePayload = {
       ...project,

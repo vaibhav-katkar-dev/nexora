@@ -1,17 +1,35 @@
-﻿import { Request, Response } from "express";
+import { Request, Response } from "express";
 import { Project } from "../models/Project.js";
 import { Domain } from "../models/Domain.js";
 import { evaluateProjectQuality } from "../services/qualityChecker.js";
 
 const PAGE_SIZE = 1000;
 
+function resolveSiteCanonicalUrl(slug: string, primaryCustomDomain?: string): string {
+  if (primaryCustomDomain) {
+    return `https://${primaryCustomDomain}/`;
+  }
+  const hostBase = process.env.CLIENT_URL || process.env.SITE_BASE_URL || "https://okinsite.com";
+  let platformRoot = "okinsite.com";
+  try {
+    const parsed = new URL(hostBase.startsWith("http") ? hostBase : `https://${hostBase}`);
+    platformRoot = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  } catch {}
+
+  if (platformRoot === "localhost" || platformRoot === "127.0.0.1") {
+    return `http://${slug}.localhost:3000/`;
+  }
+  if (platformRoot.endsWith(".vercel.app")) {
+    return `https://${platformRoot}/${slug}`;
+  }
+  return `https://${slug}.${platformRoot}/`;
+}
+
 /**
  * GET /sitemap-entries — Returns JSON list of indexable site entries for Next.js sitemap integration
  */
 export const getSitemapEntriesJson = async (req: Request, res: Response) => {
   try {
-    const hostBase = process.env.CLIENT_URL || process.env.SITE_BASE_URL || "";
-
     const projects = await Project.find({
       status: "published",
       "seo.noIndex": { $ne: true },
@@ -39,9 +57,7 @@ export const getSitemapEntriesJson = async (req: Request, res: Response) => {
       if (quality.status !== "legitimate") continue;
 
       const primaryCustomDomain = domainMap.get(proj._id.toString());
-      const url = primaryCustomDomain
-        ? `https://${primaryCustomDomain}/`
-        : `${hostBase.replace(/\/$/, "")}/${proj.slug}`;
+      const url = resolveSiteCanonicalUrl(proj.slug, primaryCustomDomain);
 
       entries.push({
         url,
@@ -188,9 +204,7 @@ async function buildSitemapPageXml(page: number, hostBase: string): Promise<stri
     }
 
     const primaryCustomDomain = domainMap.get(proj._id.toString());
-    const loc = primaryCustomDomain
-      ? `https://${primaryCustomDomain}/`
-      : `${hostBase.replace(/\/$/, "")}/${proj.slug}`;
+    const loc = resolveSiteCanonicalUrl(proj.slug, primaryCustomDomain);
 
     const lastmod = (proj.publishedAt || proj.updatedAt || new Date()).toISOString();
 

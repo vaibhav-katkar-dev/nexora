@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { domainsApi, projectsApi, mediaApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { buildPublishedSiteUrl } from "@/lib/siteUrl";
 import {
   Globe,
   Shield,
@@ -207,9 +208,10 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
 
   // Determine computed canonical URL
   const primaryDomain = domains.find((d) => d.isPrimary) || domains.find((d) => d.status === "active");
+  const defaultSiteUrl = buildPublishedSiteUrl(site.slug);
   const canonicalUrl = primaryDomain
     ? `https://${primaryDomain.normalizedDomain}/`
-    : `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${site.slug}`;
+    : defaultSiteUrl;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
@@ -268,17 +270,17 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">Oninsite.site/{site.slug}</span>
-                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                    <span className="text-xs font-bold text-slate-900">{defaultSiteUrl.replace(/^https?:\/\//, "")}</span>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
                       Default Subdomain
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Free permanent web address hosted on Oninsite global CDN.
+                    Permanent branded subdomain hosted on global edge CDN.
                   </p>
                 </div>
                 <a
-                  href={`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${site.slug}`}
+                  href={defaultSiteUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="p-2 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white border border-slate-200 transition-colors"

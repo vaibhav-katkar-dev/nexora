@@ -59,6 +59,42 @@ const EXCLUDED_PATH_PREFIXES = [
   "/assets",
 ];
 
+// Reserved subdomains that belong to system infrastructure, not user projects
+const RESERVED_SUBDOMAINS = new Set([
+  "www",
+  "api",
+  "admin",
+  "app",
+  "dashboard",
+  "custom",
+  "sites",
+  "mail",
+  "smtp",
+  "ftp",
+  "cname",
+  "status",
+  "docs",
+  "help",
+  "support",
+  "dev",
+  "staging",
+  "preview",
+  "assets",
+  "static",
+]);
+
+// Known platform root domain suffixes
+const PLATFORM_ROOT_DOMAINS = ["okinsite.com", "okinsite.site", "oninsite.com", "oninsite.site"];
+
+if (process.env.NEXT_PUBLIC_SITE_URL) {
+  try {
+    const envHost = new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname.toLowerCase().replace(/^www\./, "");
+    if (envHost && !PLATFORM_ROOT_DOMAINS.includes(envHost)) {
+      PLATFORM_ROOT_DOMAINS.push(envHost);
+    }
+  } catch {}
+}
+
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const hostname = req.headers.get("host")?.split(":")[0]?.toLowerCase().trim() || "";
@@ -68,14 +104,46 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // If host is a platform host or Vercel preview domain ending in .vercel.app (and not a custom domain)
+  // 1. Check if host is an exact reserved platform host or Vercel preview domain
   if (RESERVED_HOSTS.has(hostname) || hostname.endsWith(".vercel.app")) {
     return NextResponse.next();
   }
 
-  // Custom Domain Detected!
-  // Rewrite request path to `/[slug]` passing the normalized hostname as the slug parameter.
-  // The public slug page (`/[slug]/page.tsx`) & backend API will resolve `www.cafemumbai.com` to the published site.
+  // 2. Check if host is a platform subdomain (e.g. "cafemumbai.okinsite.com" or "cafemumbai.localhost")
+  let detectedSubdomain: string | null = null;
+
+  for (const rootDomain of PLATFORM_ROOT_DOMAINS) {
+    if (hostname.endsWith(`.${rootDomain}`)) {
+      const sub = hostname.slice(0, -(rootDomain.length + 1));
+      // Only single-level subdomains (not multi-level like a.b.okinsite.com)
+      if (sub && !sub.includes(".")) {
+        detectedSubdomain = sub;
+        break;
+      }
+    }
+  }
+
+  // Also support localhost subdomains for local development (e.g. "cafemumbai.localhost")
+  if (!detectedSubdomain && (hostname.endsWith(".localhost") || hostname.endsWith(".127.0.0.1"))) {
+    const parts = hostname.split(".");
+    if (parts.length >= 2 && parts[0]) {
+      detectedSubdomain = parts[0];
+    }
+  }
+
+  if (detectedSubdomain) {
+    // If it's a reserved system subdomain (e.g. api.okinsite.com, app.okinsite.com), do not treat as user site
+    if (RESERVED_SUBDOMAINS.has(detectedSubdomain)) {
+      return NextResponse.next();
+    }
+
+    // Rewrite request path to `/[slug]` with the extracted subdomain as slug parameter
+    url.pathname = `/${detectedSubdomain}${url.pathname === "/" ? "" : url.pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
+  // 3. External Custom Domain Detected (e.g. "www.cafemumbai.com" or "cafemumbai.com")
+  // Rewrite request path to `/[slug]` passing the full normalized hostname as slug
   url.pathname = `/${hostname}${url.pathname === "/" ? "" : url.pathname}`;
   return NextResponse.rewrite(url);
 }
