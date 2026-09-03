@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import { SiteConfigJSON } from "@ai-platform/shared";
 import { Navbar } from "@/components/navigation/Navbar";
 import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
+import { QuickOnboardingModal } from "@/components/common/QuickOnboardingModal";
 import { BusinessProfile, injectBusinessProfileIntoConfig } from "@/lib/businessProfile";
 import {
   Globe,
@@ -84,6 +85,7 @@ export default function DashboardPage() {
     site: null,
   });
   const [settingsPanelProject, setSettingsPanelProject] = useState<Project | null>(null);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [deleteConfirmState, setDeleteConfirmState] = useState<{ isOpen: boolean; projectId: string; projectName: string }>({
     isOpen: false,
@@ -120,7 +122,16 @@ export default function DashboardPage() {
       const meRes = await authApi.me();
       if (meRes.data) setUser(meRes.data.user || meRes.data);
       const projRes = await projectsApi.getAll();
-      if (projRes.data) setProjects(projRes.data);
+      if (projRes.data) {
+        setProjects(projRes.data);
+        if (projRes.data.length === 0) {
+          const justLoggedIn = sessionStorage.getItem("just_logged_in");
+          if (justLoggedIn === "true") {
+            sessionStorage.removeItem("just_logged_in");
+            setShowOnboardingModal(true);
+          }
+        }
+      }
     } catch (err) {
       console.error("Dashboard load error", err);
     } finally {
@@ -417,55 +428,65 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Main View Tabs */}
-          <div className="flex items-center gap-1.5 bg-slate-200/70 p-1.5 rounded-2xl shrink-0 self-start md:self-auto border border-slate-300/40">
+          <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
             <button
-              onClick={() => setDashboardView("sites")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                dashboardView === "sites"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              onClick={() => setShowOnboardingModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/20 active:scale-95 transition-all shrink-0"
             >
-              <LayoutGrid size={14} className={dashboardView === "sites" ? "text-indigo-600" : ""} />
-              <span>My Sites</span>
-              <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-slate-100 text-slate-700 font-extrabold">
-                {projects.length}
-              </span>
+              <Plus size={14} />
+              <span>Create Website</span>
             </button>
 
-            <button
-              onClick={() => setDashboardView("leads")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all relative ${
-                dashboardView === "leads"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <MessageCircle size={14} className={dashboardView === "leads" ? "text-emerald-600" : ""} />
-              <span>Form Leads</span>
-              {leadsMeta.unreadCount > 0 ? (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-500 text-white font-black animate-pulse">
-                  {leadsMeta.unreadCount}
+            {/* Main View Tabs */}
+            <div className="flex items-center gap-1.5 bg-slate-200/70 p-1.5 rounded-2xl shrink-0 border border-slate-300/40">
+              <button
+                onClick={() => setDashboardView("sites")}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  dashboardView === "sites"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <LayoutGrid size={14} className={dashboardView === "sites" ? "text-indigo-600" : ""} />
+                <span>My Sites</span>
+                <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-slate-100 text-slate-700 font-extrabold">
+                  {projects.length}
                 </span>
-              ) : (
-                <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-slate-100 text-slate-600 font-extrabold">
-                  {leadsMeta.totalAll || 0}
-                </span>
-              )}
-            </button>
+              </button>
 
-            <button
-              onClick={() => setDashboardView("analytics")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                dashboardView === "analytics"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <BarChart3 size={14} className={dashboardView === "analytics" ? "text-indigo-600" : ""} />
-              <span>Site Analytics</span>
-            </button>
+              <button
+                onClick={() => setDashboardView("leads")}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all relative ${
+                  dashboardView === "leads"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <MessageCircle size={14} className={dashboardView === "leads" ? "text-emerald-600" : ""} />
+                <span>Form Leads</span>
+                {leadsMeta.unreadCount > 0 ? (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-500 text-white font-black animate-pulse">
+                    {leadsMeta.unreadCount}
+                  </span>
+                ) : (
+                  <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-slate-100 text-slate-600 font-extrabold">
+                    {leadsMeta.totalAll || 0}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setDashboardView("analytics")}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  dashboardView === "analytics"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <BarChart3 size={14} className={dashboardView === "analytics" ? "text-indigo-600" : ""} />
+                <span>Site Analytics</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -474,6 +495,42 @@ export default function DashboardPage() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {dashboardView === "sites" && (
           <div className="space-y-8">
+            {/* New User Welcome Onboarding Banner */}
+            {projects.length === 0 && (
+              <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                <div className="relative z-10 max-w-2xl space-y-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/20">
+                    <Sparkles size={13} /> Quick Setup
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    What kind of website do you want to create?
+                  </h2>
+                  <p className="text-sm text-indigo-100/90 leading-relaxed max-w-lg">
+                    Pick your website goal below to see hand-picked templates pre-filled with your brand details.
+                  </p>
+                  <div className="pt-2 flex flex-wrap gap-2.5">
+                    {[
+                      { id: "business", label: "💼 Business & Services" },
+                      { id: "restaurant", label: "🍽️ Restaurant & Cafe" },
+                      { id: "portfolio", label: "🎨 Portfolio & Creative" },
+                      { id: "store", label: "🛍️ Store & Products" },
+                      { id: "personal", label: "👤 Personal & Bio Link" },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setShowOnboardingModal(true);
+                        }}
+                        className="px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-indigo-950 hover:bg-indigo-50 shadow-sm transition-all flex items-center gap-1.5 active:scale-95"
+                      >
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Quick Action Cards Banner */}
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
               {/* Designer Templates Card */}
@@ -1463,6 +1520,13 @@ export default function DashboardPage() {
           handleCreateBlank(null);
         }}
         isSubmitting={isCreating}
+      />
+
+      {/* ── Quick Personalization & Onboarding Modal ── */}
+      <QuickOnboardingModal
+        isOpen={showOnboardingModal}
+        onClose={() => setShowOnboardingModal(false)}
+        defaultName={user?.name || ""}
       />
     </div>
   );

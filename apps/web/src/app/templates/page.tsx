@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { projectsApi, authApi, templatesApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { SiteConfigJSON } from "@ai-platform/shared";
@@ -43,10 +43,11 @@ import {
 
 // ── Category icon map ──────────────────────────────────────────────────────────
 const CATEGORY_ICON_COMPONENTS: Record<string, React.ElementType> = {
+  all: Globe,
   portfolio: Palette,
-  resume: FileText,
-  digital_card: CreditCard,
-  restaurant_menu: UtensilsCrossed,
+  cv_resume: FileText,
+  business_card: CreditCard,
+  restaurant: UtensilsCrossed,
   business: Briefcase,
   product_landing: Rocket,
   startup_landing: Lightbulb,
@@ -56,14 +57,22 @@ const CATEGORY_ICON_COMPONENTS: Record<string, React.ElementType> = {
   blank: File,
 };
 
-export default function TemplateGalleryPage() {
+function TemplateGalleryContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
+  const urlCategory = searchParams?.get("category") || "";
 
   const [user, setUser] = useState<{ email: string; role?: string; name?: string } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>(urlCategory || "all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    if (urlCategory) {
+      setSelectedCategory(urlCategory);
+    }
+  }, [urlCategory]);
 
   // Business Setup Wizard Modal state
   const [businessSetupModal, setBusinessSetupModal] = useState<{
@@ -340,6 +349,32 @@ export default function TemplateGalleryPage() {
           </div>
         </div>
 
+        {/* ── Personalized Recommendation Banner ─────────────────────────── */}
+        {selectedCategory !== "all" && (
+          <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-fade-in">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-sm">
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900">
+                  Recommended templates for your {selectedCategory.replace(/_/g, " ")} website
+                </h3>
+                <p className="text-xs text-slate-600">
+                  Showing designs tailored to your goal. Pick any template to customize with your brand details.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("all")}
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white px-3.5 py-2 rounded-xl border border-indigo-200 hover:border-indigo-300 transition-colors shrink-0 shadow-xs"
+            >
+              Show All Templates →
+            </button>
+          </div>
+        )}
+
         {/* ── Template Cards Grid ─────────────────────────────────────────── */}
         {templatesLoading ? (
           <div className="py-20 bg-white border border-dashed border-slate-200 rounded-2xl text-center text-slate-400 text-sm flex items-center justify-center gap-2">
@@ -598,3 +633,18 @@ export default function TemplateGalleryPage() {
     </div>
   );
 }
+
+export default function TemplateGalleryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <Loader2 className="animate-spin text-indigo-600" size={32} />
+        </div>
+      }
+    >
+      <TemplateGalleryContent />
+    </Suspense>
+  );
+}
+

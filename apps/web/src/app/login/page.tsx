@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,7 @@ export default function LoginPage() {
         localStorage.setItem("refreshToken", res.data.refreshToken);
       }
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      sessionStorage.setItem("just_logged_in", "true");
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "Incorrect email or password.");
