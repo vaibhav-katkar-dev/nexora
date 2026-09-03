@@ -87,7 +87,9 @@ export default function EditorPage() {
       // ★ Quick-start guest mode path
       if (id === "quick-start") {
         try {
-          const draftRaw = sessionStorage.getItem("nexora-quick-start-draft");
+          const draftRaw =
+            sessionStorage.getItem("Oninsite-quick-start-draft") ||
+            sessionStorage.getItem("nexora-quick-start-draft");
           if (draftRaw) {
             const draft = JSON.parse(draftRaw);
             loadProject({
@@ -106,6 +108,11 @@ export default function EditorPage() {
         } catch (e) {
           console.warn("[QuickStart Draft load error]:", e);
         }
+
+        // If no draft exists in session storage, redirect to templates gallery instead of crashing API
+        router.replace("/templates");
+        setIsLoading(false);
+        return;
       }
 
       // ★ Instant path: when the user just created a project from a template on
@@ -113,9 +120,12 @@ export default function EditorPage() {
       // config) is cached in sessionStorage. Render it immediately and skip the
       // redundant network fetch — making "Use Template → editor" feel instant.
       try {
-        const cachedRaw = sessionStorage.getItem(`nexora-pending-project:${id}`);
+        const cachedRaw =
+          sessionStorage.getItem(`Oninsite-pending-project:${id}`) ||
+          sessionStorage.getItem(`nexora-pending-project:${id}`);
         if (cachedRaw) {
           const cached = JSON.parse(cachedRaw);
+          sessionStorage.removeItem(`Oninsite-pending-project:${id}`);
           sessionStorage.removeItem(`nexora-pending-project:${id}`);
           if (cached && cached.config) {
             loadProject(cached);
@@ -126,6 +136,7 @@ export default function EditorPage() {
         }
       } catch {
         // Corrupt / unreadable cache — fall through to the network fetch.
+        sessionStorage.removeItem(`Oninsite-pending-project:${id}`);
         sessionStorage.removeItem(`nexora-pending-project:${id}`);
       }
 
@@ -162,18 +173,19 @@ export default function EditorPage() {
   useEffect(() => {
     if (isGuestQuickStart && config) {
       try {
-        const existingRaw = sessionStorage.getItem("nexora-quick-start-draft");
+        const existingRaw =
+          sessionStorage.getItem("Oninsite-quick-start-draft") ||
+          sessionStorage.getItem("nexora-quick-start-draft");
         const existing = existingRaw ? JSON.parse(existingRaw) : {};
-        sessionStorage.setItem(
-          "nexora-quick-start-draft",
-          JSON.stringify({
-            ...existing,
-            name: projectName || existing.name || "My Digital Presence",
-            slug: currentSlug || existing.slug || "my-site",
-            category: config.meta?.category || existing.category || "portfolio",
-            config,
-          })
-        );
+        const updated = JSON.stringify({
+          ...existing,
+          name: projectName || existing.name || "My Digital Presence",
+          slug: currentSlug || existing.slug || "my-site",
+          category: config.meta?.category || existing.category || "portfolio",
+          config,
+        });
+        sessionStorage.setItem("Oninsite-quick-start-draft", updated);
+        sessionStorage.setItem("nexora-quick-start-draft", updated);
       } catch {
         /* ignore storage quota exceptions */
       }

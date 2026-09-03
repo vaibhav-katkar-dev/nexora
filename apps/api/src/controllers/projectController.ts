@@ -1,4 +1,5 @@
 import { Response } from "express";
+import mongoose from "mongoose";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import { Project } from "../models/Project.js";
 import { Domain } from "../models/Domain.js";
@@ -7,6 +8,11 @@ import { buildStaticSite } from "../services/siteCompiler.js";
 import { SiteConfigSchema } from "@ai-platform/shared";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+
+// Helper function to check valid MongoDB ObjectId
+const isValidObjectId = (id: string): boolean => {
+  return Boolean(id && mongoose.Types.ObjectId.isValid(id));
+};
 
 // Helper function to generate short ID
 const generateShortId = (): string => {
@@ -177,6 +183,13 @@ export const getPublicProject = async (req: AuthenticatedRequest, res: Response)
 // GET /api/v1/projects/:id — full project with config
 export const getProject = async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(404).json({
+        success: false,
+        error: { code: "NOT_FOUND", message: "Project not found" },
+      });
+    }
+
     const project = await Project.findOne({ _id: req.params.id, userId: req.user!.userId });
     if (!project) {
       return res.status(404).json({
@@ -230,6 +243,13 @@ export const createProject = async (req: AuthenticatedRequest, res: Response) =>
 // PUT /api/v1/projects/:id — update (auto-save target)
 export const updateProject = async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(404).json({
+        success: false,
+        error: { code: "NOT_FOUND", message: "Project not found" },
+      });
+    }
+
     const updates = UpdateProjectSchema.parse(req.body);
 
     // If the user is changing the slug, ensure it's not already taken by another project
@@ -292,6 +312,10 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response) =>
 // POST /api/v1/projects/:id/duplicate — deep clone project
 export const duplicateProject = async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "Project not found" } });
+    }
+
     const source = await Project.findOne({ _id: req.params.id, userId: req.user!.userId }).lean();
     if (!source) {
       return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "Project not found" } });
@@ -320,6 +344,10 @@ export const duplicateProject = async (req: AuthenticatedRequest, res: Response)
 // DELETE /api/v1/projects/:id — soft-delete (status → deleted) or hard delete
 export const deleteProject = async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "Project not found" } });
+    }
+
     const project = await Project.findOneAndDelete({ _id: req.params.id, userId: req.user!.userId });
     if (!project) {
       return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "Project not found" } });

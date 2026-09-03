@@ -125,15 +125,14 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
 
       if (!token) {
         // Guest mode — jump straight into quick-start
-        sessionStorage.setItem(
-          "nexora-quick-start-draft",
-          JSON.stringify({
-            name: projName,
-            slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
-            category: profile?.category || templateData.category || "portfolio",
-            config: cfg,
-          })
-        );
+        const draftPayload = JSON.stringify({
+          name: projName,
+          slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
+          category: profile?.category || templateData.category || "portfolio",
+          config: cfg,
+        });
+        sessionStorage.setItem("Oninsite-quick-start-draft", draftPayload);
+        sessionStorage.setItem("nexora-quick-start-draft", draftPayload);
         router.push("/editor/quick-start");
         return;
       }
@@ -147,10 +146,9 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
       if (res.data?._id) {
         toast.success("Project created from template!");
         try {
-          sessionStorage.setItem(
-            `nexora-pending-project:${res.data._id}`,
-            JSON.stringify(res.data)
-          );
+          const serialized = JSON.stringify(res.data);
+          sessionStorage.setItem(`Oninsite-pending-project:${res.data._id}`, serialized);
+          sessionStorage.setItem(`nexora-pending-project:${res.data._id}`, serialized);
         } catch {
           /* ignore */
         }
@@ -158,15 +156,14 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
       }
     } catch {
       // Fallback guest edit
-      sessionStorage.setItem(
-        "nexora-quick-start-draft",
-        JSON.stringify({
-          name: projName,
-          slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
-          category: profile?.category || templateData.category || "portfolio",
-          config: cfg,
-        })
-      );
+      const draftPayload = JSON.stringify({
+        name: projName,
+        slug: projName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"),
+        category: profile?.category || templateData.category || "portfolio",
+        config: cfg,
+      });
+      sessionStorage.setItem("Oninsite-quick-start-draft", draftPayload);
+      sessionStorage.setItem("nexora-quick-start-draft", draftPayload);
       router.push("/editor/quick-start");
     } finally {
       setIsCreating(false);
