@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Globe, Check, AlertCircle, ExternalLink, Copy, QrCode } from "lucide-react";
+import { X, Globe, Check, AlertCircle, ExternalLink, Copy, QrCode, MessageSquare } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { getPublishedBaseLabel, buildPublishedSiteUrl } from "@/lib/siteUrl";
 import { QrModal } from "@/components/common/QrModal";
@@ -84,10 +84,10 @@ export function PublishModal({ initialSlug, onConfirm, onClose }: PublishModalPr
 
           {/* Custom Slug Input */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300">Public Web Address</label>
+            <label className="block text-xs font-semibold text-slate-300">Dedicated Subdomain Address</label>
             <div className="flex items-center rounded-xl border border-slate-800 bg-slate-950 overflow-hidden focus-within:border-indigo-500 transition-colors">
-              <span className="px-3 text-xs text-slate-500 font-mono bg-slate-900/80 py-3 border-r border-slate-800 select-none whitespace-nowrap">
-                {getPublishedBaseLabel()}/
+              <span className="px-3 text-xs text-indigo-400 font-bold font-mono bg-slate-900/80 py-3 border-r border-slate-800 select-none whitespace-nowrap">
+                https://
               </span>
               <input
                 type="text"
@@ -97,8 +97,11 @@ export function PublishModal({ initialSlug, onConfirm, onClose }: PublishModalPr
                   validate(e.target.value);
                 }}
                 className="flex-1 bg-transparent px-3 py-2.5 text-xs text-white font-mono focus:outline-none"
-                placeholder="my-creative-site"
+                placeholder="my-brand"
               />
+              <span className="px-3 text-xs text-slate-400 font-mono bg-slate-900/80 py-3 border-l border-slate-800 select-none whitespace-nowrap">
+                {getPublishedBaseLabel()}
+              </span>
             </div>
 
             {error ? (
@@ -119,6 +122,18 @@ export function PublishModal({ initialSlug, onConfirm, onClose }: PublishModalPr
                   >
                     {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                     <span>{copied ? "Copied" : "Copy"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const msg = `Check out my new website: ${liveUrl}`;
+                      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+                    }}
+                    className="p-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 text-[11px] font-bold flex items-center gap-1 transition-colors"
+                    title="Share to WhatsApp"
+                  >
+                    <MessageSquare size={12} />
+                    <span>WhatsApp</span>
                   </button>
                   <button
                     type="button"

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   SiteConfigJSON,
@@ -460,25 +460,64 @@ export function isColorDark(colorStr?: string): boolean | null {
   return null;
 }
 
+/** Calculate perceived luminance of a hex color (0 = black, 1 = white) */
+function getHexLuminance(hexColor: string): number {
+  if (!hexColor || typeof hexColor !== "string") return 0.1;
+  const clean = hexColor.replace("#", "").trim();
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16);
+    const g = parseInt(clean[1] + clean[1], 16);
+    const b = parseInt(clean[2] + clean[2], 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  if (clean.length >= 6) {
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  return 0.1;
+}
+
 /** Build a CSSProperties object with CSS custom properties derived from the theme config.
  *  These custom properties (--primary, --font-heading, --radius, etc.) are consumed by
  *  template CSS and inline styles throughout the renderer. */
 function buildCssVariables(theme: any, _interactive?: boolean): CSSProperties {
   if (!theme) return {};
+
+  const isDark = getIsDarkTheme(theme);
+  const bgColor = theme.backgroundColor || (isDark ? "#090D16" : "#F8FAFC");
+  const bgLuminance = getHexLuminance(bgColor);
+  const isLightBg = bgLuminance > 0.5 || !isDark;
+
+  // High contrast text & surfaces based on true background luminance
+  const textMain = theme.textColor || (isLightBg ? "#0F172A" : "#F8FAFC");
+  const textMuted = isLightBg ? "#475569" : "#94A3B8";
+  const surface = isLightBg ? "rgba(255, 255, 255, 0.94)" : "rgba(255, 255, 255, 0.04)";
+  const border = isLightBg ? "rgba(15, 23, 42, 0.08)" : "rgba(255, 255, 255, 0.08)";
+  const inputBg = isLightBg ? "#FFFFFF" : "rgba(15, 23, 42, 0.6)";
+  const inputBorder = isLightBg ? "#CBD5E1" : "rgba(255, 255, 255, 0.12)";
+
   return {
     "--primary": theme.primaryColor || "#3B82F6",
     "--secondary": theme.secondaryColor || theme.primaryColor || "#8B5CF6",
     "--accent": theme.accentColor || "#F59E0B",
-    "--background": theme.backgroundColor || "#090D16",
-    "--text": theme.textColor || "#F8FAFC",
-    "--surface": theme.mode === "light" ? "#ffffff" : "rgba(255,255,255,0.04)",
-    "--border": theme.mode === "light" ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)",
+    "--background": bgColor,
+    "--text": textMain,
+    "--text-main": textMain,
+    "--text-muted": textMuted,
+    "--surface": surface,
+    "--surface-card": surface,
+    "--border": border,
+    "--border-subtle": border,
+    "--input-bg": inputBg,
+    "--input-border": inputBorder,
     "--font-heading": theme.headingFont || theme.fontFamily || "Inter",
     "--font-body": theme.bodyFont || theme.fontFamily || "Inter",
     "--radius": theme.borderRadius || "12px",
     fontFamily: `${theme.bodyFont || theme.fontFamily || "Inter"}, ui-sans-serif, system-ui, sans-serif`,
-    backgroundColor: theme.backgroundColor || "#090D16",
-    color: theme.textColor || "#F8FAFC",
+    backgroundColor: bgColor,
+    color: textMain,
   } as CSSProperties;
 }
 
@@ -3525,6 +3564,25 @@ containerSelector
           __html: `
             .${containerClass} {
               container-type: inline-size;
+              color: var(--text-main);
+            }
+            .${containerClass} h1,
+            .${containerClass} h2,
+            .${containerClass} h3,
+            .${containerClass} h4,
+            .${containerClass} h5,
+            .${containerClass} h6 {
+              color: var(--text-main);
+            }
+            .${containerClass} [data-element-key$=".title"],
+            .${containerClass} [data-element-key$=".name"] {
+              color: var(--text-main);
+            }
+            .${containerClass} [data-element-key$=".subtitle"],
+            .${containerClass} [data-element-key$=".desc"],
+            .${containerClass} [data-element-key$=".bio"],
+            .${containerClass} [data-element-key$=".detail"] {
+              color: var(--text-muted);
             }
             @container (min-width: 768px) {
               .${containerClass} .Oninsite-nav-links { display: flex !important; }
