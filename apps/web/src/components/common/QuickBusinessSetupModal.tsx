@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   X,
-  Sparkles,
+  Globe,
   Building2,
   Phone,
   MessageSquare,
@@ -12,14 +12,8 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   ArrowRight,
-  ArrowLeft,
-  Zap,
   Upload,
-  Layers,
-  HelpCircle,
-  ExternalLink,
   Loader2,
-  Globe,
 } from "lucide-react";
 import {
   BusinessProfile,
@@ -66,7 +60,6 @@ export function QuickBusinessSetupModal({
   isSubmitting = false,
   mode = "initial",
 }: QuickBusinessSetupModalProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [profile, setProfile] = useState<BusinessProfile>(DEFAULT_BUSINESS_PROFILE);
   const [hasSavedProfile, setHasSavedProfile] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -84,7 +77,6 @@ export function QuickBusinessSetupModal({
         saved.brandName || saved.phone || saved.email || saved.location || saved.logoUrl
       );
       setHasSavedProfile(hasData);
-      setStep(1);
     }
   }, [isOpen]);
 
@@ -180,36 +172,31 @@ export function QuickBusinessSetupModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Top Header Bar ── */}
-        <div className="px-5 sm:px-6 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/30">
-              <Zap size={16} />
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+              <Globe size={18} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">
-                  {mode === "edit" ? "Update Business Profile" : "Quick Site Builder Info"}
-                </h3>
-                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
-                  Step {step} of 3
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 truncate max-w-[240px] sm:max-w-xs">
-                {templateName ? `Applying to: ${templateName}` : "Auto-fill your digital site"}
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                {mode === "edit" ? "Edit Website Details" : "Set Up Your Website"}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {templateName ? `Template: ${templateName}` : "Personalise basic brand and contact details"}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {mode === "initial" && (
               <button
                 type="button"
                 onClick={onSkip}
                 disabled={isSubmitting}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 px-2.5 py-1.5 rounded-xl transition-colors touch-manipulation"
-                title="Skip setup and open editor with default placeholder template"
+                className="text-xs font-semibold text-slate-500 hover:text-slate-900 px-2 py-1 rounded-lg transition-colors"
+                title="Skip and open editor directly"
               >
-                Skip ➔
+                Skip
               </button>
             )}
             <button
@@ -223,453 +210,259 @@ export function QuickBusinessSetupModal({
           </div>
         </div>
 
-        {/* ── Saved Profile Banner (If profile exists) ── */}
+        {/* ── Saved Profile Banner (Fast Path) ── */}
         {hasSavedProfile && mode === "initial" && (
-          <div className="bg-gradient-to-r from-emerald-50 to-indigo-50 border-b border-emerald-100/80 px-5 sm:px-6 py-2.5 flex items-center justify-between gap-2 shrink-0">
-            <div className="flex items-center gap-2 text-xs text-emerald-900 font-medium">
-              <Sparkles size={14} className="text-emerald-600 shrink-0" />
+          <div className="bg-emerald-50/80 border-b border-emerald-100 px-5 sm:px-6 py-2.5 flex items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2 text-xs text-emerald-900 font-medium truncate">
+              <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
               <span className="truncate">
-                Auto-filled with your saved profile ({profile.brandName || profile.phone || "Saved info"}).
+                Pre-filled with saved profile ({profile.brandName || profile.phone || "Saved info"}).
               </span>
             </div>
             <button
               type="button"
               onClick={handleInstantLaunchWithSaved}
               disabled={isSubmitting}
-              className="shrink-0 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 px-3 py-1 rounded-xl shadow-sm transition-all flex items-center gap-1 touch-manipulation"
+              className="shrink-0 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 px-3 py-1 rounded-lg shadow-xs transition-all flex items-center gap-1"
             >
-              <span>Instant Launch</span>
+              <span>Continue</span>
               <ArrowRight size={12} />
             </button>
           </div>
         )}
 
-        {/* ── Step Progress Indicator ── */}
-        <div className="px-5 sm:px-6 pt-3 pb-1 bg-white shrink-0">
-          <div className="grid grid-cols-3 gap-2">
-            {/* Step 1 Tab */}
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                step >= 1 ? "bg-indigo-600" : "bg-slate-100"
-              }`}
-              title="Brand & Logo"
-            />
-            {/* Step 2 Tab */}
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                step >= 2 ? "bg-indigo-600" : "bg-slate-100"
-              }`}
-              title="Contact & WhatsApp"
-            />
-            {/* Step 3 Tab */}
-            <button
-              type="button"
-              onClick={() => setStep(3)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                step >= 3 ? "bg-indigo-600" : "bg-slate-100"
-              }`}
-              title="Location & Launch"
-            />
-          </div>
-          <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 mt-1.5">
-            <span className={step === 1 ? "text-indigo-600" : ""}>1. Brand & Logo</span>
-            <span className={step === 2 ? "text-indigo-600" : ""}>2. Contact & WhatsApp</span>
-            <span className={step === 3 ? "text-indigo-600" : ""}>3. Location & Launch</span>
-          </div>
-        </div>
-
-        {/* ── Modal Form Body (Scrollable) ── */}
-        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4 text-slate-800 scrollbar-thin scrollbar-thumb-slate-200">
-          {/* ══════════════════════════════════════════════════════════════════
-              STEP 1: BRAND IDENTITY & LOGO
-          ══════════════════════════════════════════════════════════════════ */}
-          {step === 1 && (
-            <div className="space-y-4 animate-fade-in">
-              <div className="space-y-1">
-                <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Building2 size={18} className="text-indigo-600" />
-                  <span>Brand Identity</span>
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Your business or personal brand name will be placed across the site header, hero, and footer.
-                </p>
-              </div>
-
-              {/* Brand / Business Name */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Brand / Business Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={profile.brandName}
-                  onChange={(e) => updateField("brandName", e.target.value)}
-                  placeholder="e.g. Apex Digital, Dr. Mehta Clinic, or John Doe"
-                  className="w-full h-11 px-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
-                />
-              </div>
-
-              {/* Tagline / Subtitle */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Tagline / Catchphrase
-                </label>
-                <input
-                  type="text"
-                  value={profile.tagline}
-                  onChange={(e) => updateField("tagline", e.target.value)}
-                  placeholder="e.g. Next-Gen Tech Solutions | Certified Dental Specialist"
-                  className="w-full h-11 px-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
-                />
-              </div>
-
-              {/* Business Category */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Category / Industry
-                </label>
-                <select
-                  value={profile.category}
-                  onChange={(e) => updateField("category", e.target.value)}
-                  className="w-full h-11 px-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-xs font-semibold text-slate-900 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Logo / Brand Avatar */}
-              <div className="space-y-2 pt-1">
-                <label className="block text-xs font-bold text-slate-700">
-                  Brand Logo / Avatar (Optional)
-                </label>
-
-                <div className="flex items-center gap-3">
-                  {/* Logo Preview */}
-                  <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-                    {profile.logoUrl ? (
-                      <img
-                        src={profile.logoUrl}
-                        alt="Logo Preview"
-                        className="w-full h-full object-cover"
-                        onError={() => updateField("logoUrl", "")}
-                      />
-                    ) : (
-                      <span className="text-lg font-black text-indigo-600">
-                        {profile.brandName ? profile.brandName.charAt(0).toUpperCase() : "★"}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Actions: Upload & URL */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploadingLogo}
-                        className="px-3.5 py-2 min-h-[38px] rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors touch-manipulation"
-                      >
-                        {isUploadingLogo ? (
-                          <Loader2 size={13} className="animate-spin" />
-                        ) : (
-                          <Upload size={13} />
-                        )}
-                        <span>{isUploadingLogo ? "Uploading..." : "Upload Logo"}</span>
-                      </button>
-
-                      {profile.logoUrl && (
-                        <button
-                          type="button"
-                          onClick={() => updateField("logoUrl", "")}
-                          className="px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-
-                    <input
-                      type="url"
-                      value={profile.logoUrl}
-                      onChange={(e) => updateField("logoUrl", e.target.value)}
-                      placeholder="Or paste image URL (https://...)"
-                      className="w-full h-9 px-3 bg-slate-50 focus:bg-white text-xs font-medium text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all touch-manipulation"
-                    />
-                  </div>
-                </div>
-
-                {uploadError && (
-                  <p className="text-[11px] text-rose-500 font-medium">{uploadError}</p>
-                )}
-              </div>
+        {/* ── Modal Form Body (Scrollable, Single View) ── */}
+        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-5 text-slate-800 scrollbar-thin scrollbar-thumb-slate-200">
+          {/* Section 1: Brand Info */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <Building2 size={14} className="text-indigo-600" />
+              <span>Brand Identity</span>
             </div>
-          )}
 
-          {/* ══════════════════════════════════════════════════════════════════
-              STEP 2: CONTACT & WHATSAPP
-          ══════════════════════════════════════════════════════════════════ */}
-          {step === 2 && (
-            <div className="space-y-4 animate-fade-in">
+            {/* Brand / Business Name */}
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700">
+                Brand or Business Name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={profile.brandName}
+                onChange={(e) => updateField("brandName", e.target.value)}
+                placeholder="e.g. Apex Digital, Dr. Mehta, or The Daily Roast"
+                className="w-full h-10 px-3 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
+              />
+            </div>
+
+            {/* Tagline / Catchphrase */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-600">
+                Tagline or Description <span className="text-slate-400 text-[10px]">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                value={profile.tagline}
+                onChange={(e) => updateField("tagline", e.target.value)}
+                placeholder="e.g. Modern Architecture Studio | Handcrafted Coffee"
+                className="w-full h-9 px-3 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs font-medium text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Section 2: Contact & WhatsApp */}
+          <div className="space-y-3 pt-1 border-t border-slate-100">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider pt-2">
+              <Phone size={14} className="text-indigo-600" />
+              <span>Contact & Communication</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Phone */}
               <div className="space-y-1">
-                <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Phone size={18} className="text-indigo-600" />
-                  <span>Contact & Communication</span>
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Connect direct customer calls, inquiries, and 1-click WhatsApp buttons.
-                </p>
-              </div>
-
-              {/* Phone Number */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
+                <label className="block text-xs font-medium text-slate-600">
                   Contact Phone Number
                 </label>
-                <div className="relative">
-                  <Phone
-                    size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                  <input
-                    type="tel"
-                    value={profile.phone}
-                    onChange={(e) => updateField("phone", e.target.value)}
-                    placeholder="e.g. +91 9876543210 or +1 (555) 019-2834"
-                    className="w-full h-11 pl-10 pr-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
-                  />
-                </div>
-              </div>
-
-              {/* WhatsApp Toggle & Field */}
-              <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare size={16} className="text-emerald-600 shrink-0" />
-                    <span className="text-xs font-bold text-emerald-950">
-                      WhatsApp Chat Button
-                    </span>
-                  </div>
-
-                  {/* "WhatsApp Same as Phone" Checkbox */}
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={profile.whatsappSameAsPhone}
-                      onChange={(e) => updateField("whatsappSameAsPhone", e.target.checked)}
-                      className="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500 cursor-pointer"
-                    />
-                    <span className="text-xs font-semibold text-emerald-900">
-                      Same as phone number
-                    </span>
-                  </label>
-                </div>
-
-                {!profile.whatsappSameAsPhone && (
-                  <div className="space-y-1 pt-1 animate-fade-in">
-                    <label className="block text-[11px] font-bold text-emerald-900">
-                      Dedicated WhatsApp Number
-                    </label>
-                    <input
-                      type="tel"
-                      value={profile.whatsapp}
-                      onChange={(e) => updateField("whatsapp", e.target.value)}
-                      placeholder="e.g. +91 9876543210"
-                      className="w-full h-10 px-3 bg-white text-xs font-semibold text-slate-900 placeholder-slate-400 rounded-xl border border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all touch-manipulation"
-                    />
-                  </div>
-                )}
-                <p className="text-[10px] text-emerald-800 leading-relaxed">
-                  ✦ Injects 1-click floating WhatsApp buttons and pre-filled inquiry chats into your site.
-                </p>
-              </div>
-
-              {/* Business Email */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Business / Contact Email
-                </label>
-                <div className="relative">
-                  <Mail
-                    size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                  <input
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) => updateField("email", e.target.value)}
-                    placeholder="e.g. contact@mybusiness.com"
-                    className="w-full h-11 pl-10 pr-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ══════════════════════════════════════════════════════════════════
-              STEP 3: LOCATION & LAUNCH
-          ══════════════════════════════════════════════════════════════════ */}
-          {step === 3 && (
-            <div className="space-y-4 animate-fade-in">
-              <div className="space-y-1">
-                <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <MapPin size={18} className="text-indigo-600" />
-                  <span>Location & Summary</span>
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Add your physical city or address for interactive maps and contact sections.
-                </p>
-              </div>
-
-              {/* Business Location / Address */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Business Location / Address
-                </label>
-                <div className="relative">
-                  <MapPin
-                    size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                  <input
-                    type="text"
-                    value={profile.location}
-                    onChange={(e) => updateField("location", e.target.value)}
-                    placeholder="e.g. Bandra West, Mumbai or 123 Tech Hub Blvd, San Francisco"
-                    className="w-full h-11 pl-10 pr-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
-                  />
-                </div>
-              </div>
-
-              {/* Primary Call-to-Action Text */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Main Button Call-to-Action
-                </label>
                 <input
-                  type="text"
-                  value={profile.ctaText}
-                  onChange={(e) => updateField("ctaText", e.target.value)}
-                  placeholder="e.g. Get in Touch / Book Appointment / Order Now"
-                  className="w-full h-11 px-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all touch-manipulation"
+                  type="tel"
+                  value={profile.phone}
+                  onChange={(e) => updateField("phone", e.target.value)}
+                  placeholder="+91 9876543210"
+                  className="w-full h-9 px-3 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs font-medium text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
                 />
               </div>
 
-              {/* Summary Card */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-                <div className="font-bold text-slate-900 flex items-center justify-between">
-                  <span>Summary of Details</span>
-                  <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md font-bold">
-                    Saved for future templates
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-slate-600 pt-1">
-                  <div>
-                    <span className="font-medium text-slate-400 block text-[10px]">Brand:</span>
-                    <span className="font-bold text-slate-800 truncate block">
-                      {profile.brandName || "(Not set)"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-slate-400 block text-[10px]">Phone:</span>
-                    <span className="font-bold text-slate-800 truncate block">
-                      {profile.phone || "(Not set)"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-slate-400 block text-[10px]">WhatsApp:</span>
-                    <span className="font-bold text-emerald-700 truncate block">
-                      {profile.whatsappSameAsPhone ? profile.phone || "(Same as phone)" : profile.whatsapp || "(Not set)"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-slate-400 block text-[10px]">Location:</span>
-                    <span className="font-bold text-slate-800 truncate block">
-                      {profile.location || "(Not set)"}
-                    </span>
-                  </div>
-                </div>
+              {/* Email */}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-slate-600">
+                  Business Email
+                </label>
+                <input
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => updateField("email", e.target.value)}
+                  placeholder="contact@mybrand.com"
+                  className="w-full h-9 px-3 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs font-medium text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
+                />
               </div>
             </div>
-          )}
+
+            {/* WhatsApp Integration Box */}
+            <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/70 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-950">
+                  <MessageSquare size={14} className="text-emerald-600" />
+                  <span>WhatsApp Chat Button</span>
+                </div>
+                <label className="flex items-center gap-1.5 cursor-pointer text-[11px] font-medium text-emerald-900 select-none">
+                  <input
+                    type="checkbox"
+                    checked={profile.whatsappSameAsPhone}
+                    onChange={(e) => updateField("whatsappSameAsPhone", e.target.checked)}
+                    className="w-3.5 h-3.5 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500 cursor-pointer"
+                  />
+                  <span>Same as phone</span>
+                </label>
+              </div>
+
+              {!profile.whatsappSameAsPhone && (
+                <input
+                  type="tel"
+                  value={profile.whatsapp}
+                  onChange={(e) => updateField("whatsapp", e.target.value)}
+                  placeholder="WhatsApp number (e.g. +91 9876543210)"
+                  className="w-full h-8 px-2.5 bg-white text-xs font-medium text-slate-900 rounded-lg border border-emerald-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Section 3: Location & Logo (Optional) */}
+          <div className="space-y-3 pt-1 border-t border-slate-100">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider pt-2">
+              <MapPin size={14} className="text-indigo-600" />
+              <span>Location & Logo (Optional)</span>
+            </div>
+
+            {/* Location */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-600">
+                City / Address
+              </label>
+              <input
+                type="text"
+                value={profile.location}
+                onChange={(e) => updateField("location", e.target.value)}
+                placeholder="e.g. Bandra West, Mumbai or New York, NY"
+                className="w-full h-9 px-3 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs font-medium text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
+              />
+            </div>
+
+            {/* Logo Upload Row */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-600">
+                Logo or Avatar
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                  {profile.logoUrl ? (
+                    <img
+                      src={profile.logoUrl}
+                      alt="Logo"
+                      className="w-full h-full object-cover"
+                      onError={() => updateField("logoUrl", "")}
+                    />
+                  ) : (
+                    <ImageIcon size={16} className="text-slate-400" />
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingLogo}
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    {isUploadingLogo ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <Upload size={12} />
+                    )}
+                    <span>{isUploadingLogo ? "Uploading..." : "Upload"}</span>
+                  </button>
+
+                  <input
+                    type="url"
+                    value={profile.logoUrl}
+                    onChange={(e) => updateField("logoUrl", e.target.value)}
+                    placeholder="Or paste image link"
+                    className="flex-1 h-8 px-2.5 bg-slate-50 focus:bg-white text-xs text-slate-900 placeholder-slate-400 rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+
+                  {profile.logoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => updateField("logoUrl", "")}
+                      className="text-[11px] text-rose-500 hover:underline px-1"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+              {uploadError && (
+                <p className="text-[11px] text-rose-500">{uploadError}</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* ── Fixed Footer Action Bar (Android & Mobile Friendly) ── */}
+        {/* ── Fixed Footer Action Bar ── */}
         <div className="px-5 sm:px-6 py-3.5 border-t border-slate-100 bg-white flex items-center justify-between gap-3 shrink-0">
-          {/* Back button or Skip */}
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={() => setStep((s) => (s - 1) as any)}
-              disabled={isSubmitting}
-              className="px-4 py-2.5 min-h-[44px] rounded-2xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors flex items-center gap-1.5 touch-manipulation"
-            >
-              <ArrowLeft size={14} />
-              <span>Back</span>
-            </button>
-          ) : mode === "initial" ? (
+          {mode === "initial" ? (
             <button
               type="button"
               onClick={onSkip}
               disabled={isSubmitting}
-              className="px-4 py-2.5 min-h-[44px] rounded-2xl border border-slate-200 text-slate-600 hover:text-slate-900 font-bold text-xs hover:bg-slate-50 transition-colors touch-manipulation"
+              className="px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
             >
-              Skip to Editor
+              Skip for now
             </button>
           ) : (
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 min-h-[44px] rounded-2xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors touch-manipulation"
+              disabled={isSubmitting}
+              className="px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
             >
               Cancel
             </button>
           )}
-
-          {/* Next or Submit Button */}
-          {step < 3 ? (
-            <button
-              type="button"
-              onClick={() => setStep((s) => (s + 1) as any)}
-              className="flex-1 sm:flex-none px-6 py-2.5 min-h-[44px] rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25 transition-all touch-manipulation"
-            >
-              <span>Continue</span>
-              <ArrowRight size={14} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleFinish}
-              disabled={isSubmitting}
-              className="flex-1 sm:flex-none px-7 py-2.5 min-h-[44px] rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/30 transition-all touch-manipulation"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  <span>Building Site…</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 size={15} />
-                  <span>{mode === "edit" ? "Apply to Site" : "Launch Visual Studio"}</span>
-                </>
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleFinish}
+            disabled={isSubmitting}
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 size={13} className="animate-spin" />
+                <span>Opening Studio…</span>
+              </>
+            ) : (
+              <>
+                <span>{mode === "edit" ? "Save Changes" : "Apply & Open Editor"}</span>
+                <ArrowRight size={13} />
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
