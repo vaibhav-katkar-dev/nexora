@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -72,10 +72,10 @@ export function Navbar({
     };
   }, [mobileMenuOpen]);
 
-  const navItems = [
+  const navItems: Array<{ label: string; href: string; icon: React.ElementType; action?: () => void }> = [
     { label: "My Projects", href: "/dashboard", icon: FolderKanban },
     { label: "Templates", href: "/templates", icon: LayoutTemplate },
-    { label: "AI Architect", href: "/ai-builder", icon: Sparkles, action: onOpenAiModal },
+    // { label: "AI Architect", href: "/ai-builder", icon: Sparkles, action: onOpenAiModal }, // Hidden — coming soon
   ];
 
   const handleLogout = async () => {

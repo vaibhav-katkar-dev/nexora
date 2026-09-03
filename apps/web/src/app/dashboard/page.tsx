@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -476,9 +476,9 @@ export default function DashboardPage() {
           <div className="space-y-8">
             {/* Quick Action Cards Banner */}
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
-              {/* AI Generator Card */}
+              {/* Designer Templates Card */}
               <Link
-                href="/ai-builder"
+                href="/templates"
                 className="sm:col-span-2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-2xl p-5 sm:p-7 text-white relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col justify-between"
               >
                 <div
@@ -487,17 +487,17 @@ export default function DashboardPage() {
                 />
                 <div className="relative z-10 space-y-2.5 sm:space-y-3">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/15 text-white border border-white/20">
-                    <Sparkles size={12} /> Built with AI
+                    <LayoutTemplate size={12} /> Designer Templates
                   </div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-tight">
-                    Start a new site with AI
+                    Start with a pre-built template
                   </h2>
                   <p className="text-sm text-indigo-100/80 max-w-md leading-relaxed line-clamp-3 sm:line-clamp-none">
-                    Tell us what your site is for — a portfolio, a restaurant, a startup — and AI writes the content, picks the layout and gets it ready to publish.
+                    Browse ready-made templates for personal portfolios, businesses, restaurants, and digital cards. Customise them instantly in the visual editor.
                   </p>
                 </div>
                 <div className="pt-4 flex items-center gap-2 text-sm font-semibold text-indigo-200 group-hover:text-white transition-colors">
-                  Try AI builder →
+                  Browse templates →
                 </div>
               </Link>
 
@@ -588,7 +588,7 @@ export default function DashboardPage() {
                   </p>
                   <p className="text-sm text-slate-400 max-w-xs">
                     {projectTab === "all"
-                      ? "Pick a template to get started, or let AI build one from your description."
+                      ? "Pick a template to get started, or start from a blank canvas."
                       : `Switch to "All" to see your other projects.`}
                   </p>
                   <div className="flex items-center gap-2 pt-2">
@@ -598,12 +598,12 @@ export default function DashboardPage() {
                     >
                       Browse templates
                     </Link>
-                    <Link
-                      href="/ai-builder"
+                    <button
+                      onClick={() => setShowCreateBlankModal(true)}
                       className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50"
                     >
-                      Use AI builder
-                    </Link>
+                      Start from scratch
+                    </button>
                   </div>
                 </div>
               ) : (

@@ -43,10 +43,50 @@ const allowedOrigins = [
   ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()) : []),
 ].filter(Boolean) as string[];
 
+// Derive platform root domains from env (e.g. "okinsite.com", "okinsite.site")
+const platformRootDomains: string[] = [];
+[process.env.CLIENT_URL, process.env.SITE_BASE_URL].filter(Boolean).forEach((url) => {
+  try {
+    const host = new URL(url!).hostname.toLowerCase().replace(/^www\./, "");
+    if (host && !platformRootDomains.includes(host)) platformRootDomains.push(host);
+  } catch {}
+});
+// Always include the known production domain as a safety net
+if (!platformRootDomains.includes("okinsite.com")) platformRootDomains.push("okinsite.com");
+if (!platformRootDomains.includes("okinsite.site")) platformRootDomains.push("okinsite.site");
+
+function isAllowedOrigin(origin: string): boolean {
+  // 1️⃣ Exact match from CLIENT_URL or ALLOWED_ORIGINS env vars
+  if (allowedOrigins.includes(origin)) return true;
+
+  // 2️⃣ Localhost / 127.0.0.1 for local development
+  if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) return true;
+
+  // 3️⃣ Wildcard platform subdomains: *.okinsite.com, *.okinsite.site, etc.
+  // e.g. test.okinsite.com, mybrand.okinsite.com, cafe.okinsite.com
+  try {
+    const hostname = new URL(origin).hostname.toLowerCase();
+    for (const root of platformRootDomains) {
+      // Matches the root domain itself (okinsite.com) OR any *.okinsite.com subdomain
+      if (hostname === root || hostname.endsWith(`.${root}`)) return true;
+    }
+  } catch {}
+
+  // 4️⃣ External custom domains connected by users (e.g. https://www.mybrand.com)
+  // These call /projects/public/:slug which is a public, unauthenticated endpoint.
+  // Auth-protected endpoints are secured independently by JWT middleware.
+  try {
+    const parsed = new URL(origin);
+    if (parsed.protocol === "https:") return true;
+  } catch {}
+
+  return false;
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
+      if (!origin || isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));

@@ -44,7 +44,7 @@ export function EditorSidebar({
     { id: "add" as SidebarTab, label: "Add", icon: Plus },
     { id: "theme" as SidebarTab, label: "Design", icon: Palette },
     { id: "seo" as SidebarTab, label: "SEO", icon: Globe },
-    { id: "ai" as SidebarTab, label: "AI", icon: Sparkles },
+    // { id: "ai" as SidebarTab, label: "AI", icon: Sparkles }, // Hidden — coming soon
     ...(developerMode ? [{ id: "code" as SidebarTab, label: "Code", icon: Code2 }] : []),
   ];
 

@@ -171,7 +171,7 @@ export function EditorHeader({
           }`}
           title="Toggle Developer Mode"
         >
-          <Sparkles size={11} />
+          <Code2 size={11} />
           <span className="hidden sm:inline">{developerMode ? "Dev On" : "Dev"}</span>
         </button>
 

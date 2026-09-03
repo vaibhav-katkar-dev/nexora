@@ -272,7 +272,7 @@ export function ContextToolbar({
             <>
               {/* Element Label Badge */}
               <div className="px-2 py-0.5 bg-indigo-950/90 border border-indigo-700/50 rounded-lg flex items-center gap-1 font-mono text-[11px] text-indigo-300 font-semibold shrink-0">
-                <Sparkles size={11} className="text-indigo-400 shrink-0" />
+                <SlidersHorizontal size={11} className="text-indigo-400 shrink-0" />
                 <span className="max-w-[100px] truncate">{elementKeyNormalized || "element"}</span>
               </div>
 

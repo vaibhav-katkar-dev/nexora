@@ -454,7 +454,7 @@ export default function EditorPage() {
                 )}
                 {activeTab === "theme" && <ThemeInspectorPanel />}
                 {activeTab === "seo" && <SeoInspectorPanel />}
-                {activeTab === "ai" && <AiCopilotPanel />}
+                {/* {activeTab === "ai" && <AiCopilotPanel />} */}{/* Hidden — coming soon */}
               </div>
 
               {/* Desktop horizontal resize handle */}
@@ -562,7 +562,7 @@ export default function EditorPage() {
                     )}
                     {activeTab === "theme" && <ThemeInspectorPanel />}
                     {activeTab === "seo" && <SeoInspectorPanel />}
-                    {activeTab === "ai" && <AiCopilotPanel />}
+                    {/* {activeTab === "ai" && <AiCopilotPanel />} */}
                   </div>
                 )}
               </div>
@@ -668,8 +668,8 @@ export default function EditorPage() {
           onClose={() => setImagePickerState({ isOpen: false, currentUrl: "" })}
         />
       )}
-      {/* AI Assistant — fixed-position, non-intrusive, desktop only */}
-      <AiCanvasPromptBar />
+      {/* AI Assistant — temporarily hidden */}
+      {/* <AiCanvasPromptBar /> */}
 
       {/* Quick Business Profile Modal (Edit Mode) */}
       <QuickBusinessSetupModal
