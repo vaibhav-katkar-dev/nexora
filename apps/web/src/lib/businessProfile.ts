@@ -1,9 +1,10 @@
-﻿import { SiteConfigJSON } from "@ai-platform/shared";
+import { SiteConfigJSON } from "@ai-platform/shared";
 
 export interface BusinessProfile {
   brandName: string;
   tagline: string;
   category: string;
+  categories?: string[];
   logoUrl: string;
   phone: string;
   whatsapp: string;
@@ -12,12 +13,21 @@ export interface BusinessProfile {
   location: string;
   website?: string;
   ctaText?: string;
+  // Social & business links
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
+  youtube?: string;
+  googleBusiness?: string;
+  facebook?: string;
+  github?: string;
 }
 
 export const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
   brandName: "",
   tagline: "",
   category: "business",
+  categories: ["business"],
   logoUrl: "",
   phone: "",
   whatsapp: "",
@@ -26,6 +36,13 @@ export const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
   location: "",
   website: "",
   ctaText: "Get in Touch",
+  instagram: "",
+  linkedin: "",
+  twitter: "",
+  youtube: "",
+  googleBusiness: "",
+  facebook: "",
+  github: "",
 };
 
 const STORAGE_KEY = "Oninsite_business_profile_v1";
@@ -229,6 +246,28 @@ export function injectBusinessProfileIntoConfig(
       if (ctaText && (s.type === "hero" || s.type === "header")) {
         if (typeof c.ctaText === "string") c.ctaText = ctaText;
         if (typeof c.buttonText === "string") c.buttonText = ctaText;
+      }
+
+      // Social & Business Profiles replacements
+      const socialsMap: Record<string, string> = {};
+      if (profile.instagram) socialsMap.instagram = profile.instagram;
+      if (profile.linkedin) socialsMap.linkedin = profile.linkedin;
+      if (profile.twitter) socialsMap.twitter = profile.twitter;
+      if (profile.youtube) socialsMap.youtube = profile.youtube;
+      if (profile.facebook) socialsMap.facebook = profile.facebook;
+      if (profile.github) socialsMap.github = profile.github;
+      if (profile.website) socialsMap.website = profile.website;
+      if (profile.googleBusiness) {
+        socialsMap.google = profile.googleBusiness;
+        socialsMap.maps = profile.googleBusiness;
+        if (s.type === "contact" || s.type === "maps" || s.type === "footer") {
+          c.googleBusiness = profile.googleBusiness;
+          c.googleMapsUrl = profile.googleBusiness;
+        }
+      }
+
+      if (Object.keys(socialsMap).length > 0) {
+        c.socials = { ...(c.socials || {}), ...socialsMap };
       }
 
       s.content = c;

@@ -62,6 +62,11 @@ function TemplateGalleryContent() {
   const searchParams = useSearchParams();
   const toast = useToast();
   const urlCategory = searchParams?.get("category") || "";
+  const urlCategoriesRaw = searchParams?.get("categories") || "";
+  const urlCategories = useMemo(() => {
+    if (!urlCategoriesRaw) return [];
+    return urlCategoriesRaw.split(",").map((c) => c.trim()).filter(Boolean);
+  }, [urlCategoriesRaw]);
 
   const [user, setUser] = useState<{ email: string; role?: string; name?: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>(urlCategory || "all");
@@ -361,17 +366,34 @@ function TemplateGalleryContent() {
                   Recommended templates for your {selectedCategory.replace(/_/g, " ")} website
                 </h3>
                 <p className="text-xs text-slate-600">
-                  Showing designs tailored to your goal. Pick any template to customize with your brand details.
+                  Showing designs tailored to your goals. Your brand details, logo, and links are pre-filled automatically!
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("all")}
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white px-3.5 py-2 rounded-xl border border-indigo-200 hover:border-indigo-300 transition-colors shrink-0 shadow-xs"
-            >
-              Show All Templates →
-            </button>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {urlCategories.length > 1 &&
+                urlCategories.map((catId) => (
+                  <button
+                    key={catId}
+                    type="button"
+                    onClick={() => setSelectedCategory(catId)}
+                    className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all capitalize ${
+                      selectedCategory === catId
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    {catId.replace(/_/g, " ")}
+                  </button>
+                ))}
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("all")}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white px-3.5 py-1.5 rounded-lg border border-indigo-200 hover:border-indigo-300 transition-colors shadow-xs"
+              >
+                Show All Templates →
+              </button>
+            </div>
           </div>
         )}
 
