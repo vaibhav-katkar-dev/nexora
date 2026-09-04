@@ -1525,7 +1525,7 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive, onSe
           : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       }>
         {items.map((item: any, i: number) => {
-          const IconComponent = getIconComponent(item.icon, Sparkles);
+          const IconComponent = item.icon ? getIconComponent(item.icon) : null;
           return (
             <div
               key={i}
@@ -1564,12 +1564,14 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive, onSe
               )}
               <div className={layout === "list" ? "flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4" : layout === "compact" ? "p-5 flex-1 flex flex-col" : "p-8 flex-1 flex flex-col"}>
                 <div className="flex-1">
+                  {IconComponent && (
                   <div
                     className={`rounded-xl flex items-center justify-center shadow-md ${layout === "compact" ? "w-9 h-9 mb-3" : "w-12 h-12 mb-4"}`}
                     style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
                   >
                     <IconComponent size={layout === "compact" ? 18 : 24} />
                   </div>
+                  )}
                   <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base mb-1.5" : "text-xl mb-2"}`} style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
                     {item.title}
                   </h3>
@@ -1616,7 +1618,7 @@ function ServicesSection({ section, theme, selectedElementKey, interactive, onSe
           : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       }>
         {items.map((item: any, i: number) => {
-          const IconComponent = getIconComponent(item.icon, Sparkles);
+          const IconComponent = item.icon ? getIconComponent(item.icon) : null;
           return (
             <article
               key={i}
@@ -1655,12 +1657,14 @@ function ServicesSection({ section, theme, selectedElementKey, interactive, onSe
               )}
               <div className={layout === "list" ? "flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4" : layout === "compact" ? "p-5 flex-1 flex flex-col" : "p-6 flex-1 flex flex-col"}>
                 <div className="flex-1">
+                  {IconComponent && (
                   <div
                     className={`rounded-xl flex items-center justify-center shadow-md ${layout === "compact" ? "w-9 h-9 mb-3" : "w-12 h-12 mb-4"}`}
                     style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
                   >
                     <IconComponent size={layout === "compact" ? 18 : 24} />
                   </div>
+                  )}
                   <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base mb-1.5" : "text-xl mb-2"}`} style={{ fontFamily: "var(--font-heading)" }}>
                     {item.title}
                   </h3>
@@ -3258,82 +3262,137 @@ function RenderSection({ section, theme, selectedElementKey, interactive, siteSl
     onRequestImageEdit,
   };
 
-  switch (section.type) {
-    case "navbar":
-      return <NavbarSection {...rendererProps} />;
-    case "hero":
-      return <HeroSection {...rendererProps} />;
-    case "about":
-      return <AboutSection {...rendererProps} />;
-    case "features":
-      return <FeaturesSection {...rendererProps} />;
-    case "services":
-      return <ServicesSection {...rendererProps} />;
-    case "products":
-      return <ProductsSection {...rendererProps} />;
-    case "gallery":
-      return <GallerySection {...rendererProps} />;
-    case "team":
-      return <TeamSection {...rendererProps} />;
-    case "testimonials":
-      return <TestimonialsSection {...rendererProps} />;
-    case "portfolio_grid":
-      return <PortfolioSection {...rendererProps} />;
-    case "menu_list":
-      return <MenuSection {...rendererProps} />;
-    case "timeline":
-      return <TimelineSection {...rendererProps} />;
-    case "pricing":
-      return <PricingSection {...rendererProps} />;
-    case "faq":
-      return <FAQSection {...rendererProps} />;
-    case "blog":
-      return <BlogSection {...rendererProps} />;
-    case "links":
-      return <LinksSection {...rendererProps} />;
-    case "digital_card":
-      return <DigitalCardSection {...rendererProps} />;
-    case "contact":
-      return <ContactSection {...rendererProps} />;
-    case "cta":
-      return <CtaSection {...rendererProps} />;
-    case "maps":
-      return <MapsSection {...rendererProps} />;
-    case "whatsapp":
-      return <WhatsAppSection {...rendererProps} />;
-    case "video":
-    case "media":
-      return <VideoSection {...rendererProps} />;
-    case "custom_html": {
-      const rawHtml = section.content?.html || "";
-      // If the template ships its own semantic root (section/nav/footer/...),
-      // render the raw HTML directly so its layout & full-bleed styling apply.
-      // Only wrap bare fragments in a plain, padding-free <div> for safety.
-      const hasRoot = customHtmlHasRootElement(rawHtml);
-      return hasRoot ? (
-        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
-      ) : (
-        <section id={section.id} className="custom-html-section">
-          {rawHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
-          ) : (
-            <div className="text-center py-8 text-slate-400 text-xs border border-dashed border-slate-700 rounded-xl">
-              [Custom HTML Section: {section.title || "Empty"}]
-            </div>
-          )}
-        </section>
-      );
+  const renderedContent = (() => {
+    switch (section.type) {
+      case "navbar":
+        return <NavbarSection {...rendererProps} />;
+      case "hero":
+        return <HeroSection {...rendererProps} />;
+      case "about":
+        return <AboutSection {...rendererProps} />;
+      case "features":
+        return <FeaturesSection {...rendererProps} />;
+      case "services":
+        return <ServicesSection {...rendererProps} />;
+      case "products":
+        return <ProductsSection {...rendererProps} />;
+      case "gallery":
+        return <GallerySection {...rendererProps} />;
+      case "team":
+        return <TeamSection {...rendererProps} />;
+      case "testimonials":
+        return <TestimonialsSection {...rendererProps} />;
+      case "portfolio_grid":
+        return <PortfolioSection {...rendererProps} />;
+      case "menu_list":
+        return <MenuSection {...rendererProps} />;
+      case "timeline":
+        return <TimelineSection {...rendererProps} />;
+      case "pricing":
+        return <PricingSection {...rendererProps} />;
+      case "faq":
+        return <FAQSection {...rendererProps} />;
+      case "blog":
+        return <BlogSection {...rendererProps} />;
+      case "links":
+        return <LinksSection {...rendererProps} />;
+      case "digital_card":
+        return <DigitalCardSection {...rendererProps} />;
+      case "contact":
+        return <ContactSection {...rendererProps} />;
+      case "cta":
+        return <CtaSection {...rendererProps} />;
+      case "maps":
+        return <MapsSection {...rendererProps} />;
+      case "whatsapp":
+        return <WhatsAppSection {...rendererProps} />;
+      case "video":
+      case "media":
+        return <VideoSection {...rendererProps} />;
+      case "custom_html": {
+        const rawHtml = section.content?.html || "";
+        // If the template ships its own semantic root (section/nav/footer/...),
+        // render the raw HTML directly so its layout & full-bleed styling apply.
+        // Only wrap bare fragments in a plain, padding-free <div> for safety.
+        const hasRoot = customHtmlHasRootElement(rawHtml);
+        return hasRoot ? (
+          <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
+        ) : (
+          <section id={section.id} className="custom-html-section">
+            {rawHtml ? (
+              <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
+            ) : (
+              <div className="text-center py-8 text-slate-400 text-xs border border-dashed border-slate-700 rounded-xl">
+                [Custom HTML Section: {section.title || "Empty"}]
+              </div>
+            )}
+          </section>
+        );
+      }
+      case "footer":
+        return <FooterSection {...rendererProps} />;
+      default:
+        return (
+          <section id={section.id} className="py-16 px-6 max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold">{section.title}</h2>
+            {section.subtitle && <p className="opacity-70">{section.subtitle}</p>}
+          </section>
+        );
     }
-    case "footer":
-      return <FooterSection {...rendererProps} />;
-    default:
-      return (
-        <section id={section.id} className="py-16 px-6 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold">{section.title}</h2>
-          {section.subtitle && <p className="opacity-70">{section.subtitle}</p>}
-        </section>
-      );
+  })();
+
+  const styling = section.styling || {};
+  const wrapperStyle: React.CSSProperties = {};
+  if (styling.backgroundColor) wrapperStyle.backgroundColor = styling.backgroundColor;
+  if (styling.textColor) wrapperStyle.color = styling.textColor;
+  if (styling.paddingTop) wrapperStyle.paddingTop = styling.paddingTop;
+  if (styling.paddingBottom) wrapperStyle.paddingBottom = styling.paddingBottom;
+  if (styling.borderTop) wrapperStyle.borderTop = styling.borderTop;
+  if (styling.borderBottom) wrapperStyle.borderBottom = styling.borderBottom;
+
+  if (section.layout === "left") wrapperStyle.textAlign = "left";
+  else if (section.layout === "right") wrapperStyle.textAlign = "right";
+  else if (section.layout === "center") wrapperStyle.textAlign = "center";
+
+  const responsiveClasses = [
+    section.hideOnMobile ? "max-md:hidden" : "",
+    section.hideOnDesktop ? "md:hidden" : "",
+    section.customClass || styling.customClass || "",
+  ].filter(Boolean).join(" ");
+
+  const hasCustomStyles =
+    Object.keys(wrapperStyle).length > 0 ||
+    styling.maxWidth ||
+    responsiveClasses.length > 0;
+
+  if (!hasCustomStyles) {
+    return renderedContent;
   }
+
+  const maxWidthCss = styling.maxWidth
+    ? `[data-section-id="${section.id}"] { max-width: ${styling.maxWidth} !important; margin-left: auto !important; margin-right: auto !important; }`
+    : "";
+  const paddingOverrideCss = (styling.paddingTop || styling.paddingBottom || styling.backgroundColor)
+    ? `[data-section-id="${section.id}"] {
+        ${styling.paddingTop ? `padding-top: ${styling.paddingTop} !important;` : ""}
+        ${styling.paddingBottom ? `padding-bottom: ${styling.paddingBottom} !important;` : ""}
+        ${styling.backgroundColor ? `background-color: transparent !important;` : ""}
+      }`
+    : "";
+
+  return (
+    <div
+      id={`sec-wrap-${section.id}`}
+      data-section-wrapper={section.id}
+      className={`w-full transition-all duration-200 ${responsiveClasses}`}
+      style={wrapperStyle}
+    >
+      {(maxWidthCss || paddingOverrideCss) && (
+        <style dangerouslySetInnerHTML={{ __html: `${maxWidthCss} ${paddingOverrideCss}` }} />
+      )}
+      {renderedContent}
+    </div>
+  );
 }
 
 // ─── Main Renderer ─────────────────────────────────────────────────────────

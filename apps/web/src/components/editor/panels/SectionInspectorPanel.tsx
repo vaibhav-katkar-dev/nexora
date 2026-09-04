@@ -2451,13 +2451,13 @@ const removeArrayItem = (key: string, index: number) => {
                 <label className="text-[10px] font-semibold text-slate-400 mb-1 block">Top Padding</label>
                 <input
                   type="text"
-                  value={section.styling?.paddingTop || "4rem"}
+                  value={section.styling?.paddingTop || ""}
                   onChange={(e) =>
                     updateSection(section.id, {
                       styling: { ...(section.styling || {}), paddingTop: e.target.value },
                     })
                   }
-                  placeholder="4rem"
+                  placeholder="e.g. 4rem, 80px"
                   className={inputClass}
                 />
               </div>
@@ -2465,16 +2465,166 @@ const removeArrayItem = (key: string, index: number) => {
                 <label className="text-[10px] font-semibold text-slate-400 mb-1 block">Bottom Padding</label>
                 <input
                   type="text"
-                  value={section.styling?.paddingBottom || "4rem"}
+                  value={section.styling?.paddingBottom || ""}
                   onChange={(e) =>
                     updateSection(section.id, {
                       styling: { ...(section.styling || {}), paddingBottom: e.target.value },
                     })
                   }
-                  placeholder="4rem"
+                  placeholder="e.g. 4rem, 80px"
                   className={inputClass}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Section Text Color */}
+          <div className="space-y-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Section Text Color</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={section.styling?.textColor || "#F8FAFC"}
+                onChange={(e) =>
+                  updateSection(section.id, {
+                    styling: { ...(section.styling || {}), textColor: e.target.value },
+                  })
+                }
+                className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer p-0.5"
+              />
+              <input
+                type="text"
+                value={section.styling?.textColor || ""}
+                onChange={(e) =>
+                  updateSection(section.id, {
+                    styling: { ...(section.styling || {}), textColor: e.target.value },
+                  })
+                }
+                placeholder="e.g. #FFFFFF or inherit"
+                className={inputClass}
+              />
+              {section.styling?.textColor && (
+                <button
+                  onClick={() =>
+                    updateSection(section.id, {
+                      styling: { ...(section.styling || {}), textColor: undefined },
+                    })
+                  }
+                  className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0"
+                  title="Reset text color"
+                >
+                  <RotateCcw size={12} />
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-8 gap-1.5 pt-1">
+              {COLOR_PRESETS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() =>
+                    updateSection(section.id, {
+                      styling: { ...(section.styling || {}), textColor: c },
+                    })
+                  }
+                  className="w-5 h-5 rounded-md border border-slate-700 hover:scale-110 transition-transform"
+                  style={{ background: c }}
+                  title={c}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Max Width */}
+          <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Max Content Width</label>
+            <p className="text-[11px] text-slate-400">Constrain the section width (leave blank for full width)</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={section.styling?.maxWidth || ""}
+                onChange={(e) =>
+                  updateSection(section.id, {
+                    styling: { ...(section.styling || {}), maxWidth: e.target.value },
+                  })
+                }
+                placeholder="e.g. 1200px, 90%, 64rem"
+                className={inputClass}
+              />
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {["960px", "1200px", "1400px", "100%"].map((w) => (
+                <button
+                  key={w}
+                  onClick={() =>
+                    updateSection(section.id, {
+                      styling: { ...(section.styling || {}), maxWidth: w },
+                    })
+                  }
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all ${
+                    section.styling?.maxWidth === w
+                      ? "bg-indigo-600 text-white border-indigo-500"
+                      : "bg-slate-900 text-slate-400 border-slate-700 hover:text-white"
+                  }`}
+                >
+                  {w}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider Borders */}
+          <div className="space-y-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Section Dividers (Borders)</label>
+            <div>
+              <label className="text-[10px] font-semibold text-slate-400 mb-1 block">Border Top</label>
+              <input
+                type="text"
+                value={section.styling?.borderTop || ""}
+                onChange={(e) =>
+                  updateSection(section.id, {
+                    styling: { ...(section.styling || {}), borderTop: e.target.value },
+                  })
+                }
+                placeholder="e.g. 1px solid rgba(255,255,255,0.1)"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-slate-400 mb-1 block">Border Bottom</label>
+              <input
+                type="text"
+                value={section.styling?.borderBottom || ""}
+                onChange={(e) =>
+                  updateSection(section.id, {
+                    styling: { ...(section.styling || {}), borderBottom: e.target.value },
+                  })
+                }
+                placeholder="e.g. 1px solid rgba(255,255,255,0.1)"
+                className={inputClass}
+              />
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {[
+                { label: "Subtle light", value: "1px solid rgba(255,255,255,0.08)" },
+                { label: "Subtle dark", value: "1px solid rgba(0,0,0,0.15)" },
+                { label: "Primary", value: "1px solid var(--primary)" },
+              ].map((preset) => (
+                <button
+                  key={preset.label}
+                  onClick={() =>
+                    updateSection(section.id, {
+                      styling: {
+                        ...(section.styling || {}),
+                        borderTop: preset.value,
+                        borderBottom: preset.value,
+                      },
+                    })
+                  }
+                  className="px-2.5 py-1 rounded-lg text-[10px] font-semibold border bg-slate-900 text-slate-400 border-slate-700 hover:text-white transition-all"
+                >
+                  {preset.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -2483,6 +2633,7 @@ const removeArrayItem = (key: string, index: number) => {
       {/* ── Advanced Tab ── */}
       {inspectorTab === "advanced" && (
         <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+          {/* Section ID / Anchor */}
           <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
             <label className="text-xs font-bold text-slate-300">Section ID / Anchor</label>
             <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -2496,6 +2647,7 @@ const removeArrayItem = (key: string, index: number) => {
             />
           </div>
 
+          {/* Section Visibility */}
           <div className="space-y-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
             <div className="flex items-center justify-between">
               <div>
@@ -2516,6 +2668,70 @@ const removeArrayItem = (key: string, index: number) => {
             </div>
           </div>
 
+          {/* Responsive Visibility */}
+          <div className="space-y-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Responsive Visibility</label>
+            <p className="text-[11px] text-slate-400">Hide this section on specific screen sizes</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-800">
+                <div>
+                  <span className="text-xs font-semibold text-white">Hide on Mobile</span>
+                  <p className="text-[10px] text-slate-400">Hidden on screens smaller than 768px</p>
+                </div>
+                <button
+                  onClick={() => updateSection(section.id, { hideOnMobile: !section.hideOnMobile })}
+                  className={`relative w-10 h-5 rounded-full border transition-all ${
+                    section.hideOnMobile
+                      ? "bg-indigo-600 border-indigo-500"
+                      : "bg-slate-800 border-slate-700"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${
+                      section.hideOnMobile ? "left-5" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-800">
+                <div>
+                  <span className="text-xs font-semibold text-white">Hide on Desktop</span>
+                  <p className="text-[10px] text-slate-400">Hidden on screens 768px and wider</p>
+                </div>
+                <button
+                  onClick={() => updateSection(section.id, { hideOnDesktop: !section.hideOnDesktop })}
+                  className={`relative w-10 h-5 rounded-full border transition-all ${
+                    section.hideOnDesktop
+                      ? "bg-indigo-600 border-indigo-500"
+                      : "bg-slate-800 border-slate-700"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${
+                      section.hideOnDesktop ? "left-5" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Custom CSS Class */}
+          <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <label className="text-xs font-bold text-slate-300">Custom CSS Class</label>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Add custom Tailwind or CSS classes to this section wrapper
+            </p>
+            <input
+              type="text"
+              value={section.customClass || ""}
+              onChange={(e) => updateSection(section.id, { customClass: e.target.value })}
+              placeholder="e.g. my-custom-section animate-fadeIn"
+              className={inputClass}
+            />
+          </div>
+
+          {/* Delete Section */}
           <div className="pt-2">
             <button
               onClick={() => removeSection(section.id)}

@@ -182,12 +182,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
             elementColors: updates.elementColors
               ? { ...(sec.elementColors || {}), ...updates.elementColors }
               : sec.elementColors,
+            styling: updates.styling
+              ? { ...(sec.styling || {}), ...updates.styling }
+              : sec.styling,
             content: updates.content
               ? { ...(sec.content || {}), ...updates.content }
               : sec.content || {},
           }
         : sec
     );
+    if (updates.id && updates.id !== sectionId) {
+      set({ activeSectionId: updates.id });
+    }
     get().setConfig({ ...config, sections: newSections });
   },
 

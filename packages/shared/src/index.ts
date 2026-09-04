@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 // ==========================================
 // Category & Enum Definitions
@@ -129,9 +129,16 @@ export const SectionSchema = z.object({
       paddingBottom: z.string().optional(),
       backgroundColor: z.string().optional(),
       textColor: z.string().optional(),
+      borderTop: z.string().optional(),
+      borderBottom: z.string().optional(),
+      maxWidth: z.string().optional(),
+      customClass: z.string().optional(),
     })
     .optional(),
   layout: z.string().optional(),
+  hideOnMobile: z.boolean().optional(),
+  hideOnDesktop: z.boolean().optional(),
+  customClass: z.string().optional(),
   fieldDefinitions: z.array(FieldDefinitionSchema).optional(),
   visible: z.boolean().default(true),
 });
