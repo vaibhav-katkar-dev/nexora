@@ -76,6 +76,17 @@ function IframeCanvas({
     if (!doc) return;
     didInit.current = true;
 
+    // ── Set base URL so relative stylesheet and asset links resolve ──
+    try {
+      if (typeof window !== "undefined") {
+        const baseEl = doc.createElement("base");
+        baseEl.href = `${window.location.origin}/`;
+        doc.head.appendChild(baseEl);
+      }
+    } catch {
+      // ignore
+    }
+
     // ── Copy ALL parent stylesheets into the iframe ──────────────────
     // This ensures Tailwind classes, custom CSS, Google Fonts, etc.
     // all work identically inside the iframe.
@@ -89,6 +100,27 @@ function IframeCanvas({
         // cross-origin link tags may fail to clone — skip silently
       }
     });
+
+    // Also copy document.styleSheets cssRules directly to avoid any network delay
+    try {
+      const styleSheets = Array.from(document.styleSheets);
+      const inlineCssTag = doc.createElement("style");
+      let combinedRules = "";
+      styleSheets.forEach((sheet) => {
+        try {
+          const rules = Array.from((sheet as CSSStyleSheet).cssRules || []);
+          rules.forEach((r) => { combinedRules += r.cssText + "\n"; });
+        } catch {
+          // cross-origin stylesheets cannot be read
+        }
+      });
+      if (combinedRules) {
+        inlineCssTag.textContent = combinedRules;
+        doc.head.appendChild(inlineCssTag);
+      }
+    } catch {
+      // fallback
+    }
 
     // ── Base reset styles for the iframe body ───────────────────────
     const resetStyle = doc.createElement("style");
@@ -135,6 +167,7 @@ function IframeCanvas({
         title="preview"
         tabIndex={-1}
         aria-hidden="true"
+        srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
         onLoad={handleLoad}
         sandbox="allow-same-origin"
         className="pointer-events-none border-0 select-none block transition-transform duration-500 ease-out group-hover:scale-[1.02]"
@@ -211,11 +244,13 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
     return () => window.removeEventListener("resize", measure);
   }, []);
 
+  const bg = config?.theme?.backgroundColor || PAGE_BG;
+
   const fallback = (
-    <div className={`absolute inset-0 flex items-center justify-center ${FALLBACK_BG}`}>
-      <div className="flex flex-col items-center gap-2 text-slate-400">
-        <LayoutTemplate size={24} className="text-indigo-400 opacity-80" />
-        <span className="text-xs font-semibold capitalize tracking-wide text-slate-300">
+    <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: bg }}>
+      <div className="flex flex-col items-center gap-2" style={{ color: config?.theme?.primaryColor || "#6366f1" }}>
+        <LayoutTemplate size={24} className="opacity-80" />
+        <span className="text-xs font-semibold capitalize tracking-wide opacity-90">
           {category || name || "Template Preview"}
         </span>
       </div>
@@ -224,22 +259,22 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
 
   const ready = inView && heroConfig && box.width > 0 && box.height > 0;
   const scale = box.width > 0 ? box.width / CANVAS_W : 0.25;
-  const bg = config?.theme?.backgroundColor || PAGE_BG;
 
   return (
     <div
       ref={wrapperRef}
-      className="relative w-full overflow-hidden bg-slate-950 select-none group"
-      style={
-        height
+      className="relative w-full overflow-hidden select-none group"
+      style={{
+        ...(height
           ? { minHeight: height, maxHeight: height }
-          : { aspectRatio: "16 / 10", width: "100%" }
-      }
+          : { aspectRatio: "16 / 10", width: "100%" }),
+        backgroundColor: bg,
+      }}
       aria-hidden="true"
     >
       {!ready ? (
         !inView ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-950 animate-pulse">
+          <div className="absolute inset-0 flex items-center justify-center animate-pulse" style={{ backgroundColor: bg }}>
             <Loader2 size={20} className="text-indigo-500 animate-spin" />
           </div>
         ) : (
@@ -261,10 +296,10 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
       )}
 
       {/* Depth shadow */}
-      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06),inset_0_-20px_30px_-12px_rgba(0,0,0,0.5)]" />
+      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),inset_0_-20px_30px_-12px_rgba(0,0,0,0.3)]" />
 
-      {/* Hover gradient */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Subtle hover gradient */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>
   );
 }

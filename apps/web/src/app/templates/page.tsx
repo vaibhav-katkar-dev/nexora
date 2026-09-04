@@ -410,7 +410,10 @@ function TemplateGalleryContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTemplates.map((template) => {
               const IconComp = CATEGORY_ICON_COMPONENTS[template.category] || Globe;
-              const primaryColor = template.config.theme.primaryColor || "#4F46E5";
+              const primaryColor = template.config.theme?.primaryColor || "#4F46E5";
+              const secondaryColor = template.config.theme?.secondaryColor || "#a855f7";
+              const accentColor = template.config.theme?.accentColor || "#06b6d4";
+              const themeMode = template.config.theme?.mode || "dark";
 
               return (
                 <div
@@ -428,10 +431,21 @@ function TemplateGalleryContent() {
                   {/* ── Template Info ─────────────────────────────────────── */}
                   <div className="px-1 pt-4 pb-1 flex-1 flex flex-col gap-3">
                     <div className="space-y-1.5">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400 flex items-center gap-1.5">
-                        <IconComp size={11} style={{ color: primaryColor }} />
-                        {template.category.replace("_", " ")}
-                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400 flex items-center gap-1.5">
+                          <IconComp size={11} style={{ color: primaryColor }} />
+                          {template.category.replace("_", " ")}
+                        </p>
+                        {/* Color Palette Indicators */}
+                        <div className="flex items-center gap-1.5 shrink-0" title={`Colors: Primary ${primaryColor}, Secondary ${secondaryColor}, Accent ${accentColor}`}>
+                          <span className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: primaryColor }} />
+                          <span className="w-3 h-3 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: secondaryColor }} />
+                          <span className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: accentColor }} />
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-slate-500 bg-slate-100 border border-slate-200">
+                            {themeMode === "light" ? "Light" : "Dark"}
+                          </span>
+                        </div>
+                      </div>
                       <h3 className="text-[15px] font-semibold text-slate-900 leading-snug line-clamp-1">
                         {template.name}
                       </h3>
@@ -494,6 +508,15 @@ function TemplateGalleryContent() {
                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 capitalize shrink-0">
                   {previewTemplate.category}
                 </span>
+                {/* Palette indicator in preview modal */}
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 shrink-0">
+                  <span className="w-3 h-3 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: previewTemplate.config?.theme?.primaryColor || "#6366f1" }} title="Primary Color" />
+                  <span className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: previewTemplate.config?.theme?.secondaryColor || "#a855f7" }} title="Secondary Color" />
+                  <span className="w-2 h-2 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: previewTemplate.config?.theme?.accentColor || "#06b6d4" }} title="Accent Color" />
+                  <span className="text-[10px] text-slate-400 font-medium ml-1">
+                    {previewTemplate.config?.theme?.mode === "light" ? "Light Mode" : "Dark Mode"}
+                  </span>
+                </div>
               </div>
 
               {/* Viewport Switcher */}
@@ -566,7 +589,10 @@ function TemplateGalleryContent() {
             {/* Live Render Area */}
             <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden bg-slate-950 p-2 sm:p-4 flex flex-col items-center custom-scrollbar">
               {previewViewport === "desktop" ? (
-                <div className="w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-black">
+                <div
+                  className="w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800/80"
+                  style={{ backgroundColor: previewTemplate.config?.theme?.backgroundColor || "#0B1120" }}
+                >
                   <SiteRenderer config={previewTemplate.config} />
                 </div>
               ) : (

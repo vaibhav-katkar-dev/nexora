@@ -219,6 +219,17 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
               <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
                 {templateData.category.replace("_", " ")}
               </span>
+              {/* Palette indicator in preview header */}
+              {templateData.config?.theme && (
+                <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700">
+                  <span className="w-3 h-3 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: templateData.config.theme.primaryColor }} title="Primary" />
+                  <span className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: templateData.config.theme.secondaryColor }} title="Secondary" />
+                  <span className="w-2 h-2 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: templateData.config.theme.accentColor }} title="Accent" />
+                  <span className="text-[10px] text-slate-400 font-medium ml-1">
+                    {templateData.config.theme.mode === "light" ? "Light Mode" : "Dark Mode"}
+                  </span>
+                </span>
+              )}
             </h1>
           </div>
         </div>
@@ -283,7 +294,10 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
       {/* ── Main Preview Area ──────────────────────────────────────────────── */}
       <main className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden p-2 sm:p-4 bg-slate-950 flex flex-col items-center custom-scrollbar">
         {viewport === "desktop" ? (
-          <div className="w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800/80 bg-black">
+          <div
+            className="w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800/80"
+            style={{ backgroundColor: templateData.config?.theme?.backgroundColor || "#0B1120" }}
+          >
             <SiteRenderer config={templateData.config} />
           </div>
         ) : (

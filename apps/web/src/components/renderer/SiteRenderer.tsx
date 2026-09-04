@@ -493,10 +493,13 @@ function buildCssVariables(theme: any, _interactive?: boolean): CSSProperties {
   // High contrast text & surfaces based on true background luminance
   const textMain = theme.textColor || (isLightBg ? "#0F172A" : "#F8FAFC");
   const textMuted = isLightBg ? "#475569" : "#94A3B8";
-  const surface = isLightBg ? "rgba(255, 255, 255, 0.94)" : "rgba(255, 255, 255, 0.04)";
-  const border = isLightBg ? "rgba(15, 23, 42, 0.08)" : "rgba(255, 255, 255, 0.08)";
+  const surface = isLightBg ? "#FFFFFF" : "rgba(255, 255, 255, 0.04)";
+  const border = isLightBg ? "rgba(15, 23, 42, 0.10)" : "rgba(255, 255, 255, 0.08)";
+  const cardShadow = isLightBg
+    ? "0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04)"
+    : "0 4px 20px -2px rgba(0, 0, 0, 0.5)";
   const inputBg = isLightBg ? "#FFFFFF" : "rgba(15, 23, 42, 0.6)";
-  const inputBorder = isLightBg ? "#CBD5E1" : "rgba(255, 255, 255, 0.12)";
+  const inputBorder = isLightBg ? "#CBD5E1" : "rgba(255, 255, 255, 0.14)";
 
   return {
     "--primary": theme.primaryColor || "#3B82F6",
@@ -510,6 +513,7 @@ function buildCssVariables(theme: any, _interactive?: boolean): CSSProperties {
     "--surface-card": surface,
     "--border": border,
     "--border-subtle": border,
+    "--card-shadow": cardShadow,
     "--input-bg": inputBg,
     "--input-border": inputBorder,
     "--font-heading": theme.headingFont || theme.fontFamily || "Inter",
@@ -1079,8 +1083,8 @@ function HeroSection({ section, theme, selectedElementKey, interactive, onSelect
 
         <h1
           {...sel("title")}
-          className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl leading-none mb-6 text-white"
-          style={{ fontFamily: "var(--font-heading)" }}
+          className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl leading-none mb-6"
+          style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}
         >
           {section.title}
         </h1>
@@ -1088,8 +1092,8 @@ function HeroSection({ section, theme, selectedElementKey, interactive, onSelect
         {section.subtitle && (
           <p
             {...sel("subtitle")}
-            className="text-lg sm:text-xl opacity-90 max-w-2xl font-normal leading-relaxed mb-10 text-slate-200"
-            style={getElementStyle(section, "subtitle")}
+            className="text-lg sm:text-xl opacity-90 max-w-2xl font-normal leading-relaxed mb-10"
+            style={{ color: "var(--text-muted)", ...getElementStyle(section, "subtitle") }}
           >
             {section.subtitle}
           </p>
@@ -1137,9 +1141,11 @@ function HeroSection({ section, theme, selectedElementKey, interactive, onSelect
             <a
               {...sel("content.secondaryCtaText")}
               href={content.secondaryCtaLink || "#"}
-              className="px-8 py-3.5 rounded-xl font-semibold border backdrop-blur-sm transition-all hover:bg-white/10 text-white"
+              className="px-8 py-3.5 rounded-xl font-semibold border backdrop-blur-sm transition-all hover:opacity-90"
               style={{
-                borderColor: "rgba(255, 255, 255, 0.2)",
+                borderColor: "var(--border)",
+                backgroundColor: "var(--surface)",
+                color: "var(--text)",
                 borderRadius: "var(--radius)",
               }}
             >
@@ -1149,13 +1155,13 @@ function HeroSection({ section, theme, selectedElementKey, interactive, onSelect
         </div>
 
         {stats.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-white/15 w-full max-w-3xl">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 border-t border-slate-700/20 w-full max-w-3xl" style={{ borderColor: "var(--border)" }}>
             {stats.map((st: any, i: number) => (
               <div key={i} className="text-center">
-                <div {...sel(`content.stats.${i}.value`)} className="text-3xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
+                <div {...sel(`content.stats.${i}.value`)} className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
                   {st.value}
                 </div>
-                <div className="text-xs uppercase tracking-wider opacity-70 text-slate-300 mt-1">{st.label}</div>
+                <div className="text-xs uppercase tracking-wider opacity-75 mt-1" style={{ color: "var(--text-muted)" }}>{st.label}</div>
               </div>
             ))}
           </div>
@@ -1215,15 +1221,15 @@ function AboutSection({ section, theme, selectedElementKey, interactive, onSelec
           <div className="inline-block text-xs font-bold uppercase tracking-wider" style={{ color: theme.primaryColor }}>
             About
           </div>
-          <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+          <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
             {section.title}
           </h2>
-          {content.bio && <p {...sel("content.bio")} className="text-base opacity-80 leading-relaxed">{content.bio}</p>}
+          {content.bio && <p {...sel("content.bio")} className="text-base opacity-80 leading-relaxed" style={{ color: "var(--text)" }}>{content.bio}</p>}
 
           {highlights.length > 0 && (
             <div className="space-y-3 pt-2">
               {highlights.map((h: string, i: number) => (
-                <div key={i} className="flex items-start gap-3 text-sm opacity-90">
+                <div key={i} className="flex items-start gap-3 text-sm opacity-90" style={{ color: "var(--text)" }}>
                   <CheckCircle2 size={18} style={{ color: theme.primaryColor }} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span {...sel(`content.highlights.${i}`)}>{h}</span>
                 </div>
@@ -1240,12 +1246,13 @@ function AboutSection({ section, theme, selectedElementKey, interactive, onSelec
             {...sel("content.skills")}
             className="w-full md:w-80 p-6 rounded-2xl border backdrop-blur-sm"
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.03)",
-              borderColor: "rgba(255, 255, 255, 0.08)",
+              backgroundColor: "var(--surface)",
+              borderColor: "var(--border)",
+              boxShadow: "var(--card-shadow)",
               borderRadius: "var(--radius)",
             }}
           >
-            <h3 className="text-sm font-semibold uppercase tracking-wider mb-4 opacity-70">Skills &amp; Expertise</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider mb-4 opacity-75" style={{ color: "var(--text)" }}>Skills &amp; Expertise</h3>
             <div className="flex flex-wrap gap-2">
               {skills.map((skill: string) => (
                 <span
@@ -1276,10 +1283,10 @@ function PricingSection({ section, theme, selectedElementKey, interactive }: Sec
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-6xl mx-auto">
       <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="opacity-75" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
       </div>
 
       <div className={
@@ -1299,8 +1306,9 @@ function PricingSection({ section, theme, selectedElementKey, interactive }: Sec
               p.isPopular ? "border-2 shadow-2xl scale-105" : "backdrop-blur-sm"
             }`}
             style={{
-              backgroundColor: p.isPopular ? `${theme.primaryColor}10` : "rgba(255, 255, 255, 0.03)",
-              borderColor: p.isPopular ? theme.primaryColor : "rgba(255, 255, 255, 0.08)",
+              backgroundColor: p.isPopular ? `${theme.primaryColor}15` : "var(--surface)",
+              borderColor: p.isPopular ? theme.primaryColor : "var(--border)",
+              boxShadow: p.isPopular ? undefined : "var(--card-shadow)",
               borderRadius: "var(--radius)",
             }}
           >
@@ -1352,7 +1360,7 @@ function FAQSection({ section, theme, selectedElementKey, interactive }: Section
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-3xl mx-auto">
       <div className="text-center mb-14">
-        <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
       </div>
@@ -1366,19 +1374,21 @@ function FAQSection({ section, theme, selectedElementKey, interactive }: Section
               {...sel(`content.items.${i}`)}
               className="border rounded-2xl overflow-hidden backdrop-blur-sm transition-all"
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.03)",
-                borderColor: "rgba(255, 255, 255, 0.08)",
+                backgroundColor: "var(--surface)",
+                borderColor: "var(--border)",
+                boxShadow: "var(--card-shadow)",
               }}
             >
               <button
                 onClick={() => setOpenIdx(isOpen ? null : i)}
                 className="w-full p-6 text-left font-bold flex justify-between items-center gap-4 text-lg"
+                style={{ color: "var(--text)" }}
               >
                 <span {...sel(`content.items.${i}.question`)}>{item.question}</span>
                 <ChevronDown size={20} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
               </button>
               {isOpen && (
-                <div {...sel(`content.items.${i}.answer`)} className="px-6 pb-6 text-sm opacity-75 leading-relaxed border-t border-white/5 pt-4">
+                <div {...sel(`content.items.${i}.answer`)} className="px-6 pb-6 text-sm opacity-80 leading-relaxed border-t pt-4" style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}>
                   {item.answer}
                 </div>
               )}
@@ -1459,10 +1469,10 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive, o
           </div>
         )}
 
-        <h1 {...sel("title")} className="text-2xl font-extrabold mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+        <h1 {...sel("title")} className="text-2xl font-extrabold mb-1" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h1>
-        <p {...sel("subtitle")} className="text-sm opacity-60 mb-8">{section.subtitle}</p>
+        <p {...sel("subtitle")} className="text-sm opacity-60 mb-8" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>
 
         <div className="space-y-4">
           {customLinks.map((link: any, i: number) => (
@@ -1473,9 +1483,10 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive, o
               onClick={(e) => handleLinkClick(i, link.url, e)}
               className="block w-full p-4 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] border"
               style={{
-                backgroundColor: clickedIdx === i ? theme.primaryColor : "rgba(255, 255, 255, 0.05)",
-                borderColor: "rgba(255, 255, 255, 0.1)",
-                color: clickedIdx === i ? "white" : "inherit",
+                backgroundColor: clickedIdx === i ? theme.primaryColor : "var(--surface)",
+                borderColor: "var(--border)",
+                boxShadow: "var(--card-shadow)",
+                color: clickedIdx === i ? "white" : "var(--text)",
                 borderRadius: "var(--radius)",
               }}
             >
@@ -1500,10 +1511,10 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive, onSe
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
       </div>
 
       <div className={
@@ -1523,8 +1534,9 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive, onSe
                 layout === "list" ? "flex-col sm:flex-row items-start sm:items-center gap-6 p-6" : "flex-col"
               }`}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.03)",
-                borderColor: "rgba(255, 255, 255, 0.08)",
+                backgroundColor: "var(--surface)",
+                borderColor: "var(--border)",
+                boxShadow: "var(--card-shadow)",
                 borderRadius: "var(--radius)",
               }}
             >
@@ -1558,10 +1570,10 @@ function FeaturesSection({ section, theme, selectedElementKey, interactive, onSe
                   >
                     <IconComponent size={layout === "compact" ? 18 : 24} />
                   </div>
-                  <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base mb-1.5" : "text-xl mb-2"}`} style={{ fontFamily: "var(--font-heading)" }}>
+                  <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base mb-1.5" : "text-xl mb-2"}`} style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
                     {item.title}
                   </h3>
-                  <p {...sel(`content.items.${i}.desc`)} className={`opacity-75 leading-relaxed ${layout === "compact" ? "text-xs" : "text-sm"}`}>{item.desc}</p>
+                  <p {...sel(`content.items.${i}.desc`)} className={`opacity-75 leading-relaxed ${layout === "compact" ? "text-xs" : "text-sm"}`} style={{ color: "var(--text-muted)" }}>{item.desc}</p>
                 </div>
                 {(item.buttonText || item.url || item.ctaLink) && (
                   <a
@@ -1590,10 +1602,10 @@ function ServicesSection({ section, theme, selectedElementKey, interactive, onSe
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
       </div>
 
       <div className={
@@ -1613,8 +1625,9 @@ function ServicesSection({ section, theme, selectedElementKey, interactive, onSe
                 layout === "list" ? "flex-col sm:flex-row items-start sm:items-center gap-6 p-6" : "flex-col"
               }`}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.03)",
-                borderColor: "rgba(255, 255, 255, 0.08)",
+                backgroundColor: "var(--surface)",
+                borderColor: "var(--border)",
+                boxShadow: "var(--card-shadow)",
                 borderRadius: "var(--radius)",
               }}
             >
@@ -1680,10 +1693,10 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight text-white" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
       </div>
 
       <div className={
@@ -1700,7 +1713,7 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
             className={`rounded-2xl border backdrop-blur-sm flex overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl Oninsite-card-glow ${
               layout === "list" ? "flex-col sm:flex-row items-start sm:items-center gap-6 p-6" : "flex-col"
             }`}
-            style={{ backgroundColor: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.08)", borderRadius: "var(--radius)" }}
+            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--card-shadow)", borderRadius: "var(--radius)" }}
           >
             {item.image && (
               <div className={layout === "list" ? "w-full sm:w-48 h-36 shrink-0 overflow-hidden relative rounded-xl" : layout === "compact" ? "h-36 overflow-hidden relative" : "h-52 overflow-hidden relative"}>
@@ -1735,7 +1748,7 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
             <div className={layout === "list" ? "flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full" : layout === "compact" ? "p-4 flex-1 flex flex-col justify-between" : "p-6 flex-1 flex flex-col"}>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base" : "text-xl"}`} style={{ fontFamily: "var(--font-heading)" }}>
+                  <h3 {...sel(`content.items.${i}.title`)} className={`font-bold ${layout === "compact" ? "text-base" : "text-xl"}`} style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
                     {item.title}
                   </h3>
                   {item.badge && layout === "list" && (
@@ -1747,7 +1760,7 @@ function ProductsSection({ section, theme, selectedElementKey, interactive, onAd
                     </span>
                   )}
                 </div>
-                <p {...sel(`content.items.${i}.desc`)} className={`opacity-75 leading-relaxed ${layout === "compact" ? "text-xs" : "text-sm"}`}>{item.desc}</p>
+                <p {...sel(`content.items.${i}.desc`)} className={`opacity-75 leading-relaxed ${layout === "compact" ? "text-xs" : "text-sm"}`} style={{ color: "var(--text-muted)" }}>{item.desc}</p>
               </div>
               <div className={`flex items-center gap-3 ${layout === "list" ? "shrink-0" : "mt-4 justify-between"}`}>
                 {item.price && (
@@ -1844,10 +1857,10 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive, onS
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-7xl mx-auto">
       <div className="mb-14 space-y-2">
-        <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="opacity-75" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
       </div>
 
       <div className={
@@ -1865,8 +1878,9 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive, onS
               layout === "list" ? "flex-col sm:flex-row items-stretch" : "flex-col"
             }`}
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.03)",
-              borderColor: "rgba(255, 255, 255, 0.08)",
+              backgroundColor: "var(--surface)",
+              borderColor: "var(--border)",
+              boxShadow: "var(--card-shadow)",
               borderRadius: "var(--radius)",
             }}
           >
@@ -1902,10 +1916,10 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive, onS
                     {p.tag}
                   </span>
                 )}
-                <h3 {...sel(`content.projects.${i}.name`)} className={`font-bold mb-1 group-hover:text-indigo-400 transition-colors ${layout === "compact" ? "text-base" : "text-xl"}`}>
+                <h3 {...sel(`content.projects.${i}.name`)} className={`font-bold mb-1 transition-colors ${layout === "compact" ? "text-base" : "text-xl"}`} style={{ color: "var(--text)" }}>
                   {p.name}
                 </h3>
-                <p {...sel(`content.projects.${i}.desc`)} className={`opacity-75 leading-relaxed mb-4 ${layout === "compact" ? "text-xs line-clamp-2" : "text-sm"}`}>{p.desc}</p>
+                <p {...sel(`content.projects.${i}.desc`)} className={`opacity-75 leading-relaxed mb-4 ${layout === "compact" ? "text-xs line-clamp-2" : "text-sm"}`} style={{ color: "var(--text-muted)" }}>{p.desc}</p>
               </div>
               {p.url && (
                 <a
@@ -1939,10 +1953,10 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
             {section.badge}
           </span>
         )}
-        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight text-white" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="text-base sm:text-lg opacity-75" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
       </div>
 
       <div className="space-y-16">
@@ -1958,7 +1972,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                 >
                   {cat.name}
                 </h3>
-                <div className="h-px bg-white/10 flex-1" />
+                <div className="h-px bg-slate-700/20 flex-1" style={{ backgroundColor: "var(--border)" }} />
               </div>
 
               {/* GRID LAYOUT (Photo Cards) */}
@@ -1969,7 +1983,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                       key={ii}
                       {...sel(`content.categories.${ci}.items.${ii}`)}
                       className="rounded-2xl border backdrop-blur-sm flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl Oninsite-card-glow"
-                      style={{ backgroundColor: "rgba(255, 255, 255, 0.03)", borderColor: "rgba(255, 255, 255, 0.08)", borderRadius: "var(--radius)" }}
+                      style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--card-shadow)", borderRadius: "var(--radius)" }}
                     >
                       {item.image && (
                         <div className="h-48 overflow-hidden relative">
@@ -2001,7 +2015,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                       <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                         <div>
                           <div className="flex items-start justify-between gap-2 mb-2">
-                            <h4 {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-lg text-white" style={{ fontFamily: "var(--font-heading)" }}>
+                            <h4 {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-lg" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
                               {item.name}
                             </h4>
                             {item.price && (
@@ -2010,7 +2024,7 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                               </span>
                             )}
                           </div>
-                          {item.desc && <p {...sel(`content.categories.${ci}.items.${ii}.desc`)} className="text-sm opacity-75 leading-relaxed">{item.desc}</p>}
+                          {item.desc && <p {...sel(`content.categories.${ci}.items.${ii}.desc`)} className="text-sm opacity-75 leading-relaxed" style={{ color: "var(--text-muted)" }}>{item.desc}</p>}
                         </div>
                         {onAddToCart ? (
                           <button
@@ -2048,8 +2062,8 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                     <div
                       key={ii}
                       {...sel(`content.categories.${ci}.items.${ii}`)}
-                      className="p-4 rounded-xl border backdrop-blur-sm flex items-center gap-4 transition-colors hover:bg-white/5"
-                      style={{ borderColor: "rgba(255, 255, 255, 0.08)", borderRadius: "var(--radius)" }}
+                      className="p-4 rounded-xl border backdrop-blur-sm flex items-center gap-4 transition-colors"
+                      style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--card-shadow)", borderRadius: "var(--radius)" }}
                     >
                       {item.image && (
                         <InteractiveImageWrapper
@@ -2074,12 +2088,12 @@ function MenuSection({ section, theme, selectedElementKey, interactive, onAddToC
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <span {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-base truncate text-white">{item.name}</span>
+                          <span {...sel(`content.categories.${ci}.items.${ii}.name`)} className="font-bold text-base truncate" style={{ color: "var(--text)" }}>{item.name}</span>
                           <span {...sel(`content.categories.${ci}.items.${ii}.price`)} className="font-extrabold text-base shrink-0" style={{ color: theme.primaryColor }}>
                             {item.price}
                           </span>
                         </div>
-                        {item.desc && <p {...sel(`content.categories.${ci}.items.${ii}.desc`)} className="text-xs opacity-65 truncate mt-0.5">{item.desc}</p>}
+                        {item.desc && <p {...sel(`content.categories.${ci}.items.${ii}.desc`)} className="text-xs opacity-65 truncate mt-0.5" style={{ color: "var(--text-muted)" }}>{item.desc}</p>}
                         {onAddToCart ? (
                           <button
                             type="button"
@@ -2230,11 +2244,11 @@ function LinksSection({ section, theme, selectedElementKey, interactive }: Secti
   return (
     <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-lg mx-auto text-center">
       {section.title && (
-        <h2 {...sel("title")} className="text-3xl font-extrabold mb-3" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-3xl font-extrabold mb-3" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
       )}
-      {section.subtitle && <p {...sel("subtitle")} className="text-sm opacity-80 mb-10">{section.subtitle}</p>}
+      {section.subtitle && <p {...sel("subtitle")} className="text-sm opacity-80 mb-10" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
 
       <div className="space-y-4">
         {links.map((link: any, i: number) => {
@@ -2254,8 +2268,10 @@ function LinksSection({ section, theme, selectedElementKey, interactive }: Secti
                   : "hover:-translate-y-1 hover:shadow-xl"
               }`}
               style={{
-                backgroundColor: clicked ? undefined : "rgba(255, 255, 255, 0.05)",
-                borderColor: clicked ? undefined : "rgba(255, 255, 255, 0.12)",
+                backgroundColor: clicked ? undefined : "var(--surface)",
+                borderColor: clicked ? undefined : "var(--border)",
+                boxShadow: "var(--card-shadow)",
+                color: clicked ? undefined : "var(--text)",
                 borderRadius: "var(--radius)",
               }}
             >
@@ -2550,10 +2566,10 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
   return (
     <section id={section.id} data-section-id={section.id} className="py-12 sm:py-20 px-4 sm:px-6 max-w-4xl mx-auto">
       <div className="text-center mb-8 sm:mb-12 space-y-2">
-        <h2 {...sel("title")} className="text-2xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 {...sel("title")} className="text-2xl sm:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
-        {section.subtitle && <p {...sel("subtitle")} className="text-sm sm:text-base opacity-75">{section.subtitle}</p>}
+        {section.subtitle && <p {...sel("subtitle")} className="text-sm sm:text-base opacity-75" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
       </div>
 
       <div className={`flex flex-wrap ${!isFormEnabled ? "justify-center max-w-md mx-auto" : ""} gap-8 sm:gap-12 items-start`}>
@@ -2564,12 +2580,15 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
               {...selectOnly("content.email", selectedElementKey)}
               className="flex items-center gap-3.5 sm:gap-4"
             >
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center border shrink-0"
+                style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+              >
                 <Mail size={18} style={{ color: theme.primaryColor }} />
               </div>
               <div className="min-w-0">
-                <div className="text-xs opacity-60">Email Us</div>
-                <a href={`mailto:${c.email}`} className="font-semibold hover:underline truncate block">
+                <div className="text-xs opacity-60" style={{ color: "var(--text-muted)" }}>Email Us</div>
+                <a href={`mailto:${c.email}`} className="font-semibold hover:underline truncate block" style={{ color: "var(--text)" }}>
                   {c.email}
                 </a>
               </div>
@@ -2577,12 +2596,15 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
           )}
           {c.phone && (
             <div {...selectOnly("content.phone", selectedElementKey)} className="flex items-center gap-3.5 sm:gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center border shrink-0"
+                style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+              >
                 <Phone size={18} style={{ color: theme.primaryColor }} />
               </div>
               <div>
-                <div className="text-xs opacity-60">Call Directly</div>
-                <a href={`tel:${c.phone}`} className="font-semibold hover:underline">
+                <div className="text-xs opacity-60" style={{ color: "var(--text-muted)" }}>Call Directly</div>
+                <a href={`tel:${c.phone}`} className="font-semibold hover:underline" style={{ color: "var(--text)" }}>
                   {c.phone}
                 </a>
               </div>
@@ -2590,12 +2612,15 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
           )}
           {c.address && (
             <div {...selectOnly("content.address", selectedElementKey)} className="flex items-center gap-3.5 sm:gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shrink-0">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center border shrink-0"
+                style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+              >
                 <MapPin size={18} style={{ color: theme.primaryColor }} />
               </div>
               <div>
-                <div className="text-xs opacity-60">Location</div>
-                <div className="font-semibold text-sm sm:text-base">{c.address}</div>
+                <div className="text-xs opacity-60" style={{ color: "var(--text-muted)" }}>Location</div>
+                <div className="font-semibold text-sm sm:text-base" style={{ color: "var(--text)" }}>{c.address}</div>
               </div>
             </div>
           )}
@@ -2605,7 +2630,7 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                 <MessageCircle size={18} className="text-emerald-400" />
               </div>
               <div>
-                <div className="text-xs opacity-60">WhatsApp Chat</div>
+                <div className="text-xs opacity-60" style={{ color: "var(--text-muted)" }}>WhatsApp Chat</div>
                 <a
                   href={`https://wa.me/${(c.publicWhatsapp || c.whatsapp).replace(/[^0-9]/g, "")}`}
                   target="_blank"
@@ -2629,7 +2654,11 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
 
         {/* Interactive Form Card */}
         {isFormEnabled && (
-          <div {...sel("form")} className="flex-[1_1_280px] relative rounded-2xl border bg-white/5 backdrop-blur-sm p-4 sm:p-6 overflow-hidden transition-all duration-500 shadow-xl w-full">
+          <div
+            {...sel("form")}
+            className="flex-[1_1_280px] relative rounded-2xl border backdrop-blur-sm p-4 sm:p-6 overflow-hidden transition-all duration-500 shadow-xl w-full"
+            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--card-shadow)" }}
+          >
             {submitStatus === "success" ? (
               <div className="py-8 px-4 text-center space-y-5 animate-in fade-in zoom-in-95 duration-500">
                 {/* Celebratory animated pulse icon */}
@@ -2641,8 +2670,8 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                 </div>
 
                 <div className="space-y-1.5">
-                  <h3 className="text-xl font-bold text-slate-100">Message Received!</h3>
-                  <p className="text-sm text-slate-300 max-w-sm mx-auto leading-relaxed">
+                  <h3 className="text-xl font-bold" style={{ color: "var(--text)" }}>Message Received!</h3>
+                  <p className="text-sm max-w-sm mx-auto leading-relaxed" style={{ color: "var(--text-muted)" }}>
                     {successInfo?.message || "Thank you for getting in touch. We will get back to you shortly."}
                   </p>
                 </div>
@@ -2660,11 +2689,12 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-white/10">
+                <div className="pt-4 border-t" style={{ borderColor: "var(--border)" }}>
                   <button
                     type="button"
                     onClick={handleReset}
-                    className="text-xs text-slate-400 hover:text-slate-200 transition-colors underline"
+                    className="text-xs transition-colors underline"
+                    style={{ color: "var(--text-muted)" }}
                   >
                     Send another message
                   </button>
@@ -2684,7 +2714,7 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                 />
 
                 {errorMsg && (
-                  <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs leading-relaxed">
+                  <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs leading-relaxed">
                     {errorMsg}
                   </div>
                 )}
@@ -2698,7 +2728,8 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={submitStatus === "submitting"}
-                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                    className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
                   />
                 </div>
 
@@ -2711,7 +2742,8 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     disabled={submitStatus === "submitting"}
-                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                    className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
                   />
                 </div>
 
@@ -2725,7 +2757,8 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       disabled={submitStatus === "submitting"}
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50 font-mono"
+                      className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50 font-mono"
+                      style={{ backgroundColor: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
                     />
                   </div>
                 )}
@@ -2741,7 +2774,8 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                         value={customFields[f.name] || ""}
                         onChange={(e) => setCustomFields({ ...customFields, [f.name]: e.target.value })}
                         disabled={submitStatus === "submitting"}
-                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                        className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                        style={{ backgroundColor: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
                       />
                     </div>
                   ))}
@@ -2756,7 +2790,8 @@ function ContactSection({ section, theme, selectedElementKey, interactive, siteS
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       disabled={submitStatus === "submitting"}
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 resize-none transition-colors disabled:opacity-50"
+                      className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 resize-none transition-colors disabled:opacity-50"
+                      style={{ backgroundColor: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
                     />
                   </div>
                 )}
