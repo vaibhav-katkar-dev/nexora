@@ -630,6 +630,25 @@ export default function LandingPage() {
   const [dbTemplates, setDbTemplates] = useState<any[]>([]);
   const [activeHeroTab, setActiveHeroTab] = useState<"velora" | "gym" | "bio">("velora");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll-aware nav elevation
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Lock body scroll when mobile nav is open
+  useEffect(() => {
+    if (mobileNavOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileNavOpen]);
+
 
   // Fetch templates for live showcase
   useEffect(() => {
@@ -904,165 +923,211 @@ export default function LandingPage() {
         </p>
       </div>
 
-      {/* ── 1. HEADER (Clean Sticky SaaS Navigation) ── */}
-      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/80 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-[70px] flex items-center justify-between gap-4">
-          {/* Left: Brand Logo */}
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <img
-              src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
-              alt="OkiNSITE"
-              className="h-8 sm:h-9 md:h-10 w-auto object-contain transition-transform group-hover:scale-[1.02]"
-            />
-          </Link>
+      {/* ── 1. HEADER ── */}
+      <header
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm shadow-slate-900/[0.06]"
+            : "bg-white/80 backdrop-blur-md border-b border-transparent"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-[60px] sm:h-[66px]">
 
-          {/* Center: Desktop Navigation */}
-          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-1 text-sm font-medium text-slate-600">
-            <a href="#how-it-works" className="px-3.5 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/70 transition-colors">
-              How It Works
-            </a>
-            <Link href="/templates" className="px-3.5 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/70 transition-colors">
-              Templates
+            {/* ── Logo ── */}
+            <Link href="/" className="flex items-center shrink-0 group" aria-label="OkiNSITE home">
+              <img
+                src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+                alt="OkiNSITE"
+                className="h-7 sm:h-8 w-auto object-contain transition-opacity group-hover:opacity-80"
+              />
             </Link>
-            <a href="#presence-types" className="px-3.5 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/70 transition-colors">
-              For Creators
-            </a>
-            <a href="#presence-types" className="px-3.5 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/70 transition-colors">
-              For Businesses
-            </a>
-            <a href="#pricing" className="px-3.5 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/70 transition-colors inline-flex items-center gap-1.5">
-              <span>Pricing</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200/60">
-                Free now
-              </span>
-            </a>
-            <a href="#value-prop" className="px-3.5 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/70 transition-colors">
-              Why OkiNSITE
-            </a>
-            <a href="#faq" className="px-3.5 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100/70 transition-colors">
-              FAQ
-            </a>
-          </nav>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 transition-colors"
-            >
-              Sign In
-            </Link>
-            <button
-              onClick={() => handleClaim()}
-              className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white text-xs sm:text-sm font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/25 transition-all"
-            >
-              <span>Claim Your Free Site</span>
-              <ArrowRight size={15} />
-            </button>
-            {/* Mobile Hamburger */}
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors"
-              aria-label="Toggle navigation menu"
-            >
-              {mobileNavOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          </div>
-        </div>
+            {/* ── Desktop nav (≥ lg) ── */}
+            <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-0.5 text-[13.5px] font-medium text-slate-600">
+              {[
+                { label: "How It Works", href: "#how-it-works" },
+                { label: "Templates",    href: "/templates", isLink: true },
+                { label: "Use Cases",    href: "#presence-types" },
+                { label: "FAQ",          href: "#faq" },
+              ].map(({ label, href, isLink }) =>
+                isLink ? (
+                  <Link
+                    key={label}
+                    href={href}
+                    className="relative px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all duration-150"
+                  >
+                    {label}
+                  </Link>
+                ) : (
+                  <a
+                    key={label}
+                    href={href}
+                    className="relative px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all duration-150"
+                  >
+                    {label}
+                  </a>
+                )
+              )}
+              {/* Pricing with badge */}
+              <a
+                href="#pricing"
+                className="relative px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all duration-150 inline-flex items-center gap-1.5"
+              >
+                Pricing
+                <span className="text-[10px] font-bold px-1.5 py-px rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/80 leading-none tracking-wide">
+                  Free
+                </span>
+              </a>
+            </nav>
 
-        {/* Mobile Navigation Drawer */}
-        {mobileNavOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-16 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-xl p-5 flex flex-col gap-2 z-50 animate-in slide-in-from-top-2 duration-150">
-            <a
-              href="#how-it-works"
-              onClick={() => setMobileNavOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              How It Works
-            </a>
-            <Link
-              href="/templates"
-              onClick={() => setMobileNavOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Templates
-            </Link>
-            <a
-              href="#presence-types"
-              onClick={() => setMobileNavOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              For Creators & Businesses
-            </a>
-            <a
-              href="#pricing"
-              onClick={() => setMobileNavOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-            >
-              <span>Pricing</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200">
-                Free for early users
-              </span>
-            </a>
-            <a
-              href="#value-prop"
-              onClick={() => setMobileNavOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Why OkiNSITE
-            </a>
-            <a
-              href="#faq"
-              onClick={() => setMobileNavOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              FAQ
-            </a>
-            <div className="pt-3 mt-1 border-t border-slate-100 flex flex-col gap-2">
+            {/* ── Right: CTA + Hamburger ── */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Sign in — desktop only */}
               <Link
                 href="/login"
-                onClick={() => setMobileNavOpen(false)}
-                className="w-full text-center py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50"
+                className="hidden sm:inline-flex items-center justify-center h-9 px-4 rounded-xl text-[13px] font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/90 transition-all duration-150"
               >
-                Sign In
+                Sign in
               </Link>
+
+              {/* Primary CTA — desktop shows full label, mobile shows short */}
               <button
-                onClick={() => {
-                  setMobileNavOpen(false);
-                  handleClaim();
-                }}
-                className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold text-sm shadow-md shadow-blue-500/20 flex items-center justify-center gap-2"
+                onClick={() => handleClaim()}
+                className="inline-flex items-center justify-center gap-1.5 h-9 px-4 sm:px-5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.97] text-white text-[13px] font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all duration-150"
               >
-                <span>Claim Your Free Site</span>
-                <ArrowRight size={15} />
+                <span className="hidden sm:inline">Claim Free Site</span>
+                <span className="sm:hidden">Get Started</span>
+                <ArrowRight size={14} className="shrink-0" />
+              </button>
+
+              {/* Hamburger — separated, only on < lg */}
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(true)}
+                aria-label="Open navigation menu"
+                aria-expanded={mobileNavOpen}
+                className="lg:hidden -mr-1 flex items-center justify-center w-10 h-10 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/90 active:bg-slate-200/80 transition-all duration-150"
+              >
+                <Menu size={20} strokeWidth={2} />
               </button>
             </div>
           </div>
-        )}
+        </div>
       </header>
 
-      <main>
+      {/* ── Mobile navigation ── */}
+      {/* Backdrop */}
+      <div
+        aria-hidden="true"
+        onClick={() => setMobileNavOpen(false)}
+        className={`lg:hidden fixed inset-0 z-[55] bg-slate-950/40 backdrop-blur-[2px] transition-all duration-300 ${
+          mobileNavOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      />
+      {/* Drawer panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        className={`lg:hidden fixed inset-y-0 right-0 z-[60] w-full max-w-xs bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(.16,1,.3,1)] ${
+          mobileNavOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <Link href="/" onClick={() => setMobileNavOpen(false)}>
+            <img
+              src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+              alt="OkiNSITE"
+              className="h-7 w-auto object-contain"
+            />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(false)}
+            aria-label="Close navigation menu"
+            className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+          >
+            <X size={20} strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Nav links — large touch targets */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5" aria-label="Mobile navigation">
+          {[
+            { label: "How It Works", href: "#how-it-works" },
+            { label: "Templates",    href: "/templates", isLink: true },
+            { label: "Use Cases",    href: "#presence-types" },
+            { label: "Pricing",      href: "#pricing", badge: "Free" },
+            { label: "FAQ",          href: "#faq" },
+          ].map(({ label, href, isLink, badge }) => {
+            const cls = "flex items-center justify-between w-full px-4 py-3.5 rounded-xl text-[15px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 active:bg-slate-100 transition-colors";
+            const inner = (
+              <>
+                <span>{label}</span>
+                {badge && (
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                    {badge}
+                  </span>
+                )}
+              </>
+            );
+            return isLink ? (
+              <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className={cls}>
+                {inner}
+              </Link>
+            ) : (
+              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className={cls}>
+                {inner}
+              </a>
+            );
+          })}
+        </nav>
+
+        {/* Drawer footer CTAs */}
+        <div className="px-4 pb-8 pt-3 border-t border-slate-100 space-y-2.5">
+          <Link
+            href="/login"
+            onClick={() => setMobileNavOpen(false)}
+            className="flex items-center justify-center w-full h-12 rounded-xl text-[14px] font-semibold text-slate-700 border border-slate-200/90 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+          >
+            Sign in
+          </Link>
+          <button
+            onClick={() => { setMobileNavOpen(false); handleClaim(); }}
+            className="flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white text-[14px] font-semibold shadow-lg shadow-blue-600/20 transition-all"
+          >
+            <span>Claim Your Free Site</span>
+            <ArrowRight size={16} />
+          </button>
+          <p className="text-center text-[11px] text-slate-400 pt-0.5">
+            Free forever · No credit card
+          </p>
+        </div>
+      </div>
+
+      <main className="pb-16 sm:pb-0">
         {/* ── 2. HERO SECTION ── */}
-        <section className="relative pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-24 overflow-hidden border-b border-slate-200/60">
+        <section className="relative pt-8 sm:pt-16 lg:pt-20 pb-12 sm:pb-24 overflow-hidden border-b border-slate-200/60">
           {/* Subtle Ambient Glow */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none -z-10">
-            <div className="absolute top-0 left-1/4 w-[520px] h-[320px] bg-gradient-to-tr from-blue-100/50 via-indigo-50/40 to-transparent blur-3xl opacity-70" />
-            <div className="absolute top-20 right-10 w-[440px] h-[340px] bg-gradient-to-br from-sky-100/40 via-blue-50/30 to-transparent blur-3xl opacity-60" />
+            <div className="absolute top-0 left-1/4 w-[320px] sm:w-[520px] h-[240px] sm:h-[320px] bg-gradient-to-tr from-blue-100/50 via-indigo-50/40 to-transparent blur-3xl opacity-70" />
+            <div className="absolute top-20 right-4 sm:right-10 w-[280px] sm:w-[440px] h-[260px] sm:h-[340px] bg-gradient-to-br from-sky-100/40 via-blue-50/30 to-transparent blur-3xl opacity-60" />
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 xl:gap-12 items-center">
               {/* Left Column: Positioning & Custom Subdomain Claim Component */}
-              <div className="lg:col-span-6 space-y-6 sm:space-y-8">
+              <div className="lg:col-span-5 space-y-6 sm:space-y-8 text-center lg:text-left">
                 {/* Micro badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-200/70 text-blue-700 text-xs font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/90 border border-blue-200/80 text-blue-700 text-xs font-semibold shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
                   <span>Your place on the internet</span>
                 </div>
 
                 {/* Primary H1 */}
-                <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-black tracking-tight text-slate-950 leading-[1.08]">
+                <h1 className="text-3xl sm:text-5xl lg:text-[54px] xl:text-[60px] font-black tracking-tight text-slate-950 leading-[1.1] sm:leading-[1.06]">
                   Claim your place <br className="hidden sm:inline" />
                   <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 bg-clip-text text-transparent">
                     on the internet.
@@ -1070,12 +1135,12 @@ export default function LandingPage() {
                 </h1>
 
                 {/* Supporting Copy */}
-                <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-xl">
+                <p className="text-slate-600 text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
                   Create a professional online presence for your business, portfolio, creator brand, restaurant, product, or personal brand — and publish it in minutes.
                 </p>
 
                 {/* ── CUSTOM SUBDOMAIN CLAIM CARD (Signature conversion component: abc.okinsite.com) ── */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 p-5 sm:p-6 space-y-4 max-w-xl transition-all hover:border-slate-300">
+                <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 p-5 sm:p-6 space-y-4 max-w-xl mx-auto lg:mx-0 text-left transition-all hover:border-slate-300">
                   <div className="flex items-center justify-between pb-1">
                     <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                       Claim your free OkiNSITE address
@@ -1169,127 +1234,33 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Right Column: Hero Visual Previews (Real Up-and-Down Scrolling Live Template Preview) */}
-              <div className="lg:col-span-6 relative">
-                <div className="relative mx-auto max-w-lg lg:max-w-none">
-                  {/* Floating Trust Labels */}
-                  <div className="absolute -top-4 right-4 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 border border-slate-200 shadow-md text-xs font-bold text-slate-700">
+              {/* Right Column: Seamless Full-Scale Hero Visual Ecosystem */}
+              <div className="lg:col-span-7 relative flex items-center justify-center">
+                <div className="relative w-full max-w-2xl lg:max-w-none flex items-center justify-center">
+                  {/* Subtle multi-layer ambient glow to naturally connect image with background */}
+                  <div className="absolute -inset-6 sm:-inset-12 bg-gradient-to-tr from-blue-400/20 via-indigo-300/25 to-sky-300/15 blur-3xl sm:blur-[80px] -z-10 rounded-full pointer-events-none" />
+
+                  {/* Floating Trust Badges */}
+                  <div className="absolute top-2 right-2 sm:right-6 lg:right-4 z-20 hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-slate-200/90 shadow-lg shadow-slate-900/5 text-xs font-bold text-slate-700 backdrop-blur-md">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>Live Worldwide</span>
                   </div>
 
-                  <div className="absolute -bottom-3 left-4 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 border border-slate-200 shadow-md text-xs font-semibold text-slate-700">
+                  <div className="absolute bottom-2 left-2 sm:left-6 lg:left-4 z-20 hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-slate-200/90 shadow-lg shadow-slate-900/5 text-xs font-semibold text-slate-700 backdrop-blur-md">
                     <ShieldCheck size={14} className="text-blue-600" />
                     <span>SSL Secured · Edge CDN</span>
                   </div>
 
-                  {/* Browser Window Mockup with Real Animated Scroll Preview */}
-                  <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 overflow-hidden">
-                    {/* Browser Chrome Header */}
-                    <div className="bg-slate-900 text-white px-4 sm:px-5 py-3 flex items-center justify-between border-b border-slate-800 gap-3">
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-                      </div>
-
-                      {/* Browser Address Bar: https://[subdomain].okinsite.com */}
-                      <div className="flex-1 max-w-sm mx-auto bg-slate-800/90 border border-slate-700/80 rounded-xl px-3 py-1 text-center flex items-center justify-center gap-1.5">
-                        <Lock size={11} className="text-emerald-400 shrink-0" />
-                        <span className="text-[11px] font-mono text-slate-200 font-semibold truncate">
-                          https://{activeHeroSubdomain}
-                        </span>
-                      </div>
-
-                      <div className="hidden sm:flex items-center gap-1 text-[10px] text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-md shrink-0">
-                        <span>● Live</span>
-                      </div>
-                    </div>
-
-                    {/* Interactive Real Template Switcher Tabs (Velora Salon, Gym Bold, Link in Bio) */}
-                    <div className="bg-slate-50 border-b border-slate-200/80 px-4 py-2 flex items-center justify-between text-xs overflow-x-auto gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => setActiveHeroTab("velora")}
-                          className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                            activeHeroTab === "velora"
-                              ? "bg-white text-emerald-800 shadow-xs border border-emerald-200/80"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                          }`}
-                        >
-                          <Sparkles size={13} className="text-amber-500" />
-                          <span>Velora Salon</span>
-                        </button>
-                        <button
-                          onClick={() => setActiveHeroTab("gym")}
-                          className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                            activeHeroTab === "gym"
-                              ? "bg-white text-orange-600 shadow-xs border border-orange-200/80"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                          }`}
-                        >
-                          <Activity size={13} className="text-orange-500" />
-                          <span>Gym Bold</span>
-                        </button>
-                        <button
-                          onClick={() => setActiveHeroTab("bio")}
-                          className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                            activeHeroTab === "bio"
-                              ? "bg-white text-cyan-700 shadow-xs border border-cyan-200/80"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                          }`}
-                        >
-                          <Share2 size={13} className="text-cyan-600" />
-                          <span>Link in Bio</span>
-                        </button>
-                      </div>
-                      <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">
-                        Auto-gliding preview
-                      </span>
-                    </div>
-
-                    {/* Moving Up and Down Real Template Preview Window */}
-                    <div className="relative h-[480px] sm:h-[560px] bg-slate-950 overflow-hidden group">
-                      {/* Vertically animated scrolling viewport wrapper */}
-                      <div className="w-full animate-hero-scroll will-change-transform">
-                        <TemplateThumbnail
-                          config={activeHeroConfig}
-                          name={activeHeroName}
-                          category={activeHeroCategory}
-                          height={1400}
-                        />
-                      </div>
-
-                      {/* Top subtle vignette */}
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-950/40 to-transparent" />
-
-                      {/* Bottom action banner & hover-to-pause indicator */}
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent flex items-end justify-between px-4 pb-3">
-                        <div className="px-2.5 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-[10px] font-mono text-slate-300 flex items-center gap-1.5 backdrop-blur-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span>Scrolling preview · Hover to pause</span>
-                        </div>
-                        <button
-                          onClick={() => handleClaim(cleanSlug)}
-                          className="pointer-events-auto px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-colors"
-                        >
-                          Claim This Design →
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Footer inside preview box */}
-                    <div className="p-3 bg-white border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500 text-[11px]">
-                        Live on your custom address: <strong className="font-mono text-slate-800">{activeHeroSubdomain}</strong>
-                      </span>
-                      <button
-                        onClick={() => handleClaim(activeHeroTab === "velora" ? "velora-salon-spa" : activeHeroTab === "gym" ? "stronger-studio-fitness-coach" : "kai-chen-bio")}
-                        className="font-bold text-blue-600 hover:underline text-[11px]"
-                      >
-                        Customize This Template →
-                      </button>
-                    </div>
+                  {/* High-fidelity responsive showcase container with soft edge melt */}
+                  <div className="relative w-full flex items-center justify-center [mask-image:radial-gradient(ellipse_97%_97%_at_50%_50%,#000_88%,transparent_100%)]">
+                    <img
+                      src="https://res.cloudinary.com/usj348ny/image/upload/v1788526028/ChatGPT_Image_Sep_4_2026_06_03_34_PM.png"
+                      alt="OkiNSITE Digital Presence Ecosystem"
+                      className="w-full h-auto object-contain max-h-[580px] sm:max-h-[660px] lg:max-h-[720px] drop-shadow-[0_24px_48px_rgba(15,23,42,0.12)] transition-transform duration-700 hover:scale-[1.01]"
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
+                    />
                   </div>
                 </div>
               </div>
@@ -2127,17 +2098,22 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* ── Sticky Bottom CTA on Mobile ── */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 z-40 flex items-center justify-between gap-3 shadow-2xl safe-bottom">
-        <div className="min-w-0">
-          <div className="text-[11px] font-bold text-slate-900 truncate">Claim your free address</div>
-          <div className="text-[10px] font-mono text-blue-600 truncate">{cleanSlug}.okinsite.com</div>
+      {/* ── Sticky Bottom CTA on Mobile (Enhanced safe-area & typography) ── */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 px-4 py-3 z-40 flex items-center justify-between gap-3 shadow-2xl shadow-slate-900/20 safe-bottom">
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-bold text-slate-900 truncate">
+            {usernameInput.trim().length >= 2 ? "Claim this address" : "Claim your free address"}
+          </div>
+          <div className="text-[11px] font-mono text-blue-600 truncate font-semibold">
+            {usernameInput.trim().length >= 2 ? `${cleanSlug}.okinsite.com` : "yourname.okinsite.com"}
+          </div>
         </div>
         <button
           onClick={() => handleClaim()}
-          className="shrink-0 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-600/20"
+          className="shrink-0 h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs shadow-md shadow-blue-600/25 flex items-center gap-1.5 transition-all"
         >
-          Claim Free Site →
+          <span>Claim Site</span>
+          <ArrowRight size={13} />
         </button>
       </div>
 
