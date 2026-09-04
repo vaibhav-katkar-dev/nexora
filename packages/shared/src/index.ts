@@ -152,7 +152,7 @@ export const TemplateMetadataSchema = z.object({
   category: z.string(),
   description: z.string(),
   tags: z.array(z.string()).default([]),
-  author: z.string().default("Oninsite AI"),
+  author: z.string().default("OkInSite"),
   version: z.string().default("1.0.0"),
   status: z.enum(["published", "draft", "archived"]).default("published"),
   popularity: z.number().default(90),

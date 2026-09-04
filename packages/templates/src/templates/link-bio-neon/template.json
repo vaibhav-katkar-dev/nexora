@@ -1,11 +1,11 @@
-﻿{
+{
   "meta": {
     "id": "link-bio-neon",
     "slug": "link-bio-neon",
     "title": "Neon Creator Link in Bio",
     "description": "Vibrant, high-engagement link-in-bio hub tailored for content creators, influencers, musicians, and streamers.",
     "category": "link_in_bio",
-    "author": "Oninsite Design Studio",
+    "author": "OkInSite Studio",
     "version": "2.0.0",
     "tags": ["Link in Bio", "Creator", "Social", "Glow", "Media"],
     "popularity": 91,
@@ -52,12 +52,21 @@
       "title": "@KaiVibes",
       "subtitle": "Music Producer & Visual Artist 🎧 2M+ Streamers",
       "content": {
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+        "bio": "Crafting synthwave soundscapes, cinematic beats, and visual stories. Catch my weekly live streams & latest music releases below.",
+        "socials": {
+          "spotify": "https://spotify.com",
+          "youtube": "https://youtube.com",
+          "instagram": "https://instagram.com",
+          "twitter": "https://twitter.com",
+          "email": "kai@example.com"
+        },
         "links": [
-          { "label": "🎵 Listen to New Single 'Eclipse'", "url": "https://spotify.com", "badge": "New Release" },
-          { "label": "📺 Watch Latest Studio Vlog on YouTube", "url": "https://youtube.com" },
-          { "label": "🎟️ World Tour Tickets & VIP Passes", "url": "https://example.com" },
-          { "label": "💬 Join Discord Community (40k Members)", "url": "https://discord.gg" },
-          { "label": "💼 Business & Sponsorship Inquiries", "url": "mailto:kai@example.com" }
+          { "label": "🎵 Listen to New Single 'Eclipse'", "url": "https://spotify.com", "badge": "New Release", "icon": "Sparkles" },
+          { "label": "📺 Watch Latest Studio Vlog on YouTube", "url": "https://youtube.com", "badge": "HD", "icon": "Youtube" },
+          { "label": "🎟️ World Tour Tickets & VIP Passes", "url": "https://example.com", "badge": "Selling Fast", "icon": "Globe" },
+          { "label": "💬 Join Discord Community (40k Members)", "url": "https://discord.gg", "icon": "MessageCircle" },
+          { "label": "💼 Business & Sponsorship Inquiries", "url": "mailto:kai@example.com", "icon": "Mail" }
         ]
       },
       "visible": true

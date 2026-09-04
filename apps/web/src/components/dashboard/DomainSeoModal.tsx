@@ -266,7 +266,7 @@ export function DomainSeoModal({ isOpen, onClose, site, onSiteUpdated }: DomainS
           {/* ════ DOMAINS TAB ════ */}
           {activeTab === "domains" && (
             <div className="space-y-6">
-              {/* Default Oninsite Subdomain Card */}
+              {/* Default OkInSite Subdomain Card */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">

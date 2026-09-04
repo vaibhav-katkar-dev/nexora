@@ -5,7 +5,7 @@ const LOGO_URL = "https://res.cloudinary.com/usj348ny/image/upload/v1788452134/o
 interface OkinsiteLogoProps {
   /** px size of the logo image (square). Default 32 */
   size?: number;
-  /** Whether to show the "Oninsite" wordmark text next to the logo */
+  /** Whether to show the "OkInSite" wordmark text next to the logo */
   showWordmark?: boolean;
   /** Extra class for the wordmark text */
   wordmarkClass?: string;
@@ -16,7 +16,7 @@ interface OkinsiteLogoProps {
 }
 
 /**
- * Oninsite brand logo — single source of truth.
+ * OkInSite brand logo — single source of truth.
  * Replace the LOGO_URL constant if the logo ever changes.
  */
 export function OkinsiteLogo({
@@ -30,7 +30,7 @@ export function OkinsiteLogo({
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <Image
         src={LOGO_URL}
-        alt="Oninsite logo"
+        alt="OkInSite logo"
         width={size}
         height={size}
         className="rounded-lg object-contain shrink-0"
@@ -41,7 +41,7 @@ export function OkinsiteLogo({
         <span
           className={wordmarkClass ?? `font-bold tracking-tight text-sm ${dark ? "text-white" : "text-slate-900"}`}
         >
-          Oninsite
+          OkInSite
         </span>
       )}
     </span>

@@ -36,7 +36,7 @@ async function fetchTemplate(id: string): Promise<TemplatePreviewData | null> {
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const data = await fetchTemplate(params.id);
   const title = data?.name || "Template Preview";
-  const description = data?.description || "Live preview of a Nexora template.";
+  const description = data?.description || "Live preview of an OkInSite template.";
   return {
     title,
     description,

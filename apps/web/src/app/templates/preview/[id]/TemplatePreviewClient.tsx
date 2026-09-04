@@ -60,7 +60,10 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
 
     // 1. Try reading from sessionStorage
     try {
-      const cached = sessionStorage.getItem(`nexora-tpl-preview:${id}`);
+      const cached =
+        sessionStorage.getItem(`OkInSite-tpl-preview:${id}`) ||
+        sessionStorage.getItem(`Oninsite-tpl-preview:${id}`) ||
+        sessionStorage.getItem(`nexora-tpl-preview:${id}`);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed?.config) {

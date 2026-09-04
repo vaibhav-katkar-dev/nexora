@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEditorStore } from "@/store/editorStore";
 import { useToast } from "@/components/ui/Toast";
@@ -177,7 +177,7 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
       case "timeline":
         return {
           items: [
-            { period: "2024 - Present", role: "Principal Architect", company: "Oninsite AI", desc: "Leading platform engine development and scalable component design." },
+            { period: "2024 - Present", role: "Principal Architect", company: "OkInSite", desc: "Leading platform engine development and scalable component design." },
             { period: "2021 - 2024", role: "Senior Full-Stack Engineer", company: "TechCorp Inc.", desc: "Architected high-throughput microservices and React design systems." },
           ],
         };
@@ -193,8 +193,8 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
       case "faq":
         return {
           items: [
-            { question: "How does Oninsite build sites?", answer: "Oninsite combines AI prompts with modular templates to generate production-ready websites instantly." },
-            { question: "Can I connect my custom domain?", answer: "Yes! You can publish your site directly with custom URL slugs or your custom domain name." },
+            { question: "How does OkInSite build sites?", answer: "OkInSite combines modular templates with instant visual editing to generate production-ready websites in under 3 minutes." },
+            { question: "Can I connect my custom domain?", answer: "Yes! You can publish your site directly on your free subdomain (yourname.okinsite.com) or configure a custom domain name." },
           ],
         };
 

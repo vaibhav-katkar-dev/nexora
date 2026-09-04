@@ -226,9 +226,23 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
     }
     const visible = config.sections.filter((s) => s.visible !== false);
     if (visible.length === 0) return config;
-    // For tall/scrollable hero preview: show all sections; otherwise just 3
-    return { ...config, sections: isScrollable ? visible : visible.slice(0, 3) };
-  }, [config, isScrollable]);
+    if (isScrollable) return { ...config, sections: visible };
+
+    const isBio = category === "link_in_bio" || config.meta?.category === "link_in_bio";
+    if (isBio) {
+      // Prioritize creator header/hero and the links section so the template card prominently displays link buttons!
+      const heroSec = visible.find((s) => s.type === "hero" || s.type === "navbar" || s.type === "digital_card");
+      const linksSec = visible.find((s) => s.type === "links");
+      if (heroSec && linksSec && heroSec.id !== linksSec.id) {
+        return { ...config, sections: [heroSec, linksSec] };
+      }
+      if (linksSec) {
+        return { ...config, sections: [linksSec] };
+      }
+    }
+
+    return { ...config, sections: visible.slice(0, 3) };
+  }, [config, isScrollable, category]);
 
   // Lazy-mount
   useEffect(() => {

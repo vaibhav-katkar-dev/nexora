@@ -1,4 +1,4 @@
-﻿import { SiteConfigJSON } from "@ai-platform/shared";
+import { SiteConfigJSON } from "@ai-platform/shared";
 import { buildPublishedSiteUrl } from "./siteUrl";
 
 export interface SeoMetadataOptions {
@@ -24,7 +24,7 @@ export interface SeoMetadataOptions {
 export function generateJsonLdSchema(options: SeoMetadataOptions): Record<string, any> {
   const { config, seo, slug, projectName, canonicalUrl } = options;
   const title = seo?.metaTitle || config?.meta?.title || projectName || "Digital Presence";
-  const description = seo?.metaDescription || config?.meta?.description || "Built with Oninsite AI Platform";
+  const description = seo?.metaDescription || config?.meta?.description || "Built with OkInSite Platform";
   const url = canonicalUrl || (seo?.canonicalUrl) || (slug ? buildPublishedSiteUrl(slug) : typeof window !== "undefined" ? window.location.href : "");
   const category = config?.meta?.category || "custom";
 
@@ -88,7 +88,7 @@ export function generateJsonLdSchema(options: SeoMetadataOptions): Record<string
         "url": url,
         "publisher": {
           "@type": "Organization",
-          "name": "Oninsite Digital Presence Platform",
+          "name": "OkInSite",
         },
       };
   }
@@ -155,23 +155,22 @@ export function injectSeoHeadTags(options: SeoMetadataOptions): void {
   }
   canonical.setAttribute("href", computedCanonical);
 
-  // 6. Favicon Link (if customized)
-  if (seo?.favicon) {
-    let favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
-    if (!favicon) {
-      favicon = document.createElement("link");
-      favicon.setAttribute("rel", "icon");
-      document.head.appendChild(favicon);
-    }
-    favicon.setAttribute("href", seo.favicon);
+  // 6. Favicon Link
+  const faviconUrl = seo?.favicon || "/icon.png";
+  let favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+  if (!favicon) {
+    favicon = document.createElement("link");
+    favicon.setAttribute("rel", "icon");
+    document.head.appendChild(favicon);
   }
+  favicon.setAttribute("href", faviconUrl);
 
   // 7. JSON-LD Schema.org Microdata Script
   const jsonLdData = generateJsonLdSchema({ ...options, canonicalUrl: computedCanonical });
-  let jsonLdScript = document.getElementById("Oninsite-jsonld-schema") as HTMLScriptElement | null;
+  let jsonLdScript = document.getElementById("okinsite-jsonld-schema") as HTMLScriptElement | null;
   if (!jsonLdScript) {
     jsonLdScript = document.createElement("script");
-    jsonLdScript.id = "Oninsite-jsonld-schema";
+    jsonLdScript.id = "okinsite-jsonld-schema";
     jsonLdScript.type = "application/ld+json";
     document.head.appendChild(jsonLdScript);
   }

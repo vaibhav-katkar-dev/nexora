@@ -1402,7 +1402,7 @@ function FAQSection({ section, theme, selectedElementKey, interactive }: Section
 
 function DigitalCardSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const socials = section.content?.socials || {};
-  const customLinks = section.content?.customLinks || [];
+  const customLinks = section.content?.customLinks || section.content?.links || section.content?.items || [];
   const avatar = section.content?.avatar || "";
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
@@ -1474,25 +1474,42 @@ function DigitalCardSection({ section, theme, selectedElementKey, interactive, o
         </h1>
         <p {...sel("subtitle")} className="text-sm opacity-60 mb-8" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>
 
-        <div className="space-y-4">
-          {customLinks.map((link: any, i: number) => (
-            <a
-              key={i}
-              {...sel(`content.customLinks.${i}`)}
-              href={link.url || "#"}
-              onClick={(e) => handleLinkClick(i, link.url, e)}
-              className="block w-full p-4 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] border"
-              style={{
-                backgroundColor: clickedIdx === i ? theme.primaryColor : "var(--surface)",
-                borderColor: "var(--border)",
-                boxShadow: "var(--card-shadow)",
-                color: clickedIdx === i ? "white" : "var(--text)",
-                borderRadius: "var(--radius)",
-              }}
-            >
-              {link.text}
-            </a>
-          ))}
+        <div className="space-y-3">
+          {customLinks.map((link: any, i: number) => {
+            const label = link.label || link.text || link.title || link.name || "Visit Link";
+            const IconComponent = getIconComponent(link.icon, null);
+            const clicked = clickedIdx === i;
+            return (
+              <a
+                key={i}
+                {...sel(`content.customLinks.${i}`)}
+                href={link.url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => handleLinkClick(i, link.url, e)}
+                className={`relative flex items-center justify-center gap-2.5 w-full py-3.5 px-5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] border shadow-sm ${
+                  clicked ? "scale-95" : ""
+                }`}
+                style={{
+                  backgroundColor: clicked ? theme.primaryColor : "var(--surface)",
+                  borderColor: clicked ? theme.primaryColor : "var(--border)",
+                  boxShadow: "var(--card-shadow)",
+                  color: clicked ? "#FFFFFF" : "var(--text)",
+                  borderRadius: "var(--radius)",
+                }}
+              >
+                {link.badge && !clicked && (
+                  <span className="absolute top-0 right-3 -translate-y-1/2 text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-amber-500 text-amber-950 border border-amber-400 shadow-xs">
+                    {link.badge}
+                  </span>
+                )}
+                {IconComponent && <IconComponent size={16} className="opacity-75 shrink-0" />}
+                <span {...sel(`content.customLinks.${i}.label`)} className="truncate">
+                  {clicked ? "Opened ✓" : label}
+                </span>
+              </a>
+            );
+          })}
         </div>
 
         <div className="mt-8 flex justify-center gap-4">
@@ -2233,8 +2250,27 @@ function TimelineSection({ section, theme, selectedElementKey, interactive }: Se
 }
 
 
-function LinksSection({ section, theme, selectedElementKey, interactive }: SectionRendererProps) {
-  const links: any[] = section.content?.links || [];
+function LinksSection({
+  section,
+  theme,
+  selectedElementKey,
+  interactive,
+  onSelectElement,
+  onRequestImageEdit,
+}: SectionRendererProps) {
+  const rawLinks: any[] = section.content?.links || section.content?.items || section.content?.customLinks || [];
+  // Fallback links so a template or new section never renders an empty void
+  const links: any[] = rawLinks.length > 0 ? rawLinks : [
+    { label: "My Portfolio & Projects", url: "#", icon: "Sparkles", badge: "Featured" },
+    { label: "Latest Video & Content", url: "#", icon: "Youtube" },
+    { label: "Connect on Social Media", url: "#", icon: "Globe" },
+  ];
+
+  const avatar = section.content?.avatar || section.content?.avatarUrl || section.content?.image || "";
+  const bio = section.content?.bio || section.content?.desc || "";
+  const socials = section.content?.socials || {};
+  const hasSocials = socials && typeof socials === "object" && Object.keys(socials).length > 0;
+
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
 
@@ -2246,16 +2282,55 @@ function LinksSection({ section, theme, selectedElementKey, interactive }: Secti
   };
 
   return (
-    <section id={section.id} data-section-id={section.id} className="py-20 px-6 max-w-lg mx-auto text-center">
+    <section id={section.id} data-section-id={section.id} className="py-16 px-6 max-w-lg mx-auto text-center">
+      {avatar && (
+        <div className="mb-6 flex justify-center">
+          <InteractiveImageWrapper
+            sectionId={section.id}
+            elementKey="content.avatar"
+            interactive={interactive}
+            onSelectElement={onSelectElement}
+            onRequestImageEdit={onRequestImageEdit}
+            badgeLabel="Change Avatar"
+            badgePosition="bottom-right"
+            className="inline-block"
+          >
+            <img
+              {...sel("content.avatar")}
+              src={avatar}
+              alt={section.title || "Avatar"}
+              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 object-cover shadow-xl mx-auto"
+              style={{ borderColor: theme.primaryColor }}
+            />
+          </InteractiveImageWrapper>
+        </div>
+      )}
+
       {section.title && (
-        <h2 {...sel("title")} className="text-3xl font-extrabold mb-3" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
+        <h2 {...sel("title")} className="text-3xl font-extrabold mb-2" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
           {section.title}
         </h2>
       )}
-      {section.subtitle && <p {...sel("subtitle")} className="text-sm opacity-80 mb-10" style={{ color: "var(--text-muted)" }}>{section.subtitle}</p>}
+      {section.subtitle && (
+        <p {...sel("subtitle")} className="text-sm opacity-80 mb-4" style={{ color: "var(--text-muted)" }}>
+          {section.subtitle}
+        </p>
+      )}
+      {bio && (
+        <p {...sel("content.bio")} className="text-sm opacity-75 max-w-md mx-auto mb-6 leading-relaxed" style={{ color: "var(--text)" }}>
+          {bio}
+        </p>
+      )}
 
-      <div className="space-y-4">
+      {hasSocials && (
+        <div className="mb-8 flex justify-center gap-3">
+          <SocialLinksRow socials={socials} theme={theme} sel={sel} className="justify-center" />
+        </div>
+      )}
+
+      <div className="space-y-3.5">
         {links.map((link: any, i: number) => {
+          const label = link.label || link.title || link.text || link.name || link.url || "Visit Link";
           const IconComponent = getIconComponent(link.icon, Globe);
           const clicked = clickedIdx === i;
           return (
@@ -2284,12 +2359,13 @@ function LinksSection({ section, theme, selectedElementKey, interactive }: Secti
                   {link.badge}
                 </span>
               )}
-              {clicked
-                ? <CheckCircle2 size={22} className="text-emerald-400 animate-bounce" />
-                : link.icon && <IconComponent size={20} className="opacity-70 group-hover:opacity-100 transition-opacity" style={{ color: theme.primaryColor }} />
-              }
-              <span {...sel(`content.links.${i}.label`)} className={`text-lg transition-colors ${clicked ? "text-emerald-300" : ""}`}>
-                {clicked ? "Opened ✓" : link.label}
+              {clicked ? (
+                <CheckCircle2 size={22} className="text-emerald-400 animate-bounce" />
+              ) : (
+                link.icon && <IconComponent size={20} className="opacity-70 group-hover:opacity-100 transition-opacity shrink-0" style={{ color: theme.primaryColor }} />
+              )}
+              <span {...sel(`content.links.${i}.label`)} className={`text-base sm:text-lg transition-colors truncate ${clicked ? "text-emerald-300" : ""}`}>
+                {clicked ? "Opened ✓" : label}
               </span>
             </a>
           );

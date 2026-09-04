@@ -143,7 +143,7 @@ export const getSitemapPageXml = async (req: Request, res: Response) => {
 export const getRobotsTxt = (req: Request, res: Response) => {
   const hostBase = process.env.CLIENT_URL || process.env.SITE_BASE_URL || "";
   const content = [
-    "# Oninsite Robots Directive",
+    "# OkInSite Robots Directive",
     "User-agent: *",
     "Allow: /",
     "Disallow: /admin/",

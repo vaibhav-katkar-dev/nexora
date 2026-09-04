@@ -37,6 +37,7 @@ function buildSeoHead(project: IProjectDocument): string {
     <title>${seo.metaTitle || config.meta.title}</title>
     <meta name="description" content="${seo.metaDescription || config.meta.description}" />
     <link rel="canonical" href="${siteUrl}" />
+    <link rel="icon" href="${seo.favicon || `${baseUrl}/icon.png`}" />
     ${seo.keywords?.length ? `<meta name="keywords" content="${seo.keywords.join(", ")}" />` : ""}
 
     <!-- OpenGraph -->
@@ -419,25 +420,42 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
     case "footer":
       return `
         <footer id="${section.id}" data-section-id="${section.id}" class="footer-section">
-          <p data-element-key="title">© ${new Date().getFullYear()} ${section.title || "Oninsite AI"}. All rights reserved.</p>
+          <p data-element-key="title">© ${new Date().getFullYear()} ${section.title || "OkInSite"}. All rights reserved.</p>
         </footer>`;
 
-    case "links":
-      const links: any[] = section.content?.links || [];
+    case "links": {
+      const rawLinks: any[] = section.content?.links || section.content?.items || section.content?.customLinks || [];
+      const links = rawLinks.length > 0 ? rawLinks : [
+        { label: "My Portfolio & Projects", url: "#", badge: "Featured" },
+        { label: "Latest Video & Content", url: "#" },
+        { label: "Connect on Social Media", url: "#" },
+      ];
+      const avatar = section.content?.avatar || section.content?.avatarUrl || section.content?.image || "";
+      const bio = section.content?.bio || section.content?.desc || "";
+
       return `
         <section id="${section.id}" data-section-id="${section.id}" class="links-section">
+          ${avatar ? `<div class="links-avatar-wrap"><img src="${avatar}" alt="${section.title || "Avatar"}" data-element-key="content.avatar" class="links-avatar" /></div>` : ""}
           ${section.title ? `<h2 data-element-key="title">${section.title}</h2>` : ""}
+          ${section.subtitle ? `<p data-element-key="subtitle" class="links-subtitle">${section.subtitle}</p>` : ""}
+          ${bio ? `<p data-element-key="content.bio" class="links-bio">${bio}</p>` : ""}
           <div class="links-list">
-            ${links.map((link: any, i: number) => `
+            ${links.map((link: any, i: number) => {
+              const label = link.label || link.title || link.text || link.name || link.url || "Visit Link";
+              return `
               <a href="${link.url || "#"}" target="_blank" rel="noopener noreferrer" data-element-key="content.links.${i}.label" class="link-btn">
-                ${link.label || link.url}
-              </a>`).join("")}
+                ${link.badge ? `<span class="link-badge">${link.badge}</span>` : ""}
+                <span class="link-label">${label}</span>
+              </a>`;
+            }).join("")}
           </div>
         </section>`;
+    }
 
     case "digital_card": {
       const socials = section.content?.socials || {};
       const avatar = section.content?.avatar || "";
+      const customLinks: any[] = section.content?.customLinks || section.content?.links || section.content?.items || [];
       return `
         <section id="${section.id}" data-section-id="${section.id}" class="digital-card-section">
           <div class="digital-card">
@@ -445,6 +463,17 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
             <h1 data-element-key="title" class="dc-name">${section.title || ""}</h1>
             ${section.subtitle ? `<p data-element-key="subtitle" class="dc-role">${section.subtitle}</p>` : ""}
             ${section.content?.bio ? `<p data-element-key="content.bio" class="dc-bio">${section.content.bio}</p>` : ""}
+            ${customLinks.length > 0 ? `
+            <div class="dc-links-list">
+              ${customLinks.map((link: any, i: number) => {
+                const label = link.label || link.text || link.title || link.name || "Visit Link";
+                return `
+                <a href="${link.url || "#"}" target="_blank" rel="noopener" data-element-key="content.customLinks.${i}.label" class="dc-custom-link">
+                  ${link.badge ? `<span class="dc-badge">${link.badge}</span>` : ""}
+                  <span>${label}</span>
+                </a>`;
+              }).join("")}
+            </div>` : ""}
             <div class="dc-divider"></div>
             <div class="dc-socials">
               ${socials.email ? `<a href="mailto:${socials.email}" data-element-key="content.socials.email" class="dc-social-btn">📧 Email</a>` : ""}

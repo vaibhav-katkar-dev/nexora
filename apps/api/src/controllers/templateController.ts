@@ -1,4 +1,4 @@
-﻿import { Request, Response } from "express";
+import { Request, Response } from "express";
 import { Template, TemplateStatus } from "../models/Template.js";
 import { presetTemplates, getAllTemplates } from "@ai-platform/templates";
 import { SiteConfigSchema } from "@ai-platform/shared";
@@ -248,7 +248,7 @@ export const createTemplate = async (req: Request, res: Response) => {
       tags: data.tags || [],
       defaultConfig: data.defaultConfig,
       version: data.version || "1.0.0",
-      author: data.author || "Oninsite AI",
+      author: data.author || "OkInSite",
       isPublic: data.isPublic ?? true,
       isFeatured: data.isFeatured ?? false,
       isPremium: data.isPremium ?? false,
@@ -505,7 +505,7 @@ export const bulkImportTemplates = async (req: Request, res: Response) => {
           tags: parsed.tags || [],
           defaultConfig: parsed.defaultConfig,
           version: parsed.version || "1.0.0",
-          author: parsed.author || "Oninsite AI",
+          author: parsed.author || "OkInSite",
           isPublic: parsed.isPublic ?? true,
           isFeatured: parsed.isFeatured ?? false,
           isPremium: parsed.isPremium ?? false,
@@ -577,7 +577,7 @@ export const addBulkTemplates = async (req: Request, res: Response) => {
             tags: item.tags || [],
             defaultConfig: item.defaultConfig,
             version: item.version || "1.0.0",
-            author: item.author || "Oninsite AI",
+            author: item.author || "OkInSite",
             isPublic: item.isPublic !== undefined ? item.isPublic : true,
             isFeatured: item.isFeatured || false,
             isPremium: item.isPremium || false,
@@ -740,7 +740,7 @@ export const exportAllTemplates = async (_req: Request, res: Response) => {
       tags: t.tags || [],
       defaultConfig: t.defaultConfig,
       version: t.version || "1.0.0",
-      author: t.author || "Oninsite AI",
+      author: t.author || "OkInSite",
       isPublic: t.isPublic,
       isFeatured: t.isFeatured || false,
       isPremium: t.isPremium || false,

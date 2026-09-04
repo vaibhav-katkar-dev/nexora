@@ -272,17 +272,20 @@ function TemplateGalleryContent() {
   const handleOpenInNewTab = (template: any) => {
     const targetKey = template.slug || template.id;
     try {
-      sessionStorage.setItem(
-        `Oninsite-tpl-preview:${targetKey}`,
-        JSON.stringify({
-          config: template.config,
-          name: template.name,
-          category: template.category,
-          description: template.description,
-          slug: template.slug,
-          id: template.id,
-        })
-      );
+      const payload = JSON.stringify({
+        config: template.config,
+        name: template.name,
+        category: template.category,
+        description: template.description,
+        slug: template.slug,
+        id: template.id,
+      });
+      sessionStorage.setItem(`OkInSite-tpl-preview:${targetKey}`, payload);
+      sessionStorage.setItem(`Oninsite-tpl-preview:${targetKey}`, payload);
+      if (template.id && template.id !== targetKey) {
+        sessionStorage.setItem(`OkInSite-tpl-preview:${template.id}`, payload);
+        sessionStorage.setItem(`Oninsite-tpl-preview:${template.id}`, payload);
+      }
     } catch {
       /* ignore */
     }

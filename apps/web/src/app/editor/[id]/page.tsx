@@ -387,7 +387,7 @@ export default function EditorPage() {
     return (
       <div className="h-screen w-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <p className="text-xs font-semibold tracking-wide uppercase font-mono">Loading Nexora Website Builder…</p>
+        <p className="text-xs font-semibold tracking-wide uppercase font-mono">Loading OkInSite Studio…</p>
       </div>
     );
   }

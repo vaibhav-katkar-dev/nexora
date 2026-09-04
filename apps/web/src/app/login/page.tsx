@@ -68,7 +68,7 @@ export default function LoginPage() {
           <div className="space-y-3 pt-2">
             {[
               { icon: Zap, text: "From signup to live in under 3 minutes" },
-              { icon: Globe, text: "Free hosting on Oninsite.site/yourname" },
+              { icon: Globe, text: "Free hosting on yourname.okinsite.com" },
               { icon: CheckCircle2, text: "Works on every phone, tablet and desktop" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3 text-sm text-indigo-100/90">
@@ -102,10 +102,13 @@ export default function LoginPage() {
 
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
-              <span className="text-white font-black text-sm">N</span>
-            </div>
-            <span className="font-bold text-slate-900 text-lg">Oninsite</span>
+            <Link href="/" className="flex items-center gap-2">
+              <img
+                src="https://res.cloudinary.com/usj348ny/image/upload/v1788452134/okinsite.png"
+                alt="OkInSite"
+                className="h-8 w-auto object-contain"
+              />
+            </Link>
           </div>
 
           {/* Header */}

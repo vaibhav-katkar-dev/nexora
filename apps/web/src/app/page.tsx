@@ -2057,11 +2057,11 @@ export default function LandingPage() {
             <div className="space-y-3 text-xs">
               <div className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Product</div>
               <ul className="space-y-2">
-                <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
-                <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
-                <li><a href="#value-prop" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><span className="text-slate-600">Changelog (v1.5)</span></li>
+                <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="/how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
+                <li><Link href="/templates" className="hover:text-white transition-colors">Templates Gallery</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
               </ul>
             </div>
 
@@ -2069,31 +2069,31 @@ export default function LandingPage() {
             <div className="space-y-3 text-xs">
               <div className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Use Cases</div>
               <ul className="space-y-2">
-                <li><a href="#presence-types" className="hover:text-white transition-colors">Business (apex.okinsite.com)</a></li>
-                <li><a href="#presence-types" className="hover:text-white transition-colors">Creator (maya.okinsite.com)</a></li>
-                <li><a href="#presence-types" className="hover:text-white transition-colors">Portfolio (alex.okinsite.com)</a></li>
-                <li><a href="#presence-types" className="hover:text-white transition-colors">Restaurant (lumina.okinsite.com)</a></li>
-                <li><a href="#presence-types" className="hover:text-white transition-colors">Link in Bio</a></li>
-                <li><a href="#presence-types" className="hover:text-white transition-colors">Personal Brand</a></li>
+                <li><Link href="/templates?category=business" className="hover:text-white transition-colors">Business (apex.okinsite.com)</Link></li>
+                <li><Link href="/templates?category=creator" className="hover:text-white transition-colors">Creator (maya.okinsite.com)</Link></li>
+                <li><Link href="/templates?category=portfolio" className="hover:text-white transition-colors">Portfolio (alex.okinsite.com)</Link></li>
+                <li><Link href="/templates?category=restaurant" className="hover:text-white transition-colors">Restaurant (lumina.okinsite.com)</Link></li>
+                <li><Link href="/templates?category=link_in_bio" className="hover:text-white transition-colors">Link in Bio</Link></li>
+                <li><Link href="/templates?category=personal" className="hover:text-white transition-colors">Personal Brand</Link></li>
               </ul>
             </div>
 
             {/* Col 4: Resources & Company */}
             <div className="space-y-3 text-xs">
-              <div className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Resources</div>
+              <div className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Company & Legal</div>
               <ul className="space-y-2">
-                <li><Link href="/templates" className="hover:text-white transition-colors">Explore Gallery</Link></li>
-                <li><a href="#faq" className="hover:text-white transition-colors">FAQ & Support</a></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About OkInSite</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition-colors">Help & FAQ</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
                 <li><Link href="/login" className="hover:text-white transition-colors">Sign In</Link></li>
-                <li><Link href="/register" className="hover:text-white transition-colors">Register</Link></li>
-                <li><span className="text-slate-600">Privacy & Terms</span></li>
               </ul>
             </div>
           </div>
 
           <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>© 2026 OkiNSITE. All rights reserved.</p>
-            <p className="font-mono text-[11px]">okinsite.com · Your place on the internet.</p>
+            <p>© {new Date().getFullYear()} OkInSite. All rights reserved.</p>
+            <p className="font-mono text-[11px]">okinsite.com · Claim your place on the internet.</p>
           </div>
         </div>
       </footer>
