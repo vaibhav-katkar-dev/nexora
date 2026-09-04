@@ -400,22 +400,9 @@ export function CanvasPreview({
             }}
             className="origin-top"
           >
-            {viewport === "desktop" ? (
-              <div className="w-full min-h-full">
-                <SiteRenderer
-                  config={config}
-                  customCode={customCode}
-                  selectedSectionId={selectedSectionId}
-                  onSelectSection={onSelectSection}
-                  selectedElementKey={selectedElementKey}
-                  onSelectElement={onSelectElement}
-                  onRequestImageEdit={onRequestImageEdit}
-                  interactive={true}
-                />
-              </div>
-            ) : (
+            {viewport === "tablet" ? (
               <div className="py-4 sm:py-6 px-2 flex justify-center items-start min-h-full">
-                <DeviceFrame viewport={viewport}>
+                <DeviceFrame viewport="tablet">
                   <SiteRenderer
                     config={config}
                     customCode={customCode}
@@ -427,6 +414,19 @@ export function CanvasPreview({
                     interactive={true}
                   />
                 </DeviceFrame>
+              </div>
+            ) : (
+              <div className="w-full min-h-full">
+                <SiteRenderer
+                  config={config}
+                  customCode={customCode}
+                  selectedSectionId={selectedSectionId}
+                  onSelectSection={onSelectSection}
+                  selectedElementKey={selectedElementKey}
+                  onSelectElement={onSelectElement}
+                  onRequestImageEdit={onRequestImageEdit}
+                  interactive={true}
+                />
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useEditorStore } from "@/store/editorStore";
 import {
@@ -15,7 +16,6 @@ import {
   AlertCircle,
   Monitor,
   Tablet,
-  Smartphone,
   Pencil,
   Zap,
 } from "lucide-react";
@@ -53,6 +53,13 @@ export function EditorHeader({
   } = useEditorStore();
 
   const isPreview = viewMode === "preview";
+
+  // If mobile viewport was previously selected, default to desktop
+  useEffect(() => {
+    if (viewport === "mobile") {
+      setViewport("desktop");
+    }
+  }, [viewport, setViewport]);
 
   return (
     <header className="h-14 bg-[#080d19] border-b border-slate-800/80 px-3 sm:px-4 flex items-center justify-between z-40 select-none flex-shrink-0 backdrop-blur-md overflow-x-auto no-scrollbar touch-manipulation gap-2 sm:gap-4">
@@ -119,12 +126,12 @@ export function EditorHeader({
 
       {/* ── Center: Device Switcher, URL pill, Undo/Redo, Preview ── */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Device Switcher (Desktop / Tablet / Mobile) */}
+        {/* Device Switcher (Desktop / Tablet) */}
         <div className="flex items-center bg-[#0d1424] border border-slate-800 rounded-xl p-1 shrink-0">
           <button
             onClick={() => setViewport("desktop")}
             className={`p-1.5 rounded-lg transition-all ${
-              viewport === "desktop"
+              viewport !== "tablet"
                 ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 shadow-xs"
                 : "text-slate-400 hover:text-white"
             }`}
@@ -142,17 +149,6 @@ export function EditorHeader({
             title="Tablet View"
           >
             <Tablet size={14} />
-          </button>
-          <button
-            onClick={() => setViewport("mobile")}
-            className={`p-1.5 rounded-lg transition-all ${
-              viewport === "mobile"
-                ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 shadow-xs"
-                : "text-slate-400 hover:text-white"
-            }`}
-            title="Android / Mobile View"
-          >
-            <Smartphone size={14} />
           </button>
         </div>
 
