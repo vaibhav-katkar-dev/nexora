@@ -119,20 +119,26 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   saveError: null,
   isPublishing: false,
   published: false,
-  viewMode: "preview",
+  viewMode: "visual",
   viewport: "desktop",
   past: [],
   future: [],
   _skipAutoSave: false,
 
-  loadProject: (project) =>
-    set({
+  loadProject: (project) => {
+    const config = project.config
+      ? {
+          ...project.config,
+          sections: Array.isArray(project.config.sections) ? project.config.sections : [],
+        }
+      : null;
+    return set({
       projectId: project._id,
       projectName: project.name,
       projectSlug: project.slug || "",
       published: Boolean(project.published),
-      config: project.config,
-      activeSectionId: project.config?.sections?.[0]?.id || null,
+      config,
+      activeSectionId: config?.sections?.[0]?.id || null,
       selectedElementKey: null,
       customCode: project.customCode || {},
       seo: project.seo || { metaTitle: "", metaDescription: "" },
@@ -141,7 +147,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       past: [],
       future: [],
       _skipAutoSave: false,
-    }),
+      viewMode: "visual",
+    });
+  },
 
   pushHistorySnapshot: () => {
     const { config, customCode } = get();

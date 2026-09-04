@@ -196,7 +196,7 @@ export function EditorHeader({
           title={isPreview ? "Back to Edit" : "Full Preview"}
         >
           <Eye size={13} />
-          <span className="hidden xs:inline">{isPreview ? "Editing" : "Preview"}</span>
+          <span className="hidden xs:inline">{isPreview ? "Edit Site" : "Preview"}</span>
         </button>
 
         {/* Developer Mode toggle */}

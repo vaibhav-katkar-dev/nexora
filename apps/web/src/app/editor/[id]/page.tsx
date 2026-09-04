@@ -17,10 +17,11 @@ import { ThemeInspectorPanel } from "@/components/editor/panels/ThemeInspectorPa
 import { AddSectionPanel } from "@/components/editor/panels/AddSectionPanel";
 import { CanvasPreview } from "@/components/editor/CanvasPreview";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
+import Link from "next/link";
 import { AiCanvasPromptBar } from "@/components/editor/AiCanvasPromptBar";
 import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
 import { BusinessProfile, injectBusinessProfileIntoConfig, saveBusinessProfile } from "@/lib/businessProfile";
-import { Loader2, Sparkles, Globe, ArrowRight, Layers, SlidersHorizontal, Palette, Plus } from "lucide-react";
+import { Loader2, Sparkles, Globe, ArrowRight, Layers, SlidersHorizontal, Palette, Plus, AlertCircle, EyeOff } from "lucide-react";
 
 // Lazy-load heavy panels and modals to keep initial bundle size lightweight
 const SeoInspectorPanel = dynamic(() => import("@/components/editor/panels/SeoInspectorPanel").then(mod => mod.SeoInspectorPanel), { ssr: false });
@@ -62,6 +63,7 @@ export default function EditorPage() {
   const [showBusinessSetupModal, setShowBusinessSetupModal] = useState(false);
   const [isGuestQuickStart, setIsGuestQuickStart] = useState(false);
   const [currentSlug, setCurrentSlug] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Image Picker state
   const [imagePickerState, setImagePickerState] = useState<{
@@ -142,13 +144,17 @@ export default function EditorPage() {
 
       try {
         const res = await projectsApi.getOne(id);
-        if (res.data) {
+        if (res?.data) {
           loadProject(res.data);
           setCurrentSlug(res.data.slug || "");
+        } else {
+          setLoadError("Project not found or you do not have permission to view it.");
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to load project", err);
-        toastRef.current.error("Error", "Could not load project data.");
+        const errMsg = err?.message || "Could not load project data.";
+        setLoadError(errMsg);
+        toastRef.current.error("Error", errMsg);
       } finally {
         setIsLoading(false);
       }
@@ -379,7 +385,7 @@ export default function EditorPage() {
 
 
 
-  const activeSection = config?.sections.find((s) => s.id === activeSectionId);
+  const activeSection = config?.sections?.find((s) => s.id === activeSectionId);
   const showSidebar = viewMode !== "preview";
   const showCodeEditor = developerMode && (viewMode === "code" || activeTab === "code");
 
@@ -388,6 +394,36 @@ export default function EditorPage() {
       <div className="h-screen w-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
         <p className="text-xs font-semibold tracking-wide uppercase font-mono">Loading OkInSite Studio…</p>
+      </div>
+    );
+  }
+
+  if (loadError || !config) {
+    return (
+      <div className="h-screen w-screen bg-slate-950 flex flex-col items-center justify-center text-slate-300 gap-4 p-6 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shadow-lg">
+          <AlertCircle size={28} />
+        </div>
+        <div className="max-w-md">
+          <h2 className="text-lg font-bold text-white mb-1.5">Unable to open project</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            {loadError || "We could not find or access this project configuration. Please check your connection and account permissions."}
+          </p>
+        </div>
+        <div className="flex items-center gap-3 mt-2">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition-all cursor-pointer"
+          >
+            Retry
+          </button>
+          <Link
+            href="/dashboard"
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all shadow-md shadow-indigo-600/30"
+          >
+            Return to Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
@@ -600,9 +636,10 @@ export default function EditorPage() {
               <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
                 <button
                   onClick={() => setViewMode("visual")}
-                  className="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur hover:bg-slate-800"
+                  className="rounded-full border border-slate-700 bg-slate-900/90 px-3.5 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur hover:bg-slate-800 shadow-xl flex items-center gap-1.5 transition-all active:scale-95"
                 >
-                  Back to edit
+                  <EyeOff size={13} className="text-indigo-400" />
+                  <span>Exit Preview</span>
                 </button>
               </div>
               <div className="h-full overflow-y-auto flex flex-col">
