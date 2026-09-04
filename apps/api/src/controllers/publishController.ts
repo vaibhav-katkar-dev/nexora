@@ -38,6 +38,16 @@ export const publishProject = async (req: AuthenticatedRequest, res: Response) =
     project.publishedHtml = html;
     await project.save();
 
+    // Asynchronously notify search engines (IndexNow & Google sitemap ping) without blocking user response
+    try {
+      const siteBaseUrl = process.env.CLIENT_URL || process.env.SITE_BASE_URL || "https://okinsite.com";
+      const sitemapUrl = `${siteBaseUrl.replace(/\/$/, "")}/sitemap.xml`;
+      // Trigger Google sitemap ping
+      fetch(`https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`).catch(() => {});
+    } catch {
+      // Non-blocking ping failure
+    }
+
     res.json({
       success: true,
       message: "Project published successfully",

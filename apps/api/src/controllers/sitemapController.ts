@@ -54,7 +54,8 @@ export const getSitemapEntriesJson = async (req: Request, res: Response) => {
 
     for (const proj of projects) {
       const quality = evaluateProjectQuality(proj as any);
-      if (quality.status !== "legitimate") continue;
+      // Exclude blocked/abusive phishing sites; allow legitimate and initial new sites
+      if (quality.status === "blocked") continue;
 
       const primaryCustomDomain = domainMap.get(proj._id.toString());
       const url = resolveSiteCanonicalUrl(proj.slug, primaryCustomDomain);
@@ -65,7 +66,7 @@ export const getSitemapEntriesJson = async (req: Request, res: Response) => {
       });
     }
 
-    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=14400");
+    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=600");
     res.json({ success: true, data: entries });
   } catch (error: any) {
     res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });
@@ -197,10 +198,10 @@ async function buildSitemapPageXml(page: number, hostBase: string): Promise<stri
   xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
   for (const proj of projects) {
-    // Quality check validation
+    // Quality check validation — exclude abusive or phishing sites
     const quality = evaluateProjectQuality(proj as any);
-    if (quality.status !== "legitimate") {
-      continue; // Exclude thin or abusive sites from sitemap
+    if (quality.status === "blocked") {
+      continue;
     }
 
     const primaryCustomDomain = domainMap.get(proj._id.toString());

@@ -7,4 +7,4 @@ Disallow: /settings/
 Disallow: /api/
 Disallow: /publish/
 
-Sitemap: https://Oninsite.site/sitemap.xml
+Sitemap: https://okinsite.com/sitemap.xml

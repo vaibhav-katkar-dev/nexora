@@ -21,10 +21,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch indexable published user sites from backend API
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:4000/api/v1";
     // Strip trailing /api/v1 to reach backend root sitemap endpoint
     const backendBase = apiUrl.replace(/\/api\/v1\/?$/, "");
-    const res = await fetch(`${backendBase}/sitemap-entries`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${backendBase}/sitemap-entries`, { next: { revalidate: 300 } });
     
     if (res.ok) {
       const payload = await res.json();
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const dynamicEntries: MetadataRoute.Sitemap = payload.data.map((item: any) => ({
           url: item.url,
           lastModified: new Date(item.lastModified),
-          changeFrequency: "weekly",
+          changeFrequency: "weekly" as const,
           priority: 0.8,
         }));
         return [...staticPages, ...dynamicEntries];

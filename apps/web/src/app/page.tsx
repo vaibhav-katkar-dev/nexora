@@ -1254,7 +1254,7 @@ export default function LandingPage() {
                   {/* High-fidelity responsive showcase container with soft edge melt */}
                   <div className="relative w-full flex items-center justify-center [mask-image:radial-gradient(ellipse_97%_97%_at_50%_50%,#000_88%,transparent_100%)]">
                     <img
-                      src="https://res.cloudinary.com/usj348ny/image/upload/v1788526028/ChatGPT_Image_Sep_4_2026_06_03_34_PM.png"
+                      src="https://res.cloudinary.com/usj348ny/image/upload/v1788529300/processed_okinsite_hero.jpg"
                       alt="OkiNSITE Digital Presence Ecosystem"
                       className="w-full h-auto object-contain max-h-[580px] sm:max-h-[660px] lg:max-h-[720px] drop-shadow-[0_24px_48px_rgba(15,23,42,0.12)] transition-transform duration-700 hover:scale-[1.01]"
                       loading="eager"

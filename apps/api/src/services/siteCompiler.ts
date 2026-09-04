@@ -1,4 +1,4 @@
-﻿import { IProjectDocument } from "../models/Project.js";
+import { IProjectDocument } from "../models/Project.js";
 import {
   SiteConfigJSON,
   Section,
@@ -14,7 +14,19 @@ import { getPublishedBaseUrl } from "../utils/siteUrl.js";
 function buildSeoHead(project: IProjectDocument): string {
   const { seo, config, slug } = project;
   const baseUrl = getPublishedBaseUrl();
-  const siteUrl = `${baseUrl}/${slug}`;
+  let rootDomain = "okinsite.com";
+  try {
+    const parsed = new URL(baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`);
+    rootDomain = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  } catch {}
+
+  const siteUrl =
+    rootDomain === "localhost" || rootDomain === "127.0.0.1" || rootDomain.includes("localhost")
+      ? `http://${slug}.localhost:3000`
+      : rootDomain.endsWith(".vercel.app")
+      ? `https://${rootDomain}/${slug}`
+      : `https://${slug}.${rootDomain}`;
+
   const ogImage = seo.ogImage || `${baseUrl}/og-default.png`;
 
   const schemaType = getSchemaType(config.meta.category);
