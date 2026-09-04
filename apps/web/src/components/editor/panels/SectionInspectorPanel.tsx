@@ -25,7 +25,13 @@ import {
   AlignJustify,
   Eye,
   EyeOff,
+  MapPin,
+  Navigation,
+  Loader2,
+  Check,
 } from "lucide-react";
+import { detectAutoLocation } from "@/lib/geoLocation";
+import { CustomTemplateInspector } from "@/components/custom-template/CustomTemplateInspector";
 
 // ─── Per-Element Custom Color -------------------------------------------------
 // Preset swatches shown in the color popup. A nice spread of editable colors.
@@ -141,6 +147,42 @@ export function SectionInspectorPanel({
     currentUrl: "",
     fieldPath: "",
   });
+  const [locatingTarget, setLocatingTarget] = useState<string | null>(null);
+  const [locationSuccessTarget, setLocationSuccessTarget] = useState<string | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  const handleAutoDetectLocation = async (targetType: "maps" | "contact" | "digital_card") => {
+    if (!section) return;
+    setLocatingTarget(targetType);
+    setLocationError(null);
+    try {
+      const result = await detectAutoLocation();
+      if (targetType === "maps") {
+        updateSection(section.id, {
+          content: {
+            ...(section.content || {}),
+            address: result.formattedAddress,
+            lat: result.latitude,
+            lng: result.longitude,
+          },
+        });
+      } else if (targetType === "contact") {
+        handleFieldChange("address", result.formattedAddress);
+      } else if (targetType === "digital_card") {
+        const shortAddr = result.city && result.country 
+          ? `${result.city}, ${result.country}` 
+          : result.formattedAddress;
+        handleFieldChange("location", shortAddr);
+      }
+      setLocationSuccessTarget(targetType);
+      setTimeout(() => setLocationSuccessTarget(null), 3000);
+    } catch (err: any) {
+      setLocationError(err?.message || "Could not retrieve location.");
+      setTimeout(() => setLocationError(null), 5000);
+    } finally {
+      setLocatingTarget(null);
+    }
+  };
 
   useEffect(() => {
     if (!selectedElementKey) return;
@@ -428,6 +470,10 @@ const removeArrayItem = (key: string, index: number) => {
       {/* Form Controls (Content Tab) */}
       {inspectorTab === "content" && (
         <div ref={panelScrollRef} className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+        {section.type === "custom_template" ? (
+          <CustomTemplateInspector section={section} onOpenImagePicker={onOpenImagePicker} />
+        ) : (
+          <>
         {/* Core Header Properties (Only show supported fields per section) */}
         {(() => {
           const supportsBadge = [
@@ -961,9 +1007,44 @@ const removeArrayItem = (key: string, index: number) => {
             </div>
 
             {/* Location */}
-            <div data-field-path="location">
-              <label className={labelClass}>Location</label>
-              <input type="text" value={content.location || ""} onChange={(e) => handleFieldChange("location", e.target.value)} placeholder="e.g. New York, USA" className={inputClass} />
+            <div data-field-path="location" className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className={labelClass}>Location</label>
+                <button
+                  type="button"
+                  onClick={() => handleAutoDetectLocation("digital_card")}
+                  disabled={locatingTarget === "digital_card"}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50 transition-colors"
+                  title="Detect your location automatically"
+                >
+                  {locatingTarget === "digital_card" ? (
+                    <>
+                      <Loader2 size={11} className="animate-spin" />
+                      <span>Detecting...</span>
+                    </>
+                  ) : locationSuccessTarget === "digital_card" ? (
+                    <>
+                      <Check size={11} className="text-emerald-400" />
+                      <span className="text-emerald-400">Detected!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Navigation size={11} />
+                      <span>Auto Detect</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <input
+                type="text"
+                value={content.location || ""}
+                onChange={(e) => handleFieldChange("location", e.target.value)}
+                placeholder="e.g. New York, USA"
+                className={inputClass}
+              />
+              {locationError && locatingTarget === null && (
+                <p className="text-[10px] text-amber-400">{locationError}</p>
+              )}
             </div>
 
             {/* Avatar — Visual Card */}
@@ -1143,9 +1224,44 @@ const removeArrayItem = (key: string, index: number) => {
               <span className="text-indigo-400">◈</span> Map Settings
             </h3>
 
-            <div data-field-path="address">
-              <label className={labelClass}>Address (recommended)</label>
-              <input type="text" value={content.address || ""} onChange={(e) => handleFieldChange("address", e.target.value)} placeholder="e.g. 1600 Amphitheatre Pkwy, Mountain View" className={inputClass} />
+            <div data-field-path="address" className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className={labelClass}>Address (recommended)</label>
+                <button
+                  type="button"
+                  onClick={() => handleAutoDetectLocation("maps")}
+                  disabled={locatingTarget === "maps"}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50 transition-colors"
+                  title="Detect your current location and coordinates"
+                >
+                  {locatingTarget === "maps" ? (
+                    <>
+                      <Loader2 size={11} className="animate-spin" />
+                      <span>Detecting...</span>
+                    </>
+                  ) : locationSuccessTarget === "maps" ? (
+                    <>
+                      <Check size={11} className="text-emerald-400" />
+                      <span className="text-emerald-400">Location Set!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Navigation size={11} />
+                      <span>Auto Detect</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <input
+                type="text"
+                value={content.address || ""}
+                onChange={(e) => handleFieldChange("address", e.target.value)}
+                placeholder="e.g. 1600 Amphitheatre Pkwy, Mountain View"
+                className={inputClass}
+              />
+              {locationError && locatingTarget === null && (
+                <p className="text-[10px] text-amber-400">{locationError}</p>
+              )}
             </div>
 
             <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
@@ -1312,7 +1428,33 @@ const removeArrayItem = (key: string, index: number) => {
               </div>
 
               <div data-field-path="address" className="space-y-1">
-                <label className={labelClass}>Display Office / Address</label>
+                <div className="flex items-center justify-between">
+                  <label className={labelClass}>Display Office / Address</label>
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDetectLocation("contact")}
+                    disabled={locatingTarget === "contact"}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50 transition-colors"
+                    title="Detect your current location automatically"
+                  >
+                    {locatingTarget === "contact" ? (
+                      <>
+                        <Loader2 size={11} className="animate-spin" />
+                        <span>Detecting...</span>
+                      </>
+                    ) : locationSuccessTarget === "contact" ? (
+                      <>
+                        <Check size={11} className="text-emerald-400" />
+                        <span className="text-emerald-400">Detected!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Navigation size={11} />
+                        <span>Auto Detect</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={content.address || ""}
@@ -1320,6 +1462,9 @@ const removeArrayItem = (key: string, index: number) => {
                   placeholder="123 Market St, San Francisco, CA"
                   className={inputClass}
                 />
+                {locationError && locatingTarget === null && (
+                  <p className="text-[10px] text-amber-400">{locationError}</p>
+                )}
               </div>
             </div>
 
@@ -2361,6 +2506,8 @@ const removeArrayItem = (key: string, index: number) => {
             return null;
           })}
         </div>
+        )}
+        </>
         )}
 
         </div>

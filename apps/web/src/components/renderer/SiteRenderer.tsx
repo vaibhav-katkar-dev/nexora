@@ -52,6 +52,7 @@ import {
 import { useEditorStore } from "@/store/editorStore";
 import { formsApi } from "@/lib/api";
 import { getUrlUtmParams } from "@/lib/analyticsTracker";
+import { CustomTemplateRenderer } from "@/components/custom-template/CustomTemplateRenderer";
 
 // Icon mapping helper
 const ICON_MAP: Record<string, any> = {
@@ -3407,6 +3408,8 @@ function RenderSection({ section, theme, selectedElementKey, interactive, siteSl
       }
       case "footer":
         return <FooterSection {...rendererProps} />;
+      case "custom_template":
+        return <CustomTemplateRenderer {...rendererProps} />;
       default:
         return (
           <section id={section.id} className="py-16 px-6 max-w-4xl mx-auto">

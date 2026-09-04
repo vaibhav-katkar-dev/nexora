@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
@@ -163,6 +163,29 @@ The visual editor matches elements to state using data-element-key:
 23. custom_html (Custom Bespoke HTML Fragment):
     { "id": "html-1", "type": "custom_html", "title": "Custom Block", "content": { "html": "<div className='hero-block'>...</div>" } }
 
+24. custom_template (Bespoke Schema-Driven Template — 100% Visual Editor Compatible):
+    {
+      "id": "tpl-1",
+      "type": "custom_template",
+      "content": {
+        "templateId": "noir-premium",
+        "data": {
+          "profile": {
+            "name": "Noor Ali",
+            "role": "Photographer & Visual Storyteller",
+            "bio": "Capturing quiet, cinematic moments.",
+            "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80"
+          },
+          "badge": "✨ Available for Collabs",
+          "stats": [{ "value": "318K", "label": "Followers" }],
+          "links": [{ "label": "Shop Prints", "url": "https://...", "badge": "NEW" }],
+          "gallery": [{ "url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=400&q=80", "alt": "Dunes" }],
+          "socials": { "instagram": "https://instagram.com", "twitter": "https://twitter.com" },
+          "footerText": "© 2026 Noor Ali"
+        }
+      }
+    }
+
 ---
 
 ## 6. COMPLETE MINIMAL WORKING TEMPLATE BOILERPLATE
@@ -306,7 +329,7 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
         {/* ── Navigation Tabs ──────────────────────────────────────────────── */}
         <div className="px-6 py-2 border-b border-slate-800/80 bg-slate-950/40 flex items-center gap-1.5 overflow-x-auto shrink-0 scrollbar-none">
           {[
-            { id: "sections", label: "3. Section & Content Specs (23)", icon: Layers },
+            { id: "sections", label: "3. Section & Content Specs (24)", icon: Layers },
             { id: "bindings", label: "4. Visual Editor Element Keys", icon: SlidersHorizontal },
             { id: "theme", label: "2. Theme Engine & Luminance", icon: Palette },
             { id: "rules", label: "1. Critical JSON Rules", icon: AlertTriangle },
@@ -797,6 +820,46 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
   }
 }`,
                   },
+                  {
+                    type: "custom_template",
+                    title: "Bespoke Custom Template (Noir Bio Premium)",
+                    code: `{
+  "id": "noir-bio-main",
+  "type": "custom_template",
+  "content": {
+    "templateId": "noir-premium",
+    "data": {
+      "profile": {
+        "name": "Noor Ali",
+        "role": "Photographer & Visual Storyteller",
+        "bio": "Capturing quiet, cinematic moments across the Middle East & beyond.",
+        "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80"
+      },
+      "badge": "✨ Available for Collabs",
+      "stats": [
+        { "value": "318K", "label": "Followers" },
+        { "value": "2.4M", "label": "Monthly Views" },
+        { "value": "60+", "label": "Countries Shot" }
+      ],
+      "links": [
+        { "label": "Shop Fine Art Prints", "url": "https://...", "badge": "NEW", "icon": "✦", "featured": true },
+        { "label": "Lightroom Presets", "url": "https://...", "icon": "🎞" },
+        { "label": "Book a Session", "url": "https://cal.com/noorali", "icon": "📅" }
+      ],
+      "gallery": [
+        { "url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=400&q=80", "alt": "Dunes" },
+        { "url": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80", "alt": "City" }
+      ],
+      "socials": {
+        "instagram": "https://instagram.com",
+        "twitter": "https://twitter.com",
+        "youtube": "https://youtube.com"
+      },
+      "footerText": "© 2026 Noor Ali · All rights reserved"
+    }
+  }
+}`,
+                  },
                 ].map((item) => (
                   <div key={item.type} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                     <div className="flex items-center justify-between">
@@ -971,6 +1034,137 @@ export function AdminTemplateGuideModal({ onClose }: AdminTemplateGuideModalProp
                         meta: { id: "digital-card-pro-v2", slug: "digital-card-pro-v2", title: "Digital Card Pro", category: "digital_card" },
                         theme: { mode: "dark", primaryColor: "#EA580C", backgroundColor: "#1C0D06" },
                         sections: [{ id: "card-main", type: "digital_card", title: "Marcus Sterling" }],
+                      },
+                      null,
+                      2
+                    )}
+                  </pre>
+                </div>
+
+                {/* Boilerplate Card 4: Custom Template (Noir Bio Premium) */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-violet-950 text-violet-300 border border-violet-800">
+                          CUSTOM_TEMPLATE
+                        </span>
+                        <h4 className="text-sm font-bold text-white">Noir Bio — Premium (Custom Template)</h4>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Bespoke single-page creator link-in-bio with glowing ambient orbs, stats row, curated links, mini gallery, and 100% visual editor compatibility.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        copySnippet(
+                          "boilerplate_noir",
+                          JSON.stringify(
+                            {
+                              meta: {
+                                id: "noir-bio-premium",
+                                slug: "noir-bio-premium",
+                                title: "Noir Bio — Premium Link in Bio",
+                                category: "link_in_bio",
+                                description: "Bespoke animated link-in-bio with glowing avatar, stats, curated links, mini gallery and socials.",
+                                author: "OkInSite AI",
+                                version: "1.0.1",
+                                tags: ["Premium", "Dark", "Animated", "All-in-One"],
+                                status: "published",
+                              },
+                              theme: {
+                                mode: "dark",
+                                primaryColor: "#9B8CFB",
+                                secondaryColor: "#E8C77E",
+                                accentColor: "#F6A8C7",
+                                backgroundColor: "#0A0A12",
+                                textColor: "#F5F3FF",
+                                headingFont: "Outfit",
+                                bodyFont: "Inter",
+                                borderRadius: "16px",
+                                buttonVariant: "pill",
+                                cardVariant: "glass",
+                                shadow: "xl",
+                                animations: true,
+                              },
+                              sections: [
+                                {
+                                  id: "noir-bio-main",
+                                  type: "custom_template",
+                                  variant: "default",
+                                  title: "Noor Ali",
+                                  subtitle: "Photographer & Visual Storyteller",
+                                  content: {
+                                    templateId: "noir-premium",
+                                    data: {
+                                      profile: {
+                                        name: "Noor Ali",
+                                        role: "Photographer & Visual Storyteller",
+                                        bio: "Capturing quiet, cinematic moments across the Middle East & beyond. Prints, presets and bookings below.",
+                                        avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80",
+                                      },
+                                      badge: "✨ Available for Collabs",
+                                      stats: [
+                                        { value: "318K", label: "Followers" },
+                                        { value: "2.4M", label: "Monthly Views" },
+                                        { value: "60+", label: "Countries Shot" },
+                                      ],
+                                      links: [
+                                        { label: "Shop Fine Art Prints", url: "https://noorali.example.com/prints", sub: "Limited edition drops", badge: "NEW", icon: "✦", featured: true },
+                                        { label: "Instagram", url: "https://instagram.com", icon: "◎" },
+                                        { label: "Behind the Shoot — YouTube", url: "https://youtube.com", icon: "▶" },
+                                        { label: "Lightroom Presets", url: "https://noorali.example.com/presets", icon: "🎞" },
+                                        { label: "Book a Session", url: "https://cal.com/noorali", icon: "📅" },
+                                        { label: "Business Inquiries", url: "mailto:hello@noorali.example.com", icon: "✉" },
+                                      ],
+                                      gallery: [
+                                        { url: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=400&q=80", alt: "Desert dunes at golden hour" },
+                                        { url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80", alt: "City street at night" },
+                                        { url: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=400&q=80", alt: "Mountain landscape" },
+                                        { url: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=400&q=80", alt: "Portrait in warm light" },
+                                      ],
+                                      socials: {
+                                        instagram: "https://instagram.com",
+                                        twitter: "https://twitter.com",
+                                        youtube: "https://youtube.com",
+                                        linkedin: "https://linkedin.com",
+                                      },
+                                      footerText: "© 2026 Noor Ali · Booking: hello@noorali.example.com",
+                                    },
+                                  },
+                                },
+                              ],
+                              customCode: { html: "", css: "", js: "" },
+                            },
+                            null,
+                            2
+                          )
+                        )
+                      }
+                      className="px-3 py-1 rounded-xl text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 transition-all flex items-center gap-1.5"
+                    >
+                      {copiedKey === "boilerplate_noir" ? <Check size={13} /> : <Copy size={13} />}
+                      {copiedKey === "boilerplate_noir" ? "Copied Noir Boilerplate" : "Copy Noir Boilerplate"}
+                    </button>
+                  </div>
+                  <pre className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-mono text-emerald-400 overflow-x-auto max-h-56">
+                    {JSON.stringify(
+                      {
+                        meta: { id: "noir-bio-premium", slug: "noir-bio-premium", title: "Noir Bio — Premium", category: "link_in_bio" },
+                        sections: [
+                          {
+                            id: "noir-bio-main",
+                            type: "custom_template",
+                            content: {
+                              templateId: "noir-premium",
+                              data: {
+                                profile: { name: "Noor Ali", role: "Photographer & Visual Storyteller", avatar: "https://..." },
+                                stats: [{ value: "318K", label: "Followers" }],
+                                links: [{ label: "Shop Prints", url: "https://..." }],
+                              },
+                            },
+                          },
+                        ],
                       },
                       null,
                       2

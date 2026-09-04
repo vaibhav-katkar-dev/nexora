@@ -45,6 +45,7 @@ const SECTION_ICON_MAP: Record<string, any> = {
   links: Link2,
   digital_card: CreditCard,
   custom_html: Code2,
+  custom_template: Sparkles,
 };
 
 const SECTION_DESC_MAP: Record<string, string> = {
@@ -60,6 +61,7 @@ const SECTION_DESC_MAP: Record<string, string> = {
   links: "Link in bio buttons",
   digital_card: "Digital business card details",
   custom_html: "Custom embed code",
+  custom_template: "Premium bespoke custom template",
 };
 
 export function SectionListPanel({

@@ -52,6 +52,7 @@ const SECTION_TEMPLATES = [
   { type: "video", label: "YouTube Video Embed", desc: "Responsive YouTube video player with custom link", iconComp: Youtube },
   { type: "digital_card", label: "Digital VCard", desc: "Digital business card layout", iconComp: CreditCard },
   { type: "custom_html", label: "Custom HTML Code Block", desc: "Insert custom HTML/CSS embed block", iconComp: Code2 },
+  { type: "custom_template", label: "Noir Premium Template", desc: "Bespoke animated Noir Link-in-Bio with visual editing", iconComp: Sparkles },
 ];
 
 export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
@@ -255,6 +256,46 @@ export function AddSectionPanel({ onSectionAdded }: AddSectionPanelProps) {
       case "custom_html":
         return {
           html: `<div class="p-8 text-center border border-indigo-500/30 rounded-2xl bg-indigo-950/20">\n  <h3 className="text-xl font-bold text-indigo-400">Custom HTML Block</h3>\n  <p className="text-sm text-slate-300 mt-2">Edit this raw HTML code directly in Monaco Code Editor!</p>\n</div>`,
+        };
+
+      case "custom_template":
+        return {
+          templateId: "noir-premium",
+          data: {
+            profile: {
+              name: "Noor Ali",
+              role: "Photographer & Visual Storyteller",
+              bio: "Capturing quiet, cinematic moments across the Middle East & beyond. Prints, presets and bookings below.",
+              avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80",
+            },
+            badge: "✨ Available for Collabs",
+            stats: [
+              { value: "318K", label: "Followers" },
+              { value: "2.4M", label: "Monthly Views" },
+              { value: "60+", label: "Countries Shot" },
+            ],
+            links: [
+              { label: "Shop Fine Art Prints", url: "https://noorali.example.com/prints", sub: "Limited edition drops", badge: "NEW", icon: "✦", featured: true },
+              { label: "Instagram", url: "https://instagram.com", icon: "◎" },
+              { label: "Behind the Shoot — YouTube", url: "https://youtube.com", icon: "▶" },
+              { label: "Lightroom Presets", url: "https://noorali.example.com/presets", icon: "🎞" },
+              { label: "Book a Session", url: "https://cal.com/noorali", icon: "📅" },
+              { label: "Business Inquiries", url: "mailto:hello@noorali.example.com", icon: "✉" },
+            ],
+            gallery: [
+              { url: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=400&q=80", alt: "Desert dunes at golden hour" },
+              { url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80", alt: "City street at night" },
+              { url: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=400&q=80", alt: "Mountain landscape" },
+              { url: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=400&q=80", alt: "Portrait in warm light" },
+            ],
+            socials: {
+              instagram: "https://instagram.com",
+              twitter: "https://twitter.com",
+              youtube: "https://youtube.com",
+              linkedin: "https://linkedin.com",
+            },
+            footerText: "© 2026 Noor Ali · Booking: hello@noorali.example.com",
+          },
         };
 
       case "team":

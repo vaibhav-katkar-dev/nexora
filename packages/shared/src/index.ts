@@ -42,6 +42,7 @@ export const SectionTypeEnum = z.enum([
   "blog",
   "footer",
   "custom_html",
+  "custom_template",
 ]);
 
 export type SectionType = z.infer<typeof SectionTypeEnum>;

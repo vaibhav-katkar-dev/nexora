@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Upload,
   Loader2,
+  Navigation,
 } from "lucide-react";
 import {
   BusinessProfile,
@@ -22,6 +23,7 @@ import {
   DEFAULT_BUSINESS_PROFILE,
 } from "@/lib/businessProfile";
 import { mediaApi } from "@/lib/api";
+import { detectAutoLocation } from "@/lib/geoLocation";
 
 export interface QuickBusinessSetupModalProps {
   isOpen: boolean;
@@ -64,6 +66,25 @@ export function QuickBusinessSetupModal({
   const [hasSavedProfile, setHasSavedProfile] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [locationSuccess, setLocationSuccess] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  const handleAutoLocation = async () => {
+    setIsDetectingLocation(true);
+    setLocationError(null);
+    try {
+      const result = await detectAutoLocation();
+      updateField("location", result.formattedAddress);
+      setLocationSuccess(true);
+      setTimeout(() => setLocationSuccess(false), 3000);
+    } catch (err: any) {
+      setLocationError(err?.message || "Could not detect location.");
+      setTimeout(() => setLocationError(null), 5000);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -345,9 +366,35 @@ export function QuickBusinessSetupModal({
 
             {/* Location */}
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-600">
-                City / Address
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-medium text-slate-600">
+                  City / Address
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoLocation}
+                  disabled={isDetectingLocation}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 transition-colors"
+                  title="Detect your current location automatically"
+                >
+                  {isDetectingLocation ? (
+                    <>
+                      <Loader2 size={11} className="animate-spin" />
+                      <span>Detecting...</span>
+                    </>
+                  ) : locationSuccess ? (
+                    <>
+                      <CheckCircle2 size={11} className="text-emerald-600" />
+                      <span className="text-emerald-600">Detected!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Navigation size={11} />
+                      <span>Auto Detect</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <input
                 type="text"
                 value={profile.location}
@@ -355,6 +402,9 @@ export function QuickBusinessSetupModal({
                 placeholder="e.g. Bandra West, Mumbai or New York, NY"
                 className="w-full h-9 px-3 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs font-medium text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
               />
+              {locationError && (
+                <p className="text-[10px] text-amber-600">{locationError}</p>
+              )}
             </div>
 
             {/* Logo Upload Row */}
