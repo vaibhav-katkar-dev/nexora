@@ -53,7 +53,7 @@ export default async function TemplatePreviewPage({ params }: { params: { id: st
   const data = await fetchTemplate(params.id);
 
   return (
-    <main className="min-h-screen bg-slate-950">
+    <main className="min-h-screen">
       {/* Inert SEO fallback text for search crawlers */}
       {data?.name && <h1 style={{ display: "none" }}>{data.name}</h1>}
       {data?.description && <p style={{ display: "none" }}>{data.description}</p>}

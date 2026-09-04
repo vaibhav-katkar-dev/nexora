@@ -497,6 +497,19 @@ export function SiteCreationModal({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                try {
+                                  sessionStorage.setItem(
+                                    `OkInSite-tpl-preview:${tpl.id}`,
+                                    JSON.stringify({
+                                      config: tpl.config,
+                                      name: tpl.name,
+                                      category: tpl.category,
+                                      description: tpl.description,
+                                      slug: tpl.slug,
+                                      id: tpl.id,
+                                    })
+                                  );
+                                } catch {}
                                 window.open(`/templates/preview/${tpl.id}`, "_blank");
                               }}
                               className="px-3 py-2 rounded-xl bg-white/90 hover:bg-white text-slate-900 font-bold text-xs shadow-xl flex items-center gap-1.5 transition-transform hover:scale-105"
@@ -559,6 +572,19 @@ export function SiteCreationModal({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  try {
+                                    sessionStorage.setItem(
+                                      `OkInSite-tpl-preview:${tpl.id}`,
+                                      JSON.stringify({
+                                        config: tpl.config,
+                                        name: tpl.name,
+                                        category: tpl.category,
+                                        description: tpl.description,
+                                        slug: tpl.slug,
+                                        id: tpl.id,
+                                      })
+                                    );
+                                  } catch {}
                                   window.open(`/templates/preview/${tpl.id}`, "_blank");
                                 }}
                                 className="p-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all"

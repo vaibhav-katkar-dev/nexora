@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { SiteConfigJSON } from "@ai-platform/shared";
 import { presetTemplates } from "@ai-platform/templates";
 import { SiteRenderer } from "@/components/renderer/SiteRenderer";
-import { DeviceFrame, DeviceFrameViewport } from "@/components/editor/DeviceFrame";
 import { projectsApi, templatesApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
@@ -13,9 +12,7 @@ import { BusinessProfile, injectBusinessProfileIntoConfig } from "@/lib/business
 import {
   ArrowLeft,
   Sparkles,
-  Monitor,
-  Tablet,
-  Smartphone,
+  EyeOff,
   ExternalLink,
   Loader2,
   Check,
@@ -36,7 +33,6 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
   const router = useRouter();
   const toast = useToast();
 
-  const [viewport, setViewport] = useState<DeviceFrameViewport>("desktop");
   const [isCreating, setIsCreating] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [templateData, setTemplateData] = useState<{
@@ -173,6 +169,8 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
     }
   };
 
+  const [isBarMinimized, setIsBarMinimized] = useState(false);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white gap-4">
@@ -202,113 +200,82 @@ export function TemplatePreviewClient({ id, initialData }: TemplatePreviewClient
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans">
-      {/* ── Top Bar ────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 h-14 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-4 shadow-xl">
-        {/* Left: Back button & Info */}
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          <button
-            onClick={() => router.push("/templates")}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5 text-xs font-semibold shrink-0"
-            title="Back to templates"
-          >
-            <ArrowLeft size={16} />
-            <span className="hidden sm:inline">Gallery</span>
-          </button>
-          <div className="h-4 w-px bg-slate-800 hidden sm:block" />
-          <div className="min-w-0">
-            <h1 className="text-sm font-bold text-white truncate flex items-center gap-2">
-              {templateData.name}
-              <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
-                {templateData.category.replace("_", " ")}
-              </span>
-              {/* Palette indicator in preview header */}
-              {templateData.config?.theme && (
-                <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700">
-                  <span className="w-3 h-3 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: templateData.config.theme.primaryColor }} title="Primary" />
-                  <span className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: templateData.config.theme.secondaryColor }} title="Secondary" />
-                  <span className="w-2 h-2 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: templateData.config.theme.accentColor }} title="Accent" />
-                  <span className="text-[10px] text-slate-400 font-medium ml-1">
-                    {templateData.config.theme.mode === "light" ? "Light Mode" : "Dark Mode"}
-                  </span>
-                </span>
-              )}
-            </h1>
-          </div>
-        </div>
-
-        {/* Center: Device Viewport Switcher */}
-        <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
-          <button
-            onClick={() => setViewport("desktop")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-              viewport === "desktop"
-                ? "bg-slate-800 text-white shadow-xs"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            title="Desktop View"
-          >
-            <Monitor size={14} />
-            <span className="hidden md:inline">Desktop</span>
-          </button>
-          <button
-            onClick={() => setViewport("tablet")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-              viewport === "tablet"
-                ? "bg-slate-800 text-white shadow-xs"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            title="Tablet View"
-          >
-            <Tablet size={14} />
-            <span className="hidden md:inline">Tablet</span>
-          </button>
-          <button
-            onClick={() => setViewport("mobile")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-              viewport === "mobile"
-                ? "bg-slate-800 text-white shadow-xs"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            title="Android Mobile View"
-          >
-            <Smartphone size={14} />
-            <span className="hidden md:inline">Mobile</span>
-          </button>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowSetupModal(true)}
-            disabled={isCreating}
-            className="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 disabled:opacity-50"
-          >
-            {isCreating ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Sparkles size={14} />
-            )}
-            <span>Use Template</span>
-          </button>
-        </div>
-      </header>
-
-      {/* ── Main Preview Area ──────────────────────────────────────────────── */}
-      <main className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden p-2 sm:p-4 bg-slate-950 flex flex-col items-center custom-scrollbar">
-        {viewport === "desktop" ? (
-          <div
-            className="w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-800/80"
-            style={{ backgroundColor: templateData.config?.theme?.backgroundColor || "#0B1120" }}
-          >
-            <SiteRenderer config={templateData.config} />
-          </div>
-        ) : (
-          <DeviceFrame viewport={viewport}>
-            <SiteRenderer config={templateData.config} />
-          </DeviceFrame>
-        )}
+    <div className="relative min-h-screen w-full font-sans antialiased overflow-x-hidden">
+      {/* ── RAW FULL-SCREEN SITE RENDER (No player frames, bezels or mockups) ── */}
+      <main className="w-full min-h-screen">
+        <SiteRenderer config={templateData.config} />
       </main>
+
+      {/* ── FLOATING MIDDLE ACTION BAR & TOGGLE ── */}
+      <aside className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none">
+        {isBarMinimized ? (
+          /* Minimized pill: sleek unobtrusive bubble */
+          <button
+            type="button"
+            onClick={() => setIsBarMinimized(false)}
+            className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/90 text-white border border-slate-700/80 shadow-2xl backdrop-blur-xl hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 text-xs font-bold"
+            title="Expand template controls"
+          >
+            <Sparkles size={14} className="text-indigo-400 animate-pulse" />
+            <span>Use Template</span>
+            <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded-full">Show</span>
+          </button>
+        ) : (
+          /* Expanded sleek floating control bar */
+          <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-slate-950/85 text-white border border-slate-800/90 shadow-[0_10px_38px_-10px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-2xl animate-fade-in max-w-[92vw] sm:max-w-none">
+            {/* Back to Gallery */}
+            <button
+              type="button"
+              onClick={() => router.push("/templates")}
+              className="p-2 sm:px-3 sm:py-1.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors flex items-center gap-1.5 text-xs font-semibold shrink-0"
+              title="Return to Template Gallery"
+            >
+              <ArrowLeft size={15} />
+              <span className="hidden sm:inline">Gallery</span>
+            </button>
+
+            <div className="h-4 w-px bg-slate-800 shrink-0" />
+
+            {/* Template Info */}
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-bold text-white truncate max-w-[120px] sm:max-w-[200px]">
+                {templateData.name}
+              </span>
+              <span className="hidden md:inline-block text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">
+                {templateData.category.replace(/_/g, " ")}
+              </span>
+            </div>
+
+            {/* ── MIDDLE PRIMARY BUTTON: USE THIS TEMPLATE ── */}
+            <button
+              type="button"
+              onClick={() => setShowSetupModal(true)}
+              disabled={isCreating}
+              className="px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 transition-all flex items-center gap-2 shadow-[0_4px_20px_rgba(99,102,241,0.4)] disabled:opacity-50 shrink-0"
+            >
+              {isCreating ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Sparkles size={15} className="text-amber-300" />
+              )}
+              <span>Use This Template</span>
+            </button>
+
+            <div className="h-4 w-px bg-slate-800 shrink-0" />
+
+            {/* Toggle / Minimize Option */}
+            <button
+              type="button"
+              onClick={() => setIsBarMinimized(true)}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition-colors shrink-0"
+              title="Hide controls for pure full-screen view"
+            >
+              <span className="sr-only">Hide controls</span>
+              <EyeOff size={15} />
+            </button>
+          </div>
+        )}
+      </aside>
 
       {/* ── Quick Business Setup Wizard Modal ── */}
       <QuickBusinessSetupModal

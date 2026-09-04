@@ -422,7 +422,7 @@ function TemplateGalleryContent() {
                 <div
                   key={template.id}
                   className="group bg-white rounded-[18px] border border-slate-200/80 overflow-hidden flex flex-col shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_24px_-16px_rgba(16,24,40,0.12)] transition-all duration-300 ease-out cursor-pointer will-change-transform hover:-translate-y-1.5 hover:shadow-[0_28px_52px_-18px_rgba(16,24,40,0.22)] p-3"
-                  onClick={() => handleOpenModal(template)}
+                  onClick={() => handleOpenInNewTab(template)}
                 >
                   {/* ── Live Preview Area (the hero) ─────────────────────── */}
                   <div className="relative shrink-0 rounded-[13px] overflow-hidden">
