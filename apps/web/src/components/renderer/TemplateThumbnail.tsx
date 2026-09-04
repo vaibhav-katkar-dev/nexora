@@ -74,6 +74,11 @@ function IframeCanvas({
 
     const doc = iframe.contentDocument;
     if (!doc) return;
+
+    const head = doc.head || doc.getElementsByTagName("head")[0];
+    const body = doc.body || doc.getElementsByTagName("body")[0];
+    if (!head || !body) return;
+
     didInit.current = true;
 
     // ── Set base URL so relative stylesheet and asset links resolve ──
@@ -81,7 +86,7 @@ function IframeCanvas({
       if (typeof window !== "undefined") {
         const baseEl = doc.createElement("base");
         baseEl.href = `${window.location.origin}/`;
-        doc.head.appendChild(baseEl);
+        head.appendChild(baseEl);
       }
     } catch {
       // ignore
@@ -90,16 +95,20 @@ function IframeCanvas({
     // ── Copy ALL parent stylesheets into the iframe ──────────────────
     // This ensures Tailwind classes, custom CSS, Google Fonts, etc.
     // all work identically inside the iframe.
-    const parentStyles = document.querySelectorAll(
-      'style, link[rel="stylesheet"]'
-    );
-    parentStyles.forEach((el) => {
-      try {
-        doc.head.appendChild(el.cloneNode(true));
-      } catch {
-        // cross-origin link tags may fail to clone — skip silently
-      }
-    });
+    try {
+      const parentStyles = document.querySelectorAll(
+        'style, link[rel="stylesheet"]'
+      );
+      parentStyles.forEach((el) => {
+        try {
+          head.appendChild(el.cloneNode(true));
+        } catch {
+          // cross-origin link tags may fail to clone — skip silently
+        }
+      });
+    } catch {
+      // fallback
+    }
 
     // Also copy document.styleSheets cssRules directly to avoid any network delay
     try {
@@ -116,41 +125,51 @@ function IframeCanvas({
       });
       if (combinedRules) {
         inlineCssTag.textContent = combinedRules;
-        doc.head.appendChild(inlineCssTag);
+        head.appendChild(inlineCssTag);
       }
     } catch {
       // fallback
     }
 
     // ── Base reset styles for the iframe body ───────────────────────
-    const resetStyle = doc.createElement("style");
-    resetStyle.textContent = `
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: ${canvasWidth}px;
-        min-height: ${canvasHeight}px;
-        overflow: hidden;
-        background: ${bgColor};
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-      *, *::before, *::after { box-sizing: border-box; }
-      ::-webkit-scrollbar { display: none; }
-    `;
-    doc.head.appendChild(resetStyle);
+    try {
+      const resetStyle = doc.createElement("style");
+      resetStyle.textContent = `
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: ${canvasWidth}px;
+          min-height: ${canvasHeight}px;
+          overflow: hidden;
+          background: ${bgColor};
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        ::-webkit-scrollbar { display: none; }
+      `;
+      head.appendChild(resetStyle);
+    } catch {
+      // fallback
+    }
 
     // ── Mount point for React portal ────────────────────────────────
     let mount = doc.getElementById("tmb-root");
     if (!mount) {
-      mount = doc.createElement("div");
-      mount.id = "tmb-root";
-      mount.style.width = `${canvasWidth}px`;
-      mount.style.minHeight = `${canvasHeight}px`;
-      mount.style.overflow = "hidden";
-      doc.body.appendChild(mount);
+      try {
+        mount = doc.createElement("div");
+        mount.id = "tmb-root";
+        mount.style.width = `${canvasWidth}px`;
+        mount.style.minHeight = `${canvasHeight}px`;
+        mount.style.overflow = "hidden";
+        body.appendChild(mount);
+      } catch {
+        mount = null;
+      }
     }
-    setMountNode(mount);
+    if (mount) {
+      setMountNode(mount);
+    }
   }, [canvasWidth, canvasHeight, bgColor]);
 
   // Trigger init on mount (about:blank loads synchronously)
@@ -199,15 +218,17 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
   const [inView, setInView] = useState(false);
   const [box, setBox] = useState({ width: 0, height: 0 });
 
-  // Top 3 visible sections for a rich preview
+  // Use all visible sections for tall/scrollable previews; limit to 3 for small thumbnails
+  const isScrollable = height !== undefined && height > 600;
   const heroConfig = useMemo(() => {
     if (!config || !Array.isArray(config.sections) || config.sections.length === 0) {
       return config;
     }
     const visible = config.sections.filter((s) => s.visible !== false);
     if (visible.length === 0) return config;
-    return { ...config, sections: visible.slice(0, 3) };
-  }, [config]);
+    // For tall/scrollable hero preview: show all sections; otherwise just 3
+    return { ...config, sections: isScrollable ? visible : visible.slice(0, 3) };
+  }, [config, isScrollable]);
 
   // Lazy-mount
   useEffect(() => {
@@ -259,6 +280,8 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
 
   const ready = inView && heroConfig && box.width > 0 && box.height > 0;
   const scale = box.width > 0 ? box.width / CANVAS_W : 0.25;
+  // For scrollable tall previews, render the full height; otherwise use CANVAS_H default
+  const canvasHeight = (isScrollable && height) ? height : CANVAS_H;
 
   return (
     <div
@@ -285,7 +308,7 @@ function TemplateThumbnailBase({ config, name, category, height }: TemplateThumb
           <div style={{ position: "absolute", inset: 0, overflow: "hidden", borderRadius: "inherit" }}>
             <IframeCanvas
               canvasWidth={CANVAS_W}
-              canvasHeight={CANVAS_H}
+              canvasHeight={canvasHeight}
               scale={scale}
               bgColor={bg}
             >
