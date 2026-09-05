@@ -40,10 +40,13 @@ export function NoirPremiumTemplate({
 
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
 
-  const sel = (key: string) => {
-    if (!interactive) return {};
+  const sel = (key: string, baseClass: string = "") => {
+    if (!interactive) return baseClass ? { className: baseClass } : {};
     const fullKey = `content.data.${key}`;
     const isSelected = selectedElementKey === fullKey || selectedElementKey === key;
+    const ringClass = isSelected
+      ? "ring-2 ring-indigo-500 rounded-lg outline-none shadow-lg shadow-indigo-500/25"
+      : "hover:outline hover:outline-1 hover:outline-indigo-400/50 cursor-pointer";
     return {
       "data-element-key": fullKey,
       "data-section-id": section.id,
@@ -51,7 +54,7 @@ export function NoirPremiumTemplate({
         e.stopPropagation();
         onSelectElement?.(fullKey, section.id);
       },
-      className: isSelected ? "okinsite-element-selected ring-2 ring-indigo-500 rounded-lg" : "",
+      className: `${baseClass} ${ringClass}`.trim(),
     };
   };
 
@@ -225,7 +228,7 @@ export function NoirPremiumTemplate({
         {/* HERO SECTION */}
         <header className="tpl-nb-hero">
           {data.badge && (
-            <span {...sel("badge")} className="tpl-nb-badge">
+            <span {...sel("badge", "tpl-nb-badge")}>
               {data.badge}
             </span>
           )}
@@ -234,10 +237,9 @@ export function NoirPremiumTemplate({
             <span className="tpl-nb-avatar-ring" aria-hidden="true" />
             {data.profile?.avatar ? (
               <img
-                {...sel("profile.avatar")}
+                {...sel("profile.avatar", "tpl-nb-avatar cursor-pointer")}
                 src={data.profile.avatar}
                 alt={data.profile.name || "Avatar"}
-                className="tpl-nb-avatar cursor-pointer"
                 onClick={(e) => {
                   if (interactive) {
                     e.stopPropagation();
@@ -248,8 +250,7 @@ export function NoirPremiumTemplate({
               />
             ) : (
               <div
-                {...sel("profile.avatar")}
-                className="tpl-nb-avatar bg-slate-900 flex items-center justify-center cursor-pointer"
+                {...sel("profile.avatar", "tpl-nb-avatar bg-slate-900 flex items-center justify-center cursor-pointer")}
                 onClick={(e) => {
                   if (interactive) {
                     e.stopPropagation();
@@ -263,18 +264,18 @@ export function NoirPremiumTemplate({
             )}
           </div>
 
-          <h1 {...sel("profile.name")} className="tpl-nb-name">
+          <h1 {...sel("profile.name", "tpl-nb-name")}>
             {data.profile?.name}
           </h1>
 
           {data.profile?.role && (
-            <p {...sel("profile.role")} className="tpl-nb-role">
+            <p {...sel("profile.role", "tpl-nb-role")}>
               {data.profile.role}
             </p>
           )}
 
           {data.profile?.bio && (
-            <p {...sel("profile.bio")} className="tpl-nb-bio">
+            <p {...sel("profile.bio", "tpl-nb-bio")}>
               {data.profile.bio}
             </p>
           )}
@@ -282,7 +283,7 @@ export function NoirPremiumTemplate({
           {stats.length > 0 && (
             <div className="tpl-nb-stats">
               {stats.map((stat, idx) => (
-                <div key={idx} {...sel(`stats.${idx}`)} className="tpl-nb-stat">
+                <div key={idx} {...sel(`stats.${idx}`, "tpl-nb-stat")}>
                   <strong>{stat.value}</strong>
                   <span>{stat.label}</span>
                 </div>
@@ -299,12 +300,11 @@ export function NoirPremiumTemplate({
               return (
                 <a
                   key={idx}
-                  {...sel(`links.${idx}`)}
+                  {...sel(`links.${idx}`, `tpl-nb-link ${link.featured ? "tpl-nb-link--featured" : ""}`)}
                   href={interactive ? "#" : link.url || "#"}
                   onClick={(e) => handleLinkClick(idx, link.url, e)}
                   target={interactive ? undefined : "_blank"}
                   rel="noopener noreferrer"
-                  className={`tpl-nb-link ${link.featured ? "tpl-nb-link--featured" : ""}`}
                 >
                   <span className="tpl-nb-link-icon">
                     {link.icon || "✦"}
@@ -335,8 +335,7 @@ export function NoirPremiumTemplate({
               {gallery.map((item, idx) => (
                 <div
                   key={idx}
-                  {...sel(`gallery.${idx}`)}
-                  className="tpl-nb-gallery-item group cursor-pointer"
+                  {...sel(`gallery.${idx}`, "tpl-nb-gallery-item group cursor-pointer")}
                   onClick={(e) => {
                     if (interactive) {
                       e.stopPropagation();
@@ -408,7 +407,7 @@ export function NoirPremiumTemplate({
 
         {/* FOOTER */}
         {data.footerText && (
-          <footer {...sel("footerText")} className="tpl-nb-footer">
+          <footer {...sel("footerText", "tpl-nb-footer")}>
             <p>{data.footerText}</p>
           </footer>
         )}

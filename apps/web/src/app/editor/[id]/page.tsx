@@ -228,9 +228,10 @@ export default function EditorPage() {
   const handleSelectElement = (elementKey: string, sectionId: string) => {
     selectSection(sectionId);
     selectElement(sectionId, elementKey);
-    if (typeof window !== "undefined" && window.innerWidth < 1280) {
-      setActiveTab("inspector");
-    }
+    // Always switch to inspector tab — on desktop this ensures the left inspector
+    // panel becomes visible for custom_template sections (which don't use the
+    // right-side panel). On mobile it's always needed regardless.
+    setActiveTab("inspector");
   };
 
   const handleRequestImageEdit = (sectionId: string, elementKey: string) => {

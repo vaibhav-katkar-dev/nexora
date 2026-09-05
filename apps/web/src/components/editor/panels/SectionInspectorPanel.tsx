@@ -186,18 +186,28 @@ export function SectionInspectorPanel({
 
   useEffect(() => {
     if (!selectedElementKey) return;
-    const fieldPath = normalizeElementKey(selectedElementKey);
+    // normalizeElementKey strips "content." prefix, which works for native sections.
+    // CustomTemplateInspector uses full "content.data.*" paths as data-field-path,
+    // so we try the normalized key first then fall back to the raw key.
+    const normalizedPath = normalizeElementKey(selectedElementKey);
+    const candidatePaths = [normalizedPath, selectedElementKey].filter(
+      (p, i, arr) => arr.indexOf(p) === i // dedupe
+    );
 
     const timer = setTimeout(() => {
-      const el = panelScrollRef.current?.querySelector(
-        `[data-field-path="${fieldPath}"]`
-      ) as HTMLElement | null;
+      let el: HTMLElement | null = null;
+      for (const path of candidatePaths) {
+        el = panelScrollRef.current?.querySelector(
+          `[data-field-path="${path}"]`
+        ) as HTMLElement | null;
+        if (el) break;
+      }
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         el.classList.add("okinsite-field-flash");
-        setFlashedKey(fieldPath);
+        setFlashedKey(normalizedPath);
         const clearTimer = setTimeout(() => {
-          el.classList.remove("okinsite-field-flash");
+          el!.classList.remove("okinsite-field-flash");
           setFlashedKey(null);
         }, 1400);
         return () => clearTimeout(clearTimer);

@@ -3739,22 +3739,22 @@ containerSelector
               container-type: inline-size;
               color: var(--text-main);
             }
-            .${containerClass} h1,
-            .${containerClass} h2,
-            .${containerClass} h3,
-            .${containerClass} h4,
-            .${containerClass} h5,
-            .${containerClass} h6 {
+            .${containerClass} h1:not(.okinsite-ct-root *),
+            .${containerClass} h2:not(.okinsite-ct-root *),
+            .${containerClass} h3:not(.okinsite-ct-root *),
+            .${containerClass} h4:not(.okinsite-ct-root *),
+            .${containerClass} h5:not(.okinsite-ct-root *),
+            .${containerClass} h6:not(.okinsite-ct-root *) {
               color: var(--text-main);
             }
-            .${containerClass} [data-element-key$=".title"],
-            .${containerClass} [data-element-key$=".name"] {
+            .${containerClass} [data-element-key$=".title"]:not(.okinsite-ct-root *),
+            .${containerClass} [data-element-key$=".name"]:not(.okinsite-ct-root *) {
               color: var(--text-main);
             }
-            .${containerClass} [data-element-key$=".subtitle"],
-            .${containerClass} [data-element-key$=".desc"],
-            .${containerClass} [data-element-key$=".bio"],
-            .${containerClass} [data-element-key$=".detail"] {
+            .${containerClass} [data-element-key$=".subtitle"]:not(.okinsite-ct-root *),
+            .${containerClass} [data-element-key$=".desc"]:not(.okinsite-ct-root *),
+            .${containerClass} [data-element-key$=".bio"]:not(.okinsite-ct-root *),
+            .${containerClass} [data-element-key$=".detail"]:not(.okinsite-ct-root *) {
               color: var(--text-muted);
             }
             @container (min-width: 768px) {
@@ -3774,7 +3774,14 @@ containerSelector
       {interactive && (
         <style
           dangerouslySetInnerHTML={{
-            __html: `.${containerClass}, .${containerClass} *, .${containerClass} a, .${containerClass} button { cursor: auto !important; }`,
+            /* Cursor auto-reset for editable mode — excludes .okinsite-ct-root
+               so custom_template sections keep their own hover/cursor effects */
+            __html: [
+              `.${containerClass} *:not(.okinsite-ct-root):not(.okinsite-ct-root *),`,
+              `.${containerClass} a:not(.okinsite-ct-root):not(.okinsite-ct-root a),`,
+              `.${containerClass} button:not(.okinsite-ct-root):not(.okinsite-ct-root button)`,
+              `{ cursor: auto !important; }`,
+            ].join(" "),
           }}
         />
       )}
@@ -3842,15 +3849,21 @@ containerSelector
                       }
                     : undefined
                 }
-                className={`relative transition-all duration-200 ease-out will-change-transform group ${
-                  interactive ? "cursor-pointer" : ""
-                } ${
-                  interactive && isSelected
+                className={[
+                  "relative transition-all duration-200 ease-out will-change-transform group",
+                  section.type === "custom_template" ? "okinsite-ct-root" : "",
+                  interactive ? "cursor-pointer" : "",
+                  interactive && isSelected && section.type !== "custom_template"
                     ? "z-20 before:absolute before:inset-0 sm:before:rounded-[0.9rem] before:border before:border-indigo-400/50"
-                    : interactive
+                    : interactive && section.type !== "custom_template"
                     ? "hover:before:absolute hover:before:inset-0 sm:before:rounded-[0.9rem] hover:before:border hover:before:border-slate-700/40"
-                    : ""
-                }`}
+                    : "",
+                  /* For custom_template: show a thin glowing ring around the outside instead
+                     of using ::before pseudo-element (which would overlay the template content) */
+                  interactive && isSelected && section.type === "custom_template"
+                    ? "ring-2 ring-inset ring-indigo-500/60"
+                    : "",
+                ].filter(Boolean).join(" ")}
               >
                 {interactive && (
                   <div
