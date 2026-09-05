@@ -8,9 +8,10 @@ import {
   Globe,
   Code2,
   HelpCircle,
+  QrCode,
 } from "lucide-react";
 
-export type SidebarTab = "sections" | "inspector" | "add" | "theme" | "seo" | "ai" | "code";
+export type SidebarTab = "sections" | "inspector" | "add" | "theme" | "seo" | "share" | "ai" | "code";
 
 interface EditorSidebarProps {
   activeTab: SidebarTab;
@@ -38,6 +39,7 @@ export function EditorSidebar({
       badge: activeSectionTitle ? "Active" : undefined,
     },
     { id: "seo" as SidebarTab, label: "SEO", icon: Globe },
+    { id: "share" as SidebarTab, label: "QR & Share", icon: QrCode },
     ...(developerMode ? [{ id: "code" as SidebarTab, label: "Code", icon: Code2 }] : []),
   ];
 

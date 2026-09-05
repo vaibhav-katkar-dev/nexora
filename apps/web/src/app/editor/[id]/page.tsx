@@ -21,10 +21,11 @@ import Link from "next/link";
 import { AiCanvasPromptBar } from "@/components/editor/AiCanvasPromptBar";
 import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
 import { BusinessProfile, injectBusinessProfileIntoConfig, saveBusinessProfile } from "@/lib/businessProfile";
-import { Loader2, Sparkles, Globe, ArrowRight, Layers, SlidersHorizontal, Palette, Plus, AlertCircle, EyeOff } from "lucide-react";
+import { Loader2, Sparkles, Globe, ArrowRight, Layers, SlidersHorizontal, Palette, Plus, AlertCircle, EyeOff, QrCode } from "lucide-react";
 
 // Lazy-load heavy panels and modals to keep initial bundle size lightweight
 const SeoInspectorPanel = dynamic(() => import("@/components/editor/panels/SeoInspectorPanel").then(mod => mod.SeoInspectorPanel), { ssr: false });
+const ShareQrInspectorPanel = dynamic(() => import("@/components/editor/panels/ShareQrInspectorPanel").then(mod => mod.ShareQrInspectorPanel), { ssr: false });
 const AiCopilotPanel = dynamic(() => import("@/components/editor/panels/AiCopilotPanel").then(mod => mod.AiCopilotPanel), { ssr: false });
 const CodeEditorPanel = dynamic(() => import("@/components/editor/panels/CodeEditorPanel").then(mod => mod.CodeEditorPanel), { ssr: false });
 const PublishModal = dynamic(() => import("@/components/editor/PublishModal").then(mod => mod.PublishModal), { ssr: false });
@@ -278,22 +279,24 @@ export default function EditorPage() {
     }
   }, [activeSectionId, config?.sections, setActiveSectionId, setSelectedElementKey]);
 
-  const handlePublishWithSlug = async (slug: string) => {
-    setShowSlugModal(false);
+  const handlePublishWithSlug = async (slug: string): Promise<string> => {
     try {
       // Always save the current state first so the published version matches
       // what the user sees in the editor right now.
       await save();
 
-      if (projectId) {
+      if (projectId && projectId !== "quick-start") {
         await projectsApi.updateSlug(projectId, slug);
         setCurrentSlug(slug);
         setProjectSlug(slug);
       }
       const url = await publish();
-      toast.success("Site Published Globally!", `Your site is live at ${url || buildPublishedSiteUrl(slug)}`);
+      const finalUrl = url || buildPublishedSiteUrl(slug);
+      toast.success("Site Published Globally!", `Your site is live at ${finalUrl}`);
+      return finalUrl;
     } catch (err: any) {
-      toast.error("Publish failed", err.message || "Please check your network and try again.");
+      toast.error("Publish failed", err?.message || "Please check your network and try again.");
+      throw err;
     }
   };
 
@@ -513,6 +516,9 @@ export default function EditorPage() {
                 )}
                 {activeTab === "theme" && <ThemeInspectorPanel />}
                 {activeTab === "seo" && <SeoInspectorPanel />}
+                {activeTab === "share" && (
+                  <ShareQrInspectorPanel onOpenSlugModal={() => setShowSlugModal(true)} />
+                )}
                 {/* {activeTab === "ai" && <AiCopilotPanel />} */}{/* Hidden — coming soon */}
               </div>
 
@@ -561,6 +567,7 @@ export default function EditorPage() {
                         : activeTab === "add" ? "Add Section"
                         : activeTab === "theme" ? "Theme"
                         : activeTab === "seo" ? "SEO"
+                        : activeTab === "share" ? "QR & Share"
                         : activeTab === "ai" ? "AI Copilot"
                         : "Panel"}
                     </span>
@@ -621,6 +628,9 @@ export default function EditorPage() {
                     )}
                     {activeTab === "theme" && <ThemeInspectorPanel />}
                     {activeTab === "seo" && <SeoInspectorPanel />}
+                    {activeTab === "share" && (
+                      <ShareQrInspectorPanel onOpenSlugModal={() => setShowSlugModal(true)} />
+                    )}
                     {/* {activeTab === "ai" && <AiCopilotPanel />} */}
                   </div>
                 )}
@@ -669,7 +679,7 @@ export default function EditorPage() {
           </div>
         )}
 
-        {/* ── Mobile 4-tab bottom navigation bar ──────────────────────────── */}
+        {/* ── Mobile 5-tab bottom navigation bar ──────────────────────────── */}
         {showSidebar && (
           <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-[#080d19] border-t border-slate-800 flex items-stretch h-14 safe-bottom">
             {([
@@ -677,6 +687,7 @@ export default function EditorPage() {
               { tab: "inspector", icon: SlidersHorizontal, label: "Edit" },
               { tab: "theme", icon: Palette, label: "Design" },
               { tab: "add", icon: Plus, label: "Add" },
+              { tab: "share", icon: QrCode, label: "QR & Share" },
             ] as { tab: SidebarTab; icon: React.ElementType; label: string }[]).map(({ tab, icon: Icon, label }) => {
               const isActive = activeTab === tab;
               return (
