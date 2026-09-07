@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, MessageCircle, Globe, Phone, Mail, Check, Sparkles } from "lucide-react";
+import { X, MessageCircle, Globe, Phone, Mail, Check, Sparkles, Hash } from "lucide-react";
+import { useEditorStore } from "@/store/editorStore";
 
 interface LinkBuilderModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface LinkBuilderModalProps {
   title?: string;
 }
 
-type Mode = "whatsapp" | "url" | "phone" | "email";
+type Mode = "whatsapp" | "url" | "phone" | "email" | "section";
 
 export function LinkBuilderModal({
   isOpen,
@@ -20,6 +21,7 @@ export function LinkBuilderModal({
   onSave,
   title = "Configure Button & Link Action",
 }: LinkBuilderModalProps) {
+  const sections = useEditorStore((state) => state.config?.sections || []);
   const [mode, setMode] = useState<Mode>("whatsapp");
 
   // WhatsApp fields
@@ -31,6 +33,7 @@ export function LinkBuilderModal({
   const [telNumber, setTelNumber] = useState("");
   const [emailAddr, setEmailAddr] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
+  const [selectedSectionId, setSelectedSectionId] = useState("");
 
   // Parse existing URL on mount / open
   useEffect(() => {
@@ -60,6 +63,10 @@ export function LinkBuilderModal({
         const params = new URLSearchParams(queryPart);
         setEmailSubject(params.get("subject") || "");
       }
+    } else if (trimmed.startsWith("#")) {
+      setMode("section");
+      setSelectedSectionId(trimmed.replace(/^#/, ""));
+      setCustomUrl(trimmed);
     } else {
       setMode(trimmed ? "url" : "whatsapp");
       setCustomUrl(trimmed);
@@ -75,6 +82,10 @@ export function LinkBuilderModal({
       if (!cleanPhone) return "";
       const encodedMsg = message.trim() ? `?text=${encodeURIComponent(message.trim())}` : "";
       return `https://wa.me/${cleanPhone}${encodedMsg}`;
+    }
+
+    if (mode === "section") {
+      return selectedSectionId ? `#${selectedSectionId}` : customUrl;
     }
 
     if (mode === "phone") {
@@ -116,7 +127,7 @@ export function LinkBuilderModal({
             </div>
             <div>
               <h3 className="text-sm font-bold text-white">{title}</h3>
-              <p className="text-[11px] text-slate-400">Setup 1-click WhatsApp message or link target</p>
+              <p className="text-[11px] text-slate-400">Setup 1-click WhatsApp message, URL, or section jump</p>
             </div>
           </div>
           <button
@@ -128,49 +139,60 @@ export function LinkBuilderModal({
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-4 p-1.5 m-4 bg-slate-950 rounded-xl border border-slate-800 gap-1 text-xs font-medium">
+        <div className="grid grid-cols-5 p-1.5 m-4 bg-slate-950 rounded-xl border border-slate-800 gap-1 text-[11px] font-medium">
           <button
             onClick={() => setMode("whatsapp")}
-            className={`py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
               mode === "whatsapp"
                 ? "bg-emerald-600 text-white font-semibold shadow-md"
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            <MessageCircle size={13} />
+            <MessageCircle size={12} />
             <span>WhatsApp</span>
           </button>
           <button
+            onClick={() => setMode("section")}
+            className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
+              mode === "section"
+                ? "bg-amber-600 text-white font-semibold shadow-md"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <Hash size={12} />
+            <span>Section</span>
+          </button>
+          <button
             onClick={() => setMode("url")}
-            className={`py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
               mode === "url"
                 ? "bg-indigo-600 text-white font-semibold shadow-md"
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            <Globe size={13} />
+            <Globe size={12} />
             <span>URL</span>
           </button>
           <button
             onClick={() => setMode("phone")}
-            className={`py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
               mode === "phone"
                 ? "bg-blue-600 text-white font-semibold shadow-md"
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            <Phone size={13} />
+            <Phone size={12} />
             <span>Call</span>
           </button>
           <button
             onClick={() => setMode("email")}
-            className={`py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
               mode === "email"
                 ? "bg-violet-600 text-white font-semibold shadow-md"
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            <Mail size={13} />
+            <Mail size={12} />
             <span>Email</span>
           </button>
         </div>
@@ -217,6 +239,44 @@ export function LinkBuilderModal({
                   rows={3}
                   className="w-full px-3 py-2 bg-slate-950 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
+              </div>
+            </div>
+          )}
+
+          {/* ⚓ SECTION ANCHOR TAB */}
+          {mode === "section" && (
+            <div className="space-y-3 animate-in fade-in duration-150">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Select Target Section on This Page
+                </label>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {sections.map((s) => {
+                    const isTarget = selectedSectionId === s.id;
+                    const secLabel = s.title || s.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSectionId(s.id);
+                          setCustomUrl(`#${s.id}`);
+                        }}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
+                          isTarget
+                            ? "bg-amber-500/20 border-amber-500 text-amber-200 shadow-sm"
+                            : "bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-900 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Hash size={13} className={isTarget ? "text-amber-400" : "text-slate-500"} />
+                          <span className="text-xs font-semibold truncate">{secLabel}</span>
+                        </div>
+                        <span className="text-[10px] font-mono opacity-60 ml-2 shrink-0">#{s.id}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}

@@ -43,13 +43,20 @@ export function NoirPremiumTemplate({
   const sel = (key: string, baseClass: string = "") => {
     if (!interactive) return baseClass ? { className: baseClass } : {};
     const fullKey = `content.data.${key}`;
-    const isSelected = selectedElementKey === fullKey || selectedElementKey === key;
+    const isSelected =
+      selectedElementKey === fullKey ||
+      selectedElementKey === key ||
+      (selectedElementKey &&
+        selectedElementKey.replace(/^content\./, "") === fullKey.replace(/^content\./, ""));
     const ringClass = isSelected
       ? "ring-2 ring-indigo-500 rounded-lg outline-none shadow-lg shadow-indigo-500/25"
       : "hover:outline hover:outline-1 hover:outline-indigo-400/50 cursor-pointer";
     return {
       "data-element-key": fullKey,
+      "data-element-id": `${section.id}__${fullKey}`,
       "data-section-id": section.id,
+      "data-selectable": "true",
+      "data-selected": isSelected ? "true" : "false",
       onClick: (e: React.MouseEvent) => {
         e.stopPropagation();
         onSelectElement?.(fullKey, section.id);

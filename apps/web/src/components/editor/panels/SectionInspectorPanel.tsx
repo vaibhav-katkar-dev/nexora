@@ -1,6 +1,14 @@
 "use client";
 
-import { normalizeElementKey, resolveElementValue } from "@/lib/editorElements";
+import {
+  normalizeElementKey,
+  resolveElementValue,
+  getCandidateFieldPaths,
+  isCtaOrLinkElement,
+  isImageElement,
+  resolveElementLink,
+  getElementLinkFieldPath,
+} from "@/lib/editorElements";
 import { useEditorStore } from "@/store/editorStore";
 import { useState, useEffect, useRef } from "react";
 import { humanizeElementKey } from "@/lib/elementKeys";
@@ -127,6 +135,9 @@ export function SectionInspectorPanel({
   const sectionId = useEditorStore((state) => state.activeSectionId);
   const selectedElementKey = useEditorStore((state) => state.selectedElementKey);
   const updateSection = useEditorStore((state) => state.updateSection);
+  const updateElementValue = useEditorStore((state) => state.updateElementValue);
+  const toggleElementVisibility = useEditorStore((state) => state.toggleElementVisibility);
+  const setElementVisibility = useEditorStore((state) => state.setElementVisibility);
   const removeSection = useEditorStore((state) => state.removeSection);
   const setSelectedElementKey = useEditorStore((state) => state.setSelectedElementKey);
   const section = config?.sections.find((s) => s.id === sectionId);
@@ -186,13 +197,8 @@ export function SectionInspectorPanel({
 
   useEffect(() => {
     if (!selectedElementKey) return;
-    // normalizeElementKey strips "content." prefix, which works for native sections.
-    // CustomTemplateInspector uses full "content.data.*" paths as data-field-path,
-    // so we try the normalized key first then fall back to the raw key.
+    const candidatePaths = getCandidateFieldPaths(selectedElementKey);
     const normalizedPath = normalizeElementKey(selectedElementKey);
-    const candidatePaths = [normalizedPath, selectedElementKey].filter(
-      (p, i, arr) => arr.indexOf(p) === i // dedupe
-    );
 
     const timer = setTimeout(() => {
       let el: HTMLElement | null = null;
@@ -236,16 +242,8 @@ export function SectionInspectorPanel({
 
   const handleSaveInspectorLink = (url: string) => {
     if (!linkModalState.fieldPath) return;
-    if (linkModalState.fieldPath.includes(".")) {
-      const parts = linkModalState.fieldPath.split(".");
-      const arrKey = parts[0];
-      const index = parseInt(parts[1], 10);
-      const list = [...((section.content || {})[arrKey] || [])];
-      if (list[index]) {
-        list[index] = { ...list[index], url };
-        handleFieldChange(arrKey, list);
-      }
-    } else {
+    updateElementValue(section.id, linkModalState.fieldPath, url);
+    if (!linkModalState.fieldPath.includes(".")) {
       handleFieldChange(linkModalState.fieldPath, url);
     }
   };
@@ -365,117 +363,278 @@ const removeArrayItem = (key: string, index: number) => {
         </div>
       </div>
 
-      {/* Element editing banner */}
-      {selectedElementKey && (
-        <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse flex-shrink-0" />
-            <p className="text-[11px] font-semibold text-indigo-200 truncate">
-              Editing: {humanElementLabel || selectedElementKey}
-            </p>
-          </div>
-          <button
-            onClick={() => setSelectedElementKey(null)}
-            className="text-[10px] font-bold text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex-shrink-0"
-            title="Deselect element"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+      {/* ─── UNIVERSAL SELECTED ELEMENT INSPECTOR CARD ────────────────── */}
+      {selectedElementKey && (() => {
+        const currentElementVal = resolveElementValue(section, selectedElementKey);
+        const isElementLink = isCtaOrLinkElement(selectedElementKey);
+        const currentElementLink = resolveElementLink(section, selectedElementKey);
+        const elementLinkFieldPath = getElementLinkFieldPath(selectedElementKey);
+        const isElementImg = isImageElement(selectedElementKey, currentElementVal);
+        const isElementMultiline = /subtitle|desc|bio|answer|detail|content|paragraph/i.test(selectedElementKey);
+        const normKey = normalizeElementKey(selectedElementKey);
+        const isElementVisible =
+          section.elementVisibility?.[normKey] !== false &&
+          section.elementVisibility?.[selectedElementKey] !== false;
 
-      {/* ── Per-Element Custom Color Option ─────────────────────────────── */}
-      {selectedElementKey && (
-        <div className="mx-4 mt-3 rounded-xl border border-slate-700/80 bg-slate-950 overflow-hidden">
-          {/* Toggle button */}
-          <button
-            onClick={() => setColorOpen((o) => !o)}
-            className="w-full px-3 py-2.5 flex items-center justify-between gap-2 hover:bg-slate-900 transition-colors"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span
-                className="w-5 h-5 rounded-md border border-slate-600 flex-shrink-0 shadow-sm"
-                style={{
-                  background: currentColor || "linear-gradient(135deg, #eee, #ccc)",
-                  boxShadow: currentColor ? `0 0 0 2px ${currentColor}33` : undefined,
-                }}
-              />
-              <span className="text-[11px] font-bold text-slate-200 flex items-center gap-1.5">
-                <Palette size={13} className="text-indigo-400" />
-                Custom Color
-              </span>
-              {currentColor && (
-                <span className="text-[10px] font-mono text-slate-400 truncate">{currentColor}</span>
-              )}
-            </div>
-            <span className={`text-slate-400 transition-transform duration-200 ${colorOpen ? "rotate-180" : ""}`}>
-              <ChevronDown size={14} />
-            </span>
-          </button>
-
-          {/* Popup */}
-          {colorOpen && (
-            <div className="px-3 pb-3 pt-1 border-t border-slate-800 space-y-3 animate-fade-in">
-              {/* Preset swatches */}
-              <div>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                  Quick Colors
-                </span>
-                <div className="grid grid-cols-8 gap-1.5">
-                  {COLOR_PRESETS.map((c) => {
-                    const active = currentColor?.toLowerCase() === c.toLowerCase();
-                    return (
-                      <button
-                        key={c}
-                        onClick={() => setElementColor(c)}
-                        title={c}
-                        className="w-6 h-6 rounded-md border border-slate-600 hover:scale-110 transition-transform flex-shrink-0"
-                        style={{
-                          background: c,
-                          outline: active ? "2px solid #fff" : "none",
-                          outlineOffset: 1,
-                        }}
-                      />
-                    );
-                  })}
+        return (
+          <div className="mx-3 mt-3 rounded-xl border border-indigo-500/50 bg-[#0d1428] shadow-lg shadow-indigo-950/40 overflow-hidden flex-shrink-0">
+            {/* Element Header */}
+            <div className="px-3 py-2 bg-indigo-950/80 border-b border-indigo-800/40 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-indigo-100 truncate">
+                    {humanElementLabel || selectedElementKey}
+                  </p>
+                  <p className="text-[9px] font-mono text-indigo-300/60 truncate">
+                    #{section.id}__{selectedElementKey}
+                  </p>
                 </div>
               </div>
 
-              {/* Native picker + hex input */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={currentColor || "#6366F1"}
-                  onChange={(e) => setElementColor(e.target.value)}
-                  className="w-9 h-9 rounded-lg border border-slate-700 bg-transparent cursor-pointer flex-shrink-0"
-                  title="Pick custom color"
-                />
-                <input
-                  type="text"
-                  value={currentColor || ""}
-                  onChange={(e) => setElementColor(e.target.value)}
-                  placeholder="#000000"
-                  maxLength={9}
-                  className="flex-1 min-w-0 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:outline-none focus:border-indigo-500 transition-colors"
-                />
-                {currentColor && (
-                  <button
-                    onClick={clearElementColor}
-                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 transition-colors flex items-center gap-1 flex-shrink-0"
-                    title="Reset to default color"
-                  >
-                    <RotateCcw size={11} /> Reset
-                  </button>
+              <div className="flex items-center gap-1 shrink-0">
+                {/* Visibility Toggle */}
+                <button
+                  type="button"
+                  onClick={() => toggleElementVisibility(section.id, selectedElementKey)}
+                  className={`p-1 rounded-md text-[10px] font-bold transition-colors ${
+                    isElementVisible
+                      ? "text-slate-300 hover:text-white hover:bg-indigo-900/60"
+                      : "text-rose-400 bg-rose-950/50 border border-rose-800/50 hover:bg-rose-900/60"
+                  }`}
+                  title={isElementVisible ? "Hide element on site" : "Element is hidden (click to show)"}
+                >
+                  {isElementVisible ? <Eye size={13} /> : <EyeOff size={13} />}
+                </button>
+
+                {/* Deselect */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedElementKey(null)}
+                  className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-indigo-900/60 transition-colors"
+                  title="Close element inspector"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* Element Controls Body */}
+            <div className="p-3 space-y-3">
+              {/* IMAGE ELEMENT CONTROLS */}
+              {isElementImg ? (
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    🖼️ Image / Photo
+                  </span>
+                  {currentElementVal ? (
+                    <div className="flex items-center gap-2.5 p-2 rounded-lg bg-slate-950 border border-slate-800">
+                      <div className="w-12 h-12 rounded-md overflow-hidden bg-slate-800 border border-slate-700 flex-shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={String(currentElementVal)}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        {onOpenImagePicker && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onOpenImagePicker(String(currentElementVal || ""), (newUrl) =>
+                                updateElementValue(section.id, selectedElementKey, newUrl)
+                              )
+                            }
+                            className="text-[10px] font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-700/50 px-2 py-1 rounded-md flex items-center gap-1 transition-colors w-fit"
+                          >
+                            <ImageIcon size={10} /> Replace Photo
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => updateElementValue(section.id, selectedElementKey, "")}
+                          className="text-[10px] text-slate-500 hover:text-rose-400 px-2 py-0.5 rounded hover:bg-rose-950/30 flex items-center gap-1 transition-colors w-fit"
+                        >
+                          <X size={10} /> Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    onOpenImagePicker && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenImagePicker("", (newUrl) =>
+                            updateElementValue(section.id, selectedElementKey, newUrl)
+                          )
+                        }
+                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 border-dashed border-indigo-700/50 hover:border-indigo-400 bg-indigo-950/20 hover:bg-indigo-950/40 text-indigo-300 transition-all text-xs font-bold cursor-pointer"
+                      >
+                        <ImageIcon size={13} />
+                        <span>Upload / Pick Image</span>
+                      </button>
+                    )
+                  )}
+                  <input
+                    type="text"
+                    value={String(currentElementVal || "")}
+                    onChange={(e) => updateElementValue(section.id, selectedElementKey, e.target.value)}
+                    placeholder="Paste image URL (https://...)"
+                    className={inputClass}
+                  />
+                </div>
+              ) : (
+                /* TEXT / LABEL / PRICE / HEADING CONTROLS */
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Text Content
+                  </span>
+                  {isElementMultiline ? (
+                    <textarea
+                      rows={2}
+                      value={String(currentElementVal ?? "")}
+                      onChange={(e) => updateElementValue(section.id, selectedElementKey, e.target.value)}
+                      placeholder="Enter text..."
+                      className={`${inputClass} resize-none`}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={String(currentElementVal ?? "")}
+                      onChange={(e) => updateElementValue(section.id, selectedElementKey, e.target.value)}
+                      placeholder="Enter text..."
+                      className={inputClass}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* INDEPENDENT LINK / ACTION CONTROLS */}
+              {(isElementLink || currentElementLink !== null) && (
+                <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+                      <Globe size={11} /> Button Action &amp; Link
+                    </span>
+                    <span className="text-[9px] text-slate-500 font-mono">
+                      Independent from text
+                    </span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      value={currentElementLink || ""}
+                      onChange={(e) => {
+                        const targetPath = elementLinkFieldPath || selectedElementKey;
+                        updateElementValue(section.id, targetPath, e.target.value);
+                      }}
+                      placeholder="https://..., #section, or wa.me/..."
+                      className={inputClass}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLinkModalState({
+                          isOpen: true,
+                          currentUrl: currentElementLink || "",
+                          fieldPath: elementLinkFieldPath || selectedElementKey,
+                        })
+                      }
+                      className="px-2.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0 transition-colors"
+                      title="Configure WhatsApp, Section Jump, Call, or URL"
+                    >
+                      <MessageCircle size={12} /> Action
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* PER-ELEMENT COLOR ACCORDION */}
+              <div className="pt-1 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => setColorOpen((o) => !o)}
+                  className="w-full flex items-center justify-between py-1.5 text-slate-300 hover:text-white transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3.5 h-3.5 rounded border border-slate-600 flex-shrink-0"
+                      style={{
+                        background: currentColor || "linear-gradient(135deg, #eee, #ccc)",
+                        boxShadow: currentColor ? `0 0 0 1px ${currentColor}55` : undefined,
+                      }}
+                    />
+                    <span className="text-[10px] font-bold flex items-center gap-1">
+                      <Palette size={11} className="text-indigo-400" /> Custom Element Color
+                    </span>
+                    {currentColor && (
+                      <span className="text-[9px] font-mono text-slate-400">{currentColor}</span>
+                    )}
+                  </div>
+                  <span className={`text-slate-400 transition-transform duration-200 ${colorOpen ? "rotate-180" : ""}`}>
+                    <ChevronDown size={12} />
+                  </span>
+                </button>
+
+                {colorOpen && (
+                  <div className="pt-2 space-y-2.5 animate-fade-in">
+                    <div className="grid grid-cols-8 gap-1">
+                      {COLOR_PRESETS.map((c) => {
+                        const active = currentColor?.toLowerCase() === c.toLowerCase();
+                        return (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setElementColor(c)}
+                            title={c}
+                            className="w-5 h-5 rounded border border-slate-700 hover:scale-110 transition-transform flex-shrink-0"
+                            style={{
+                              background: c,
+                              outline: active ? "2px solid #fff" : "none",
+                              outlineOffset: 1,
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="color"
+                        value={currentColor || "#6366F1"}
+                        onChange={(e) => setElementColor(e.target.value)}
+                        className="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer flex-shrink-0"
+                        title="Pick custom color"
+                      />
+                      <input
+                        type="text"
+                        value={currentColor || ""}
+                        onChange={(e) => setElementColor(e.target.value)}
+                        placeholder="#000000"
+                        maxLength={9}
+                        className="flex-1 min-w-0 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white font-mono focus:outline-none focus:border-indigo-500"
+                      />
+                      {currentColor && (
+                        <button
+                          type="button"
+                          onClick={clearElementColor}
+                          className="px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition-colors flex items-center gap-1 flex-shrink-0"
+                          title="Reset to default color"
+                        >
+                          <RotateCcw size={10} /> Reset
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
-
-              <p className="text-[9px] text-slate-600 leading-snug">
-                Applies to this element only. Leave empty to use the theme color.
-              </p>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        );
+      })()}
 
       {/* Form Controls (Content Tab) */}
       {inspectorTab === "content" && (
@@ -890,8 +1049,8 @@ const removeArrayItem = (key: string, index: number) => {
               <span className="text-indigo-400">◈</span> Call-to-Actions & Socials
             </h3>
 
-            <div className="space-y-2">
-              <label className={labelClass}>Primary CTA Button</label>
+            <div data-field-path="ctaText" className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-800/30 space-y-2">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-indigo-400">Primary CTA Button</label>
               <input
                 type="text"
                 value={content.ctaText || ""}
@@ -899,17 +1058,27 @@ const removeArrayItem = (key: string, index: number) => {
                 placeholder="Button text (e.g. Get Started)"
                 className={inputClass}
               />
-              <input
-                type="text"
-                value={content.ctaLink || ""}
-                onChange={(e) => handleFieldChange("ctaLink", e.target.value)}
-                placeholder="Button link (e.g. #contact or https://...)"
-                className={inputClass}
-              />
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={content.ctaLink || ""}
+                  onChange={(e) => handleFieldChange("ctaLink", e.target.value)}
+                  placeholder="Button link (e.g. #contact or https://...)"
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => setLinkModalState({ isOpen: true, currentUrl: content.ctaLink || "", fieldPath: "ctaLink" })}
+                  className="px-2.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0"
+                  title="Configure WhatsApp or Link Action"
+                >
+                  <MessageCircle size={12} /> WhatsApp
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className={labelClass}>Secondary CTA Button</label>
+            <div data-field-path="secondaryCtaText" className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Secondary CTA Button</label>
               <input
                 type="text"
                 value={content.secondaryCtaText || ""}
@@ -917,13 +1086,23 @@ const removeArrayItem = (key: string, index: number) => {
                 placeholder="Secondary button text (e.g. Learn More)"
                 className={inputClass}
               />
-              <input
-                type="text"
-                value={content.secondaryCtaLink || ""}
-                onChange={(e) => handleFieldChange("secondaryCtaLink", e.target.value)}
-                placeholder="Secondary button link"
-                className={inputClass}
-              />
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={content.secondaryCtaLink || ""}
+                  onChange={(e) => handleFieldChange("secondaryCtaLink", e.target.value)}
+                  placeholder="Secondary button link (e.g. #services)"
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => setLinkModalState({ isOpen: true, currentUrl: content.secondaryCtaLink || "", fieldPath: "secondaryCtaLink" })}
+                  className="px-2.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0"
+                  title="Configure WhatsApp or Link Action"
+                >
+                  <MessageCircle size={12} /> Action
+                </button>
+              </div>
             </div>
 
             {/* Social Profiles in Hero */}
@@ -2053,18 +2232,20 @@ const removeArrayItem = (key: string, index: number) => {
                           <button type="button" onClick={() => removeArrayItem("links", i)} className="p-0.5 text-slate-400 hover:text-rose-400"><X size={12} /></button>
                         </div>
                       </div>
-                      <input
-                        type="text"
-                        value={labelVal}
-                        onChange={(e) => {
-                          const n = [...(content.links || [])];
-                          n[i] = typeof n[i] === "object" ? { ...n[i], label: e.target.value } : { label: e.target.value, url: "#" };
-                          handleFieldChange("links", n);
-                        }}
-                        placeholder="Link label (e.g. About)"
-                        className={inputClass}
-                      />
-                      <div className="flex gap-1.5">
+                      <div data-field-path={`links.${i}.label`}>
+                        <input
+                          type="text"
+                          value={labelVal}
+                          onChange={(e) => {
+                            const n = [...(content.links || [])];
+                            n[i] = typeof n[i] === "object" ? { ...n[i], label: e.target.value } : { label: e.target.value, url: "#" };
+                            handleFieldChange("links", n);
+                          }}
+                          placeholder="Link label (e.g. About)"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div data-field-path={`links.${i}.url`} className="flex gap-1.5">
                         <input
                           type="text"
                           value={urlVal}
@@ -2325,7 +2506,7 @@ const removeArrayItem = (key: string, index: number) => {
                                                {Object.entries(subItem).map(([nestedK, nestedV]) => {
                                                  const isNestedImage = /image|photo|avatar|thumb|picture|logo/i.test(nestedK);
                                                  return (
-                                                   <div key={nestedK}>
+                                                   <div key={nestedK} data-field-path={`${key}.${i}.${subKey}.${subIdx}.${nestedK}`}>
                                                      <span className="text-[9px] text-slate-500 uppercase">{nestedK}</span>
                                                      <div className="flex gap-1">
                                                        <input

@@ -124,6 +124,7 @@ export const SectionSchema = z.object({
   // published site while leaving all other styling untouched.
   elementColors: z.record(z.string(), z.string()).optional(),
   elementStyles: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+  elementVisibility: z.record(z.string(), z.boolean()).optional(),
   styling: z
     .object({
       paddingTop: z.string().optional(),

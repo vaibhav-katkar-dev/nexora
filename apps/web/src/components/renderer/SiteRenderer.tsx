@@ -213,12 +213,19 @@ function elementSel(
   sectionId?: string,
   interactive?: boolean
 ) {
-  const isSelected = selectedElementKey === key;
+  const normKey = key.replace(/^content\./, "");
+  const normSelected = selectedElementKey ? selectedElementKey.replace(/^content\./, "") : null;
+  const isSelected = selectedElementKey === key || (normSelected !== null && normSelected === normKey);
   const canBeEditable = interactive && sectionId && isEditableLeafText(key);
+
+  const elementId = sectionId ? `${sectionId}__${key}` : key;
 
   if (!canBeEditable) {
     return {
       "data-element-key": key,
+      "data-element-id": elementId,
+      "data-section-id": sectionId,
+      "data-selectable": interactive ? "true" : undefined,
       "data-selected": isSelected && interactive ? "true" : "false",
     };
   }
@@ -227,6 +234,9 @@ function elementSel(
 
   return {
     "data-element-key": key,
+    "data-element-id": elementId,
+    "data-section-id": sectionId,
+    "data-selectable": "true",
     "data-selected": isSelected ? "true" : "false",
     "data-placeholder": "[Type text here...]",
     contentEditable: true,
@@ -271,12 +281,56 @@ function elementSel(
   };
 }
 
-/** Selectable in the editor but not inline-editable (e.g. contact info cards). */
-function selectOnly(key: string, selectedElementKey?: string | null) {
+/** Selectable in the editor but not inline-editable (e.g. contact info cards, containers). */
+function selectOnly(
+  key: string,
+  selectedElementKey?: string | null,
+  sectionId?: string,
+  interactive?: boolean
+) {
+  const normKey = key.replace(/^content\./, "");
+  const normSelected = selectedElementKey ? selectedElementKey.replace(/^content\./, "") : null;
+  const isSelected = selectedElementKey === key || (normSelected !== null && normSelected === normKey);
   return {
     "data-element-key": key,
-    "data-selected": selectedElementKey === key ? "true" : "false",
+    "data-element-id": sectionId ? `${sectionId}__${key}` : key,
+    "data-section-id": sectionId,
+    "data-selectable": interactive ? "true" : undefined,
+    "data-selected": isSelected && interactive ? "true" : "false",
   };
+}
+
+/**
+ * Builds CSS rules for element-level visibility toggles.
+ * In interactive mode, hidden elements are dimmed with a dashed outline so they remain clickable.
+ * In production/preview mode, they are completely hidden with display: none.
+ */
+function buildElementVisibilityCss(sections: Section[], interactive = false): string {
+  let css = "";
+  for (const section of sections) {
+    const visibility = section.elementVisibility;
+    if (!visibility || Object.keys(visibility).length === 0) continue;
+    const safeSection = String(section.id).replace(/["\\]/g, "\\$&");
+    for (const [key, isVisible] of Object.entries(visibility)) {
+      if (isVisible !== false) continue;
+      const keys = Array.from(
+        new Set([
+          key,
+          key.startsWith("content.") ? key : `content.${key}`,
+          key.replace(/^content\./, ""),
+        ])
+      );
+      for (const k of keys) {
+        const safeKey = String(k).replace(/["\\]/g, "\\$&");
+        if (interactive) {
+          css += `[data-section-id="${safeSection}"] [data-element-key="${safeKey}"], #${safeSection} [data-element-key="${safeKey}"] { opacity: 0.35 !important; filter: grayscale(70%) !important; outline: 1px dashed rgba(244, 63, 94, 0.6) !important; }\n`;
+        } else {
+          css += `[data-section-id="${safeSection}"] [data-element-key="${safeKey}"], #${safeSection} [data-element-key="${safeKey}"] { display: none !important; }\n`;
+        }
+      }
+    }
+  }
+  return css;
 }
 
 function getElementStyle(section: Section, elementKey: string): CSSProperties {
@@ -1185,7 +1239,7 @@ function HeroSection({ section, theme, selectedElementKey, interactive, onSelect
                 <div {...sel(`content.stats.${i}.value`)} className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)", color: "var(--text)" }}>
                   {st.value}
                 </div>
-                <div className="text-xs uppercase tracking-wider opacity-75 mt-1" style={{ color: "var(--text-muted)" }}>{st.label}</div>
+                <div {...sel(`content.stats.${i}.label`)} className="text-xs uppercase tracking-wider opacity-75 mt-1" style={{ color: "var(--text-muted)" }}>{st.label}</div>
               </div>
             ))}
           </div>
@@ -1278,9 +1332,10 @@ function AboutSection({ section, theme, selectedElementKey, interactive, onSelec
           >
             <h3 className="text-sm font-semibold uppercase tracking-wider mb-4 opacity-75" style={{ color: "var(--text)" }}>Skills &amp; Expertise</h3>
             <div className="flex flex-wrap gap-2">
-              {skills.map((skill: string) => (
+              {skills.map((skill: string, i: number) => (
                 <span
                   key={skill}
+                  {...sel(`content.skills.${i}`)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold border"
                   style={{
                     backgroundColor: `${theme.primaryColor}15`,
@@ -1955,6 +2010,7 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive, onS
               <div>
                 {p.tag && (
                   <span
+                    {...sel(`content.projects.${i}.tag`)}
                     className="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider mb-2"
                     style={{ background: `${theme.primaryColor}20`, color: theme.primaryColor }}
                   >
@@ -1968,6 +2024,7 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive, onS
               </div>
               {p.url && (
                 <a
+                  {...sel(`content.projects.${i}.url`)}
                   href={p.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -3256,7 +3313,7 @@ function CtaSection({ section, theme, selectedElementKey, interactive, onSelectE
           )}
 
           {description && (
-            <p {...sel("content.bio")} className="Oninsite-cta-desc text-base sm:text-lg opacity-80 leading-relaxed max-w-xl">
+            <p {...sel(section.subtitle ? "subtitle" : "content.description")} className="Oninsite-cta-desc text-base sm:text-lg opacity-80 leading-relaxed max-w-xl">
               {description}
             </p>
           )}
@@ -3684,6 +3741,7 @@ containerSelector
   // Per-element custom text colors (from the visual editor "Custom Color" tool).
   const elementColorCss = buildElementColorCss(config.sections || []);
   const elementStyleCss = buildElementStyleCss(config.sections || []);
+  const elementVisibilityCss = buildElementVisibilityCss(config.sections || [], interactive);
 
   // Live WhatsApp Ordering Cart for Products / Menu
   const [cart, setCart] = useState<Record<string, { name: string; price: string; count: number }>>({});
@@ -3754,6 +3812,7 @@ containerSelector
       {scopedTemplateCss && <style dangerouslySetInnerHTML={{ __html: scopedTemplateCss }} />}
       {elementColorCss && <style dangerouslySetInnerHTML={{ __html: elementColorCss }} />}
       {elementStyleCss && <style dangerouslySetInnerHTML={{ __html: elementStyleCss }} />}
+      {elementVisibilityCss && <style dangerouslySetInnerHTML={{ __html: elementVisibilityCss }} />}
 
       <style
         dangerouslySetInnerHTML={{

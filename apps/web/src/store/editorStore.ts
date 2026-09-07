@@ -40,6 +40,8 @@ interface EditorState {
   updateSection: (sectionId: string, updates: Record<string, any>) => void;
   duplicateSection: (sectionId: string) => void;
   toggleSectionVisibility: (sectionId: string) => void;
+  toggleElementVisibility: (sectionId: string, elementKey: string) => void;
+  setElementVisibility: (sectionId: string, elementKey: string, isVisible: boolean) => void;
   updateElementValue: (sectionId: string, elementKey: string, value: string | number, pushHistory?: boolean) => void;
   updateElementStyle: (sectionId: string, elementKey: string, styleUpdates: Record<string, string>) => void;
   moveSection: (fromSectionId: string, toSectionId: string) => void;
@@ -190,6 +192,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
             elementColors: updates.elementColors
               ? { ...(sec.elementColors || {}), ...updates.elementColors }
               : sec.elementColors,
+            elementStyles: updates.elementStyles
+              ? { ...(sec.elementStyles || {}), ...updates.elementStyles }
+              : sec.elementStyles,
+            elementVisibility: updates.elementVisibility
+              ? { ...(sec.elementVisibility || {}), ...updates.elementVisibility }
+              : sec.elementVisibility,
             styling: updates.styling
               ? { ...(sec.styling || {}), ...updates.styling }
               : sec.styling,
@@ -230,6 +238,35 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const nextSections = currentSections.map((sec) =>
       sec.id === sectionId ? { ...sec, visible: sec.visible === false ? true : false } : sec
     );
+    get().setConfig({ ...config, sections: nextSections });
+  },
+
+  toggleElementVisibility: (sectionId, elementKey) => {
+    const { config } = get();
+    if (!config) return;
+    const normalizedKey = elementKey.replace(/^content\./, "");
+    const currentSections = Array.isArray(config.sections) ? config.sections : [];
+    const nextSections = currentSections.map((sec) => {
+      if (sec.id !== sectionId) return sec;
+      const currentVis = (sec.elementVisibility || {}) as Record<string, boolean>;
+      const currentVal = currentVis[normalizedKey] !== false; // default true
+      const nextVis = { ...currentVis, [normalizedKey]: !currentVal };
+      return { ...sec, elementVisibility: nextVis };
+    });
+    get().setConfig({ ...config, sections: nextSections });
+  },
+
+  setElementVisibility: (sectionId, elementKey, isVisible) => {
+    const { config } = get();
+    if (!config) return;
+    const normalizedKey = elementKey.replace(/^content\./, "");
+    const currentSections = Array.isArray(config.sections) ? config.sections : [];
+    const nextSections = currentSections.map((sec) => {
+      if (sec.id !== sectionId) return sec;
+      const currentVis = (sec.elementVisibility || {}) as Record<string, boolean>;
+      const nextVis = { ...currentVis, [normalizedKey]: isVisible };
+      return { ...sec, elementVisibility: nextVis };
+    });
     get().setConfig({ ...config, sections: nextSections });
   },
 

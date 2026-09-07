@@ -141,6 +141,28 @@ function buildElementStyleCss(sections: Section[]): string {
   return css;
 }
 
+function buildElementVisibilityCss(sections: Section[]): string {
+  let css = "";
+  for (const section of sections) {
+    const visibility = section.elementVisibility;
+    if (!visibility || Object.keys(visibility).length === 0) continue;
+    const safeSection = String(section.id).replace(/["\\]/g, "\\$&");
+    for (const [key, isVisible] of Object.entries(visibility)) {
+      if (isVisible !== false) continue;
+      const keys = Array.from(new Set([
+        key,
+        key.startsWith("content.") ? key : `content.${key}`,
+        key.replace(/^content\./, "")
+      ]));
+      for (const k of keys) {
+        const safeKey = String(k).replace(/["\\]/g, "\\$&");
+        css += `[data-section-id="${safeSection}"] [data-element-key="${safeKey}"], #${safeSection} [data-element-key="${safeKey}"] { display: none !important; }\n`;
+      }
+    }
+  }
+  return css;
+}
+
 function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string {
   const accent = theme.primaryColor;
   const secondary = theme.secondaryColor;
@@ -794,6 +816,7 @@ export async function buildStaticSite(project: IProjectDocument): Promise<{ stat
   const themeCss = buildThemeCss(config.theme);
   const elementColorCss = buildElementColorCss(config.sections || []);
   const elementStyleCss = buildElementStyleCss(config.sections || []);
+  const elementVisibilityCss = buildElementVisibilityCss(config.sections || []);
   const sectionsHtml = config.sections.map((s) => renderSection(s, config.theme)).join("\n");
 
   const containerClass = resolveTemplateContainerClass(config);
@@ -808,6 +831,9 @@ export async function buildStaticSite(project: IProjectDocument): Promise<{ stat
 <head>
   ${seoHead}
   <style>${themeCss}</style>
+  ${elementColorCss ? `<style>${elementColorCss}</style>` : ""}
+  ${elementStyleCss ? `<style>${elementStyleCss}</style>` : ""}
+  ${elementVisibilityCss ? `<style>${elementVisibilityCss}</style>` : ""}
   ${scopedTemplateCss ? `<style>${scopedTemplateCss}</style>` : ""}
 </head>
 <body>
