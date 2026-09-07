@@ -173,7 +173,10 @@ export const getPublicProject = async (req: AuthenticatedRequest, res: Response)
       redirectTo,
     };
 
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+    // Never let intermediate CDN / edge caches poison CORS headers across different tenant subdomains
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.json({ success: true, data: responsePayload });
   } catch (error: any) {
     res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: error.message } });

@@ -165,7 +165,19 @@ export const projectsApi = {
     if (cached && now - cached.timestamp < PUBLIC_CACHE_TTL_MS) {
       return cached.data;
     }
-    const res = await apiFetch<{ data: any }>(`/projects/public/${slug}`);
+    // Use uncredentialed public fetch with no-store to guarantee clean CORS across all subdomains and custom domains
+    const response = await fetch(`${API_BASE}/projects/public/${encodeURIComponent(slug)}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      throw new Error(errJson?.error?.message || `Site not found (${response.status})`);
+    }
+    const res = (await response.json()) as { data: any };
     if (res?.data) {
       publicSiteCache.set(slug, { data: res, timestamp: now });
     }
@@ -408,7 +420,7 @@ export const mediaApi = {
 
 // ─── Form Submissions & Leads ───────────────────────────────────────────────
 export const formsApi = {
-  submit: (
+  submit: async (
     slugOrId: string,
     payload: {
       name: string;
@@ -427,15 +439,16 @@ export const formsApi = {
         content?: string;
       };
     }
-  ) =>
-    apiFetch<{ success: boolean; message: string; data: { id: string; whatsappUrl: string | null; redirectUrl: string | null; successMessage: string } }>(
-      `/forms/submit/${encodeURIComponent(slugOrId)}`,
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
-      false
-    ),
+  ) => {
+    const res = await fetch(`${API_BASE}/forms/submit/${encodeURIComponent(slugOrId)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || "Form submission failed");
+    return data as { success: boolean; message: string; data: { id: string; whatsappUrl: string | null; redirectUrl: string | null; successMessage: string } };
+  },
 
   getResponses: (params?: { projectId?: string; isRead?: boolean; isStarred?: boolean; search?: string; page?: number; limit?: number }) => {
     const qs = new URLSearchParams();

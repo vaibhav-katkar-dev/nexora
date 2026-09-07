@@ -43,65 +43,93 @@ const allowedOrigins = [
   ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()) : []),
 ].filter(Boolean) as string[];
 
-// Derive platform root domains from env (e.g. "okinsite.com", "okinsite.site")
-const platformRootDomains: string[] = [];
+// Known platform root domains for multi-tenant subdomains
+const platformRootDomains: string[] = [
+  "okinsite.com",
+  "okinsite.site",
+  "oninsite.com",
+  "oninsite.site",
+];
 [process.env.CLIENT_URL, process.env.SITE_BASE_URL].filter(Boolean).forEach((url) => {
   try {
     const host = new URL(url!).hostname.toLowerCase().replace(/^www\./, "");
     if (host && !platformRootDomains.includes(host)) platformRootDomains.push(host);
   } catch {}
 });
-// Always include the known production domain as a safety net
-if (!platformRootDomains.includes("okinsite.com")) platformRootDomains.push("okinsite.com");
-if (!platformRootDomains.includes("okinsite.site")) platformRootDomains.push("okinsite.site");
 
 function isAllowedOrigin(origin: string): boolean {
+  if (!origin) return true;
+
   // 1️⃣ Exact match from CLIENT_URL or ALLOWED_ORIGINS env vars
   if (allowedOrigins.includes(origin)) return true;
 
   // 2️⃣ Localhost / 127.0.0.1 for local development
-  if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) return true;
+  if (
+    origin.startsWith("http://localhost:") ||
+    origin.startsWith("https://localhost:") ||
+    origin.startsWith("http://127.0.0.1:") ||
+    origin.startsWith("https://127.0.0.1:") ||
+    origin === "http://localhost" ||
+    origin === "https://localhost"
+  ) {
+    return true;
+  }
 
-  // 3️⃣ Wildcard platform subdomains: *.okinsite.com, *.okinsite.site, etc.
-  // e.g. test.okinsite.com, mybrand.okinsite.com, cafe.okinsite.com
-  try {
-    const hostname = new URL(origin).hostname.toLowerCase();
-    for (const root of platformRootDomains) {
-      // Matches the root domain itself (okinsite.com) OR any *.okinsite.com subdomain
-      if (hostname === root || hostname.endsWith(`.${root}`)) return true;
-    }
-  } catch {}
-
-  // 4️⃣ External custom domains connected by users (e.g. https://www.mybrand.com)
-  // These call /projects/public/:slug which is a public, unauthenticated endpoint.
-  // Auth-protected endpoints are secured independently by JWT middleware.
+  // 3️⃣ Wildcard platform subdomains: *.okinsite.com, *.okinsite.site, *.oninsite.com, *.oninsite.site
+  // e.g. lakshmikirana.okinsite.com, mybrand.okinsite.com, cafe.okinsite.site
   try {
     const parsed = new URL(origin);
-    if (parsed.protocol === "https:") return true;
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Vercel deployment previews
+    if (hostname.endsWith(".vercel.app")) return true;
+
+    for (const root of platformRootDomains) {
+      // Matches the root domain itself (e.g. okinsite.com) OR any subdomain (*.okinsite.com)
+      if (hostname === root || hostname.endsWith(`.${root}`)) return true;
+    }
+
+    // 4️⃣ External custom domains connected by users (e.g. https://www.mybrand.com)
+    // These call /projects/public/:slug which is a public, unauthenticated endpoint.
+    // Any valid http or https origin is permitted.
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return true;
+    }
   } catch {}
 
   return false;
 }
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || isAllowedOrigin(origin)) {
-        // Explicitly reflect the actual requesting origin (not boolean true)
-        // so that Vercel's edge cache never conflates two different origins
-        // into a single cached response with a wrong Access-Control-Allow-Origin header.
-        callback(null, origin || "*");
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+const corsMiddleware = cors({
+  origin: (origin, callback) => {
+    if (!origin || isAllowedOrigin(origin)) {
+      // Explicitly reflect the requesting origin so browser CORS matches exactly
+      callback(null, origin || true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-refresh-token",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Cache-Control",
+    "Pragma",
+  ],
+  exposedHeaders: ["Content-Disposition", "Content-Type", "Content-Length"],
+  maxAge: 86400, // Cache preflight response for 24 hours
+});
 
-// Force Vary: Origin on every response so that Vercel's CDN (and any other
-// reverse-proxy / CDN in front of the API) caches CORS responses per unique
-// origin rather than serving a stale response meant for a different subdomain.
+app.use(corsMiddleware);
+app.options("*", corsMiddleware);
+
+// Force Vary: Origin on every response so that intermediate CDNs / caches
+// partition responses per unique origin.
 app.use((_req: Request, res: Response, next: NextFunction) => {
   res.vary("Origin");
   next();
