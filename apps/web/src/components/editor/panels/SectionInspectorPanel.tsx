@@ -1946,8 +1946,13 @@ const removeArrayItem = (key: string, index: number) => {
             </div>
 
             {/* Primary CTA Button */}
-            <div data-field-path="ctaText" className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-800/30 space-y-2">
-              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-indigo-400">Primary Call To Action Button</label>
+            <div data-field-path="ctaText" className="p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-800/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-indigo-400">Primary Call To Action Button</label>
+                <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                  <Sparkles size={11} /> Auto High-Contrast
+                </span>
+              </div>
               <input
                 type="text"
                 value={content.ctaText || ""}
@@ -1971,6 +1976,49 @@ const removeArrayItem = (key: string, index: number) => {
                 >
                   <MessageCircle size={12} /> WhatsApp
                 </button>
+              </div>
+
+              {/* Button Color & Contrast Overrides */}
+              <div className="pt-2 border-t border-indigo-800/20 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">Button Color</label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="color"
+                      value={content.ctaBgColor || "#3B82F6"}
+                      onChange={(e) => handleFieldChange("ctaBgColor", e.target.value)}
+                      className="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer shrink-0"
+                      title="Button background color"
+                    />
+                    <input
+                      type="text"
+                      value={content.ctaBgColor || ""}
+                      placeholder="Theme default"
+                      onChange={(e) => handleFieldChange("ctaBgColor", e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">Text Color</label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="color"
+                      value={content.ctaTextColor || "#FFFFFF"}
+                      onChange={(e) => handleFieldChange("ctaTextColor", e.target.value)}
+                      className="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer shrink-0"
+                      title="Button text color"
+                    />
+                    <input
+                      type="text"
+                      value={content.ctaTextColor || ""}
+                      placeholder="Auto contrast"
+                      onChange={(e) => handleFieldChange("ctaTextColor", e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white font-mono"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

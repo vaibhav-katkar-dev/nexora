@@ -543,6 +543,24 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
   }
 }
 
+function getHexLuminance(hexColor?: string): number {
+  if (!hexColor || typeof hexColor !== "string") return 0.1;
+  const clean = hexColor.replace("#", "").trim();
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16);
+    const g = parseInt(clean[1] + clean[1], 16);
+    const b = parseInt(clean[2] + clean[2], 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  if (clean.length >= 6) {
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  return 0.1;
+}
+
 // ────────────────────────────────────────────────────────
 // THEME CSS GENERATOR
 // Converts SiteTheme config into inline CSS variables
@@ -551,6 +569,8 @@ function buildThemeCss(theme: SiteConfigJSON["theme"]): string {
   const isGlass = theme.mode === "glassmorphism";
   const isDark = theme.mode === "dark" || isGlass;
   const fontName = theme.fontFamily || theme.headingFont || "Inter";
+  const primaryLum = getHexLuminance(theme.primaryColor);
+  const navCtaText = primaryLum > 0.55 ? "#0F172A" : "#FFFFFF";
 
   return `
     @import url('https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}:wght@400;600;700&display=swap');
@@ -560,6 +580,8 @@ function buildThemeCss(theme: SiteConfigJSON["theme"]): string {
       --secondary: ${theme.secondaryColor};
       --bg: ${theme.backgroundColor};
       --text: ${theme.textColor};
+      --nav-cta-bg: ${theme.primaryColor};
+      --nav-cta-text: ${navCtaText};
       --font: '${fontName}', sans-serif;
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; overflow-x: hidden; }
@@ -575,8 +597,21 @@ function buildThemeCss(theme: SiteConfigJSON["theme"]): string {
     .navbar-links { display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; opacity: 0.85; }
     .navbar-link { color: inherit; transition: opacity 0.2s; }
     .navbar-link:hover { opacity: 1; color: var(--primary); }
-    .navbar-cta { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: #ffffff; background: var(--primary); transition: transform 0.2s, opacity 0.2s; }
-    .navbar-cta:hover { transform: scale(1.03); opacity: 0.95; }
+    .navbar-cta, nav a.navbar-cta {
+      padding: 0.5rem 1.15rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--nav-cta-text, ${navCtaText}) !important;
+      background: var(--nav-cta-bg, var(--primary)) !important;
+      text-decoration: none !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .navbar-cta:hover, nav a.navbar-cta:hover { transform: scale(1.03); opacity: 0.95; color: var(--nav-cta-text, ${navCtaText}) !important; }
+    nav a.navbar-cta::after, nav a.navbar-cta::before { display: none !important; content: none !important; }
 
     /* Hero */
     .hero-section { min-height: 85vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4rem 2rem; }

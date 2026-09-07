@@ -501,9 +501,12 @@ function buildCssVariables(theme: any, _interactive?: boolean): CSSProperties {
     : "0 4px 20px -2px rgba(0, 0, 0, 0.5)";
   const inputBg = isLightBg ? "#FFFFFF" : "rgba(15, 23, 42, 0.6)";
   const inputBorder = isLightBg ? "#CBD5E1" : "rgba(255, 255, 255, 0.14)";
+  const primaryColor = theme.primaryColor || "#3B82F6";
+  const primaryLuminance = getHexLuminance(primaryColor);
+  const navCtaTextColor = primaryLuminance > 0.55 ? "#0F172A" : "#FFFFFF";
 
   return {
-    "--primary": theme.primaryColor || "#3B82F6",
+    "--primary": primaryColor,
     "--secondary": theme.secondaryColor || theme.primaryColor || "#8B5CF6",
     "--accent": theme.accentColor || "#F59E0B",
     "--background": bgColor,
@@ -517,6 +520,8 @@ function buildCssVariables(theme: any, _interactive?: boolean): CSSProperties {
     "--card-shadow": cardShadow,
     "--input-bg": inputBg,
     "--input-border": inputBorder,
+    "--nav-cta-bg": primaryColor,
+    "--nav-cta-text": navCtaTextColor,
     "--font-heading": theme.headingFont || theme.fontFamily || "Inter",
     "--font-body": theme.bodyFont || theme.fontFamily || "Inter",
     "--radius": theme.borderRadius || "12px",
@@ -739,6 +744,14 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
   const mobileMenuItemCount = Math.max(links.length, 1) + (content.ctaText ? 1 : 0) + (interactive ? 1 : 0);
   const mobileMenuDesiredHeight = mobileMenuItemCount * 54 + 30;
 
+  // Dynamic high-contrast CTA styling:
+  // Auto-calculates luminance so text is never washed out (e.g. white on gold/yellow or dark on dark)
+  const navCtaBg = content.ctaBgColor || section.elementColors?.["content.ctaText.bg"] || theme.primaryColor || "#3B82F6";
+  const navCtaLuminance = getHexLuminance(navCtaBg);
+  const autoCtaTextColor = navCtaLuminance > 0.55 ? "#0F172A" : "#FFFFFF";
+  const navCtaTextColor = content.ctaTextColor || section.elementColors?.["content.ctaText"] || section.elementColors?.["ctaText"] || autoCtaTextColor;
+  const navCtaRadius = theme.buttonVariant === "pill" ? "9999px" : (theme.borderRadius || "8px");
+
   const logoImage = content.logoImage || content.logo || (section as any).logoImage;
   const logoWidth = content.logoWidth || (section as any).logoWidth || 36;
   const logoHeight = content.logoHeight || (section as any).logoHeight || "auto";
@@ -875,8 +888,13 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
                   onClick={() => {
                     if (!interactive) setMobileMenuOpen(false);
                   }}
-                  className="w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105 text-center touch-manipulation"
-                  style={{ background: theme.primaryColor, boxShadow: `0 14px 28px ${menuAccent}33` }}
+                  className="w-full px-4 py-2.5 text-sm font-semibold shadow-md transition-all hover:scale-[1.02] text-center touch-manipulation flex items-center justify-center font-sans"
+                  style={{
+                    backgroundColor: navCtaBg,
+                    color: navCtaTextColor,
+                    borderRadius: navCtaRadius,
+                    boxShadow: `0 14px 28px ${menuAccent}33`,
+                  }}
                 >
                   {content.ctaText}
                 </a>
@@ -1002,8 +1020,13 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
             <a
               {...sel("content.ctaText")}
               href={content.ctaLink || "#"}
-              className="Oninsite-nav-cta hidden md:block px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105 whitespace-nowrap"
-              style={{ background: theme.primaryColor, ...getNavElementStyle(section, "content.ctaText") }}
+              className="Oninsite-nav-cta hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-semibold shadow-md transition-all hover:scale-105 whitespace-nowrap font-sans"
+              style={{
+                borderRadius: navCtaRadius,
+                ...getNavElementStyle(section, "content.ctaText"),
+                backgroundColor: navCtaBg,
+                color: navCtaTextColor,
+              }}
             >
               {content.ctaText}
             </a>
@@ -3759,13 +3782,35 @@ containerSelector
             }
             @container (min-width: 768px) {
               .${containerClass} .Oninsite-nav-links { display: flex !important; }
-              .${containerClass} .Oninsite-nav-cta { display: block !important; }
+              .${containerClass} .Oninsite-nav-cta { display: inline-flex !important; }
               .${containerClass} .Oninsite-nav-toggle { display: none !important; }
             }
             @container (max-width: 767px) {
               .${containerClass} .Oninsite-nav-links { display: none !important; }
               .${containerClass} .Oninsite-nav-cta { display: none !important; }
               .${containerClass} .Oninsite-nav-toggle { display: flex !important; }
+            }
+            /* Strict Navbar CTA Isolation: ensures button text is never overridden or made invisible by template 'body nav a' rules */
+            .${containerClass} a.Oninsite-nav-cta,
+            .${containerClass} nav a.Oninsite-nav-cta,
+            .${containerClass} .navbar-cta,
+            .${containerClass} nav a.navbar-cta {
+              text-decoration: none !important;
+              opacity: 1 !important;
+            }
+            .${containerClass} a.Oninsite-nav-cta:hover,
+            .${containerClass} nav a.Oninsite-nav-cta:hover,
+            .${containerClass} .navbar-cta:hover,
+            .${containerClass} nav a.navbar-cta:hover {
+              opacity: 0.94 !important;
+              filter: brightness(1.05);
+            }
+            .${containerClass} nav a.Oninsite-nav-cta::after,
+            .${containerClass} nav a.Oninsite-nav-cta::before,
+            .${containerClass} nav a.navbar-cta::after,
+            .${containerClass} nav a.navbar-cta::before {
+              display: none !important;
+              content: none !important;
             }
           `,
         }}

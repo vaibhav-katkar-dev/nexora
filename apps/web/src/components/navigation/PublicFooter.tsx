@@ -35,11 +35,11 @@ export function PublicFooter() {
           <div className="space-y-3 text-xs">
             <div className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Solutions</div>
             <ul className="space-y-2">
-              <li><Link href="/templates?category=business" className="hover:text-white transition-colors">Local Business</Link></li>
-              <li><Link href="/templates?category=portfolio" className="hover:text-white transition-colors">Freelancers & Portfolios</Link></li>
-              <li><Link href="/templates?category=restaurant" className="hover:text-white transition-colors">Restaurant QR Menus</Link></li>
-              <li><Link href="/templates?category=link_in_bio" className="hover:text-white transition-colors">Link in Bio Hubs</Link></li>
-              <li><Link href="/templates?category=personal" className="hover:text-white transition-colors">Personal Brands</Link></li>
+              <li><Link href="/link-in-bio" className="hover:text-white transition-colors">Link in Bio Hubs</Link></li>
+              <li><Link href="/restaurant-menu" className="hover:text-white transition-colors">Restaurant QR Menus</Link></li>
+              <li><Link href="/portfolio-builder" className="hover:text-white transition-colors">Portfolios & Freelancers</Link></li>
+              <li><Link href="/digital-business-card" className="hover:text-white transition-colors">Digital Business Cards</Link></li>
+              <li><Link href="/local-business" className="hover:text-white transition-colors">Local Shops & Retail</Link></li>
             </ul>
           </div>
 
