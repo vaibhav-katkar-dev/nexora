@@ -127,10 +127,12 @@ export const login = async (req: Request, res: Response) => {
 
 export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const token =
+    const rawToken =
       req.cookies?.refreshToken ||
       req.body?.refreshToken ||
       (req.headers["x-refresh-token"] as string);
+
+    const token = typeof rawToken === "string" ? rawToken.trim() : null;
 
     if (!token) {
       return res.status(401).json({
@@ -140,8 +142,14 @@ export const refreshToken = async (req: Request, res: Response) => {
     }
 
     const payload = verifyRefreshToken(token);
-    const user = await User.findById(payload.userId);
+    if (!payload?.userId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: "INVALID_REFRESH_TOKEN", message: "Invalid refresh token payload" },
+      });
+    }
 
+    const user = await User.findById(payload.userId);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -149,19 +157,21 @@ export const refreshToken = async (req: Request, res: Response) => {
       });
     }
 
-    // Verify token matches hash if hash exists (gracefully allow valid JWT if hash check matches or isn't set)
-    if (user.refreshTokenHash) {
-      const isMatch = await comparePassword(token, user.refreshTokenHash);
-      if (!isMatch) {
-        // If JWT signature is valid, re-issue new tokens without abruptly logging out
-      }
-    }
+    const newAccessToken = generateAccessToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role || "user",
+    });
+    const newRefreshToken = generateRefreshToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role || "user",
+    });
 
-    const newAccessToken = generateAccessToken({ userId: user._id.toString(), email: user.email, role: user.role || "user" });
-    const newRefreshToken = generateRefreshToken({ userId: user._id.toString(), email: user.email, role: user.role || "user" });
-
-    user.refreshTokenHash = await hashPassword(newRefreshToken);
-    await user.save();
+    // Asynchronously update refresh token hash without blocking the response
+    hashPassword(newRefreshToken)
+      .then((h) => User.findByIdAndUpdate(user._id, { refreshTokenHash: h }).exec())
+      .catch(() => {});
 
     setRefreshCookie(res, newRefreshToken);
 

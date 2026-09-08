@@ -1,10 +1,10 @@
+import "./env.js";
 import mongoose from "mongoose";
 import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { connectDB } from "./config/db.js";
@@ -15,14 +15,6 @@ import mediaRoutes from "./routes/mediaRoutes.js";
 import publishRoutes from "./routes/publishRoutes.js";
 import previewRoutes from "./routes/previewRoutes.js";
 import templateRoutes from "./routes/templateRoutes.js";
-
-// Load .env from apps/api (works with turbo monorepo root or api cwd)
-const envCandidates = [
-  path.resolve(process.cwd(), ".env"),
-  path.resolve(process.cwd(), "apps/api/.env"),
-];
-const envPath = envCandidates.find((candidate) => fs.existsSync(candidate));
-dotenv.config(envPath ? { path: envPath } : undefined);
 
 const app: Express = express();
 const PORT = process.env.PORT || 4000;

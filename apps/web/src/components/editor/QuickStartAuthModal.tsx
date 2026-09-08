@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { X, Lock, Mail, User, KeyRound, Globe, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -51,6 +51,9 @@ export function QuickStartAuthModal({
 
       if (authRes.data?.accessToken) {
         localStorage.setItem("accessToken", authRes.data.accessToken);
+        if (authRes.data.refreshToken) {
+          localStorage.setItem("refreshToken", authRes.data.refreshToken);
+        }
         if (authRes.data.user) {
           localStorage.setItem("user", JSON.stringify(authRes.data.user));
         }

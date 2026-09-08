@@ -10,6 +10,13 @@ async function performTokenRefresh(): Promise<string | null> {
   try {
     const storedRefreshToken =
       typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null;
+    const storedAccessToken =
+      typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+    // If there is no stored refresh token and no stored access token, there is no session to refresh
+    if (!storedRefreshToken && !storedAccessToken) {
+      return null;
+    }
 
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: "POST",
@@ -18,7 +25,7 @@ async function performTokenRefresh(): Promise<string | null> {
         "Content-Type": "application/json",
         ...(storedRefreshToken ? { "x-refresh-token": storedRefreshToken } : {}),
       },
-      body: storedRefreshToken ? JSON.stringify({ refreshToken: storedRefreshToken }) : undefined,
+      body: JSON.stringify({ refreshToken: storedRefreshToken || "" }),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -57,6 +64,17 @@ async function apiFetch<T>(
 
   // ── 401 Auto-Refresh Flow ─────────────────────────────────────────────
   if (res.status === 401 && retry) {
+    const hasTokens =
+      typeof window !== "undefined" &&
+      (Boolean(localStorage.getItem("accessToken")) || Boolean(localStorage.getItem("refreshToken")));
+
+    // Unauthenticated request returning 401: do not attempt refresh or redirect
+    if (!hasTokens) {
+      const isJson = (res.headers.get("content-type") || "").includes("application/json");
+      const errorData = isJson ? await res.json().catch(() => null) : null;
+      throw new Error(errorData?.error?.message || "Authentication required");
+    }
+
     if (!isRefreshing) {
       isRefreshing = true;
       const newToken = await performTokenRefresh();
@@ -65,11 +83,21 @@ async function apiFetch<T>(
       refreshQueue = [];
 
       if (!newToken) {
-        // Refresh failed — redirect to login
+        // Refresh genuinely failed for an authenticated user.
+        // Only redirect to /login if currently on a protected route to prevent discarding active work.
         if (typeof window !== "undefined") {
+          const currentPath = window.location.pathname;
+          const isProtectedRoute =
+            currentPath.startsWith("/dashboard") ||
+            currentPath.startsWith("/admin");
+
           localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
-          window.location.href = "/login";
+
+          if (isProtectedRoute) {
+            window.location.href = "/login";
+          }
         }
         throw new Error("Session expired. Please sign in again.");
       }

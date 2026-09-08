@@ -5,10 +5,12 @@ import rateLimit from "express-rate-limit";
 
 const router = Router();
 
-// Strict Auth Rate Limiter (5 requests per 15 minutes per IP)
+// Auth Rate Limiter (60 requests per 15 minutes per IP to avoid blocking legitimate users/admins)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: {
     success: false,
     error: {

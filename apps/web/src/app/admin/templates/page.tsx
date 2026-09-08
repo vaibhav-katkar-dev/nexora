@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -194,12 +194,32 @@ const [formErrors, setFormErrors] = useState<string[]>([]);
       .then((res) => {
         const u = res.data?.user || res.data;
         setUser(u);
+        if (u) {
+          localStorage.setItem("user", JSON.stringify(u));
+        }
         if (u?.role !== "admin") {
           toast.error("Admin access required");
           router.replace("/templates");
         }
       })
-      .catch(() => router.replace("/login"))
+      .catch(() => {
+        const currentToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+        if (!currentToken) {
+          router.replace("/login");
+        } else {
+          const cachedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+          if (cachedUser) {
+            try {
+              const parsed = JSON.parse(cachedUser);
+              setUser(parsed);
+              if (parsed?.role !== "admin") {
+                toast.error("Admin access required");
+                router.replace("/templates");
+              }
+            } catch {}
+          }
+        }
+      })
       .finally(() => {
         setAuthChecked(true);
         setLoading(false);
