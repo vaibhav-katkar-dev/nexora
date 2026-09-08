@@ -1,4 +1,4 @@
-﻿import { Section, SiteTheme } from "@ai-platform/shared";
+import { Section, SiteTheme } from "@ai-platform/shared";
 
 /**
  * Converts template JSON sections into clean, semantic HTML code.
@@ -134,7 +134,7 @@ export function generateHtmlFromSections(sections: Section[]): string {
               (p.tag ? `        <span class="project-tag">${p.tag}</span>\n` : "") +
               `        <h3>${p.name || "Project"}</h3>\n` +
               (p.desc ? `        <p>${p.desc}</p>\n` : "") +
-              (p.url ? `        <a href="${p.url}" target="_blank" class="project-link">View Project &rarr;</a>\n` : "") +
+              (p.url ? `        <a href="${p.url}" target="_blank" class="project-link">${p.buttonText || p.ctaText || "View Project"} &rarr;</a>\n` : "") +
               `      </div>\n` +
               `    </div>`
           )

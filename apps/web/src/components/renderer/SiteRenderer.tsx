@@ -2031,7 +2031,9 @@ function PortfolioSection({ section, theme, selectedElementKey, interactive, onS
                   className="inline-flex items-center gap-2 text-xs font-bold hover:underline"
                   style={{ color: theme.primaryColor }}
                 >
-                  View Live Project <ExternalLink size={14} />
+                  <span {...sel(`content.projects.${i}.buttonText`)}>
+                    {p.buttonText || p.ctaText || "View Project"}
+                  </span> <ExternalLink size={14} />
                 </a>
               )}
             </div>

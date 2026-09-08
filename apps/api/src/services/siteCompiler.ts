@@ -308,9 +308,11 @@ function renderSection(section: Section, theme: SiteConfigJSON["theme"]): string
           <div class="portfolio-grid">
             ${projects.map((p: any, i: number) => `
               <div data-element-key="content.projects.${i}" class="portfolio-card">
+                ${p.image ? `<img src="${p.image}" alt="${p.name || ""}" data-element-key="content.projects.${i}.image" loading="lazy" />` : ""}
                 <h3 data-element-key="content.projects.${i}.name">${p.name || ""}</h3>
                 <p data-element-key="content.projects.${i}.desc">${p.desc || ""}</p>
                 ${p.tag ? `<span data-element-key="content.projects.${i}.tag" class="tag">${p.tag}</span>` : ""}
+                ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener noreferrer" data-element-key="content.projects.${i}.url" class="cta-btn"><span data-element-key="content.projects.${i}.buttonText">${p.buttonText || p.ctaText || "View Project"}</span></a>` : ""}
               </div>`).join("")}
           </div>
         </section>`;
