@@ -25,6 +25,13 @@ import {
 import { mediaApi } from "@/lib/api";
 import { detectAutoLocation } from "@/lib/geoLocation";
 
+export const QUICK_SETUP_DONT_SHOW_KEY = "okinsite:quick-setup:dont-show";
+
+export function shouldShowQuickBusinessSetup(): boolean {
+  if (typeof window === "undefined") return true;
+  return window.localStorage.getItem(QUICK_SETUP_DONT_SHOW_KEY) !== "true";
+}
+
 export interface QuickBusinessSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -69,6 +76,7 @@ export function QuickBusinessSetupModal({
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const handleAutoLocation = async () => {
     setIsDetectingLocation(true);
@@ -98,6 +106,7 @@ export function QuickBusinessSetupModal({
         saved.brandName || saved.phone || saved.email || saved.location || saved.logoUrl
       );
       setHasSavedProfile(hasData);
+      setDontShowAgain(window.localStorage.getItem(QUICK_SETUP_DONT_SHOW_KEY) === "true");
     }
   }, [isOpen]);
 
@@ -173,12 +182,19 @@ export function QuickBusinessSetupModal({
   const handleFinish = () => {
     // Save to persistent storage for all future templates
     saveBusinessProfile(profile);
+    if (dontShowAgain) window.localStorage.setItem(QUICK_SETUP_DONT_SHOW_KEY, "true");
     onSubmit(profile);
   };
 
   const handleInstantLaunchWithSaved = () => {
     saveBusinessProfile(profile);
+    if (dontShowAgain) window.localStorage.setItem(QUICK_SETUP_DONT_SHOW_KEY, "true");
     onSubmit(profile);
+  };
+
+  const handleSkip = () => {
+    if (dontShowAgain) window.localStorage.setItem(QUICK_SETUP_DONT_SHOW_KEY, "true");
+    onSkip();
   };
 
   return (
@@ -212,7 +228,7 @@ export function QuickBusinessSetupModal({
             {mode === "initial" && (
               <button
                 type="button"
-                onClick={onSkip}
+                onClick={handleSkip}
                 disabled={isSubmitting}
                 className="text-xs font-semibold text-slate-500 hover:text-slate-900 px-2 py-1 rounded-lg transition-colors"
                 title="Skip and open editor directly"
@@ -476,10 +492,10 @@ export function QuickBusinessSetupModal({
 
         {/* ── Fixed Footer Action Bar ── */}
         <div className="px-5 sm:px-6 py-3.5 border-t border-slate-100 bg-white flex items-center justify-between gap-3 shrink-0">
-          {mode === "initial" ? (
-            <button
-              type="button"
-              onClick={onSkip}
+            {mode === "initial" ? (
+              <button
+                type="button"
+                onClick={handleSkip}
               disabled={isSubmitting}
               className="px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
             >
@@ -495,6 +511,17 @@ export function QuickBusinessSetupModal({
               Cancel
             </button>
           )}
+            {mode === "initial" && (
+              <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 select-none">
+                <input
+                  type="checkbox"
+                  checked={dontShowAgain}
+                  onChange={(e) => setDontShowAgain(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Don't show again</span>
+              </label>
+            )}
           <button
             type="button"
             onClick={handleFinish}

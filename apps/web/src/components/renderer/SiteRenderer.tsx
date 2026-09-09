@@ -777,6 +777,7 @@ function InteractiveImageWrapper({
 interface SectionRendererProps {
   section: Section;
   theme: SiteConfigJSON["theme"];
+  sectionIds?: string[];
   selectedElementKey?: string | null;
   interactive?: boolean;
   siteSlug?: string;
@@ -785,7 +786,17 @@ interface SectionRendererProps {
   onRequestImageEdit?: (sectionId: string, elementKey: string) => void;
 }
 
-function NavbarSection({ section, theme, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
+function resolveInternalHref(href: string, sectionIds: string[] = []): string {
+  if (!href.startsWith("#") || href.length <= 1) return href;
+
+  const target = href.slice(1);
+  if (sectionIds.includes(target)) return href;
+
+  const matchedId = sectionIds.find((id) => id.startsWith(`${target}-`));
+  return matchedId ? `#${matchedId}` : href;
+}
+
+function NavbarSection({ section, theme, sectionIds, selectedElementKey, interactive, onSelectElement, onRequestImageEdit }: SectionRendererProps) {
   const content = section.content || {};
   const links: any[] = content.links || [];
   const sel = (key: string) => elementSel(key, selectedElementKey, section.id, interactive);
@@ -888,7 +899,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
               {links && links.length > 0 ? (
                 links.map((l: any, i: number) => {
                   const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
-                  const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
+                  const linkUrl = resolveInternalHref(typeof l === "string" ? "#" : (l?.url || "#"), sectionIds);
                   const itemKey = `content.links.${i}.label`;
                   return (
                     <a
@@ -938,7 +949,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
               {content.ctaText && (
                 <a
                   {...sel("content.ctaText")}
-                  href={content.ctaLink || "#"}
+                  href={resolveInternalHref(content.ctaLink || "#", sectionIds)}
                   onClick={() => {
                     if (!interactive) setMobileMenuOpen(false);
                   }}
@@ -1049,7 +1060,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
           {links && links.length > 0 ? (
             links.map((l: any, i: number) => {
               const labelText = typeof l === "string" ? l : (l?.label || l?.name || `Link ${i + 1}`);
-              const linkUrl = typeof l === "string" ? "#" : (l?.url || "#");
+              const linkUrl = resolveInternalHref(typeof l === "string" ? "#" : (l?.url || "#"), sectionIds);
               const itemKey = `content.links.${i}.label`;
               return (
                 <a
@@ -1073,7 +1084,7 @@ function NavbarSection({ section, theme, selectedElementKey, interactive, onSele
           {content.ctaText && (
             <a
               {...sel("content.ctaText")}
-              href={content.ctaLink || "#"}
+              href={resolveInternalHref(content.ctaLink || "#", sectionIds)}
               className="Oninsite-nav-cta hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-semibold shadow-md transition-all hover:scale-105 whitespace-nowrap font-sans"
               style={{
                 borderRadius: navCtaRadius,
@@ -3399,6 +3410,7 @@ function SvgWhatsApp({ className }: { className?: string }) {
 interface RenderSectionProps {
   section: Section;
   theme: SiteConfigJSON["theme"];
+  sectionIds?: string[];
   selectedElementKey?: string | null;
   interactive?: boolean;
   siteSlug?: string;
@@ -3407,12 +3419,13 @@ interface RenderSectionProps {
   onRequestImageEdit?: (sectionId: string, elementKey: string) => void;
 }
 
-function RenderSection({ section, theme, selectedElementKey, interactive, siteSlug, onAddToCart, onSelectElement, onRequestImageEdit }: RenderSectionProps) {
+function RenderSection({ section, theme, sectionIds, selectedElementKey, interactive, siteSlug, onAddToCart, onSelectElement, onRequestImageEdit }: RenderSectionProps) {
   if (section.visible === false) return null;
 
   const rendererProps = {
     section,
     theme,
+    sectionIds,
     selectedElementKey,
     interactive: !!interactive,
     siteSlug,
@@ -4162,6 +4175,7 @@ containerSelector
             <RenderSection
               section={section}
               theme={config.theme}
+              sectionIds={(config.sections || []).map((item) => item.id)}
               selectedElementKey={selectedElementKey}
               interactive={interactive}
               siteSlug={siteSlug || config?.meta?.slug || config?.meta?.id}

@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { TemplateThumbnail } from "@/components/renderer/TemplateThumbnail";
 import { templatesApi } from "@/lib/api";
-import { QuickBusinessSetupModal } from "@/components/common/QuickBusinessSetupModal";
+import { QuickBusinessSetupModal, shouldShowQuickBusinessSetup } from "@/components/common/QuickBusinessSetupModal";
 import { BusinessProfile } from "@/lib/businessProfile";
 
 // ─── Category icon map ────────────────────────────────────────────────────────
@@ -203,15 +203,24 @@ export function SiteCreationModal({
 
   const selectedTemplate = allTemplates.find((t) => t.id === selectedTemplateId);
 
+  const openSetup = (templateId: string | null) => {
+    setPendingLaunchTemplateId(templateId);
+    if (shouldShowQuickBusinessSetup()) {
+      setShowSetupModal(true);
+    } else {
+      onLaunch(templateId, null);
+    }
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-slate-950/75 backdrop-blur-md animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 md:p-8 bg-slate-950/75 backdrop-blur-md animate-fade-in overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget && !isRedirecting) onClose();
       }}
     >
       <div
-        className={`bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/30 overflow-hidden w-full transition-all duration-300 ${
+        className={`bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/30 overflow-hidden w-full transition-all duration-300 ${
           modalStep === "template" ? "max-w-6xl" : "max-w-2xl"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -255,7 +264,7 @@ export function SiteCreationModal({
             STEP 1: MODE SELECTION ("Scratch" vs "Template")
         ══════════════════════════════════════════════════════════════════════ */}
         {modalStep === "mode" && (
-          <div className="p-6 sm:p-8 space-y-6">
+          <div className="p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="text-center max-w-lg mx-auto space-y-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100">
                 <Sparkles size={13} className="text-indigo-600" />
@@ -264,17 +273,17 @@ export function SiteCreationModal({
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 How would you like to build your site?
               </h2>
-              <p className="text-slate-500 text-sm leading-relaxed">
+              <p className="hidden sm:block text-slate-500 text-sm leading-relaxed">
                 You can start with a professionally designed template or build section-by-section from a blank canvas.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-1 sm:pt-2">
               {/* Option A: Use Template */}
               <button
                 type="button"
                 onClick={() => setModalStep("template")}
-                className="group relative text-left p-6 rounded-3xl border-2 border-indigo-500 bg-gradient-to-b from-indigo-50/40 via-white to-white hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 flex flex-col justify-between overflow-hidden touch-manipulation"
+                className="group relative text-left p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 border-indigo-500 bg-gradient-to-b from-indigo-50/40 via-white to-white hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 flex flex-col justify-between overflow-hidden touch-manipulation"
               >
                 <div className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider shadow-sm">
                   Recommended
@@ -287,12 +296,12 @@ export function SiteCreationModal({
                   <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                     Use a Template
                   </h3>
-                  <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                  <p className="hidden sm:block text-xs text-slate-600 mt-1.5 leading-relaxed">
                     Pick from 10+ ready-to-use templates for portfolios, startups, menus, digital cards, & resumes.
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-indigo-100/80 space-y-2">
+                <div className="hidden sm:block mt-6 pt-4 border-t border-indigo-100/80 space-y-2">
                   <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700">
                     <Check size={14} className="text-indigo-600 shrink-0" />
                     100% pre-structured layouts
@@ -319,11 +328,10 @@ export function SiteCreationModal({
               <button
                 type="button"
                 onClick={() => {
-                  setPendingLaunchTemplateId(null);
-                  setShowSetupModal(true);
+                  openSetup(null);
                 }}
                 disabled={isRedirecting}
-                className="group text-left p-6 rounded-3xl border-2 border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50/80 hover:shadow-lg transition-all duration-200 flex flex-col justify-between touch-manipulation"
+                className="group text-left p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50/80 hover:shadow-lg transition-all duration-200 flex flex-col justify-between touch-manipulation"
               >
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center mb-4 group-hover:bg-slate-200 group-hover:scale-110 transition-transform">
@@ -332,12 +340,12 @@ export function SiteCreationModal({
                   <h3 className="text-lg font-bold text-slate-900 group-hover:text-slate-800 transition-colors">
                     Start from Scratch
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                  <p className="hidden sm:block text-xs text-slate-500 mt-1.5 leading-relaxed">
                     Begin with a minimalist blank layout. Full creative freedom to build your site element by element.
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
+                <div className="hidden sm:block mt-6 pt-4 border-t border-slate-100 space-y-2">
                   <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-600">
                     <Check size={14} className="text-slate-400 shrink-0" />
                     Minimalist starter canvas
@@ -367,15 +375,15 @@ export function SiteCreationModal({
             STEP 2: TEMPLATE GALLERY VIEW
         ══════════════════════════════════════════════════════════════════════ */}
         {modalStep === "template" && (
-          <div className="flex flex-col h-[82vh] max-h-[850px]">
+          <div className="flex flex-col h-[calc(100dvh-1rem)] sm:h-[82vh] max-h-[850px]">
             {/* ── Toolbar: Search & Title ── */}
-            <div className="p-6 pb-4 border-b border-slate-100 bg-white space-y-4">
+            <div className="p-3 sm:p-6 pb-3 sm:pb-4 border-b border-slate-100 bg-white space-y-3 sm:space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    <h2 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
                       Select a Template Layout
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
                     Click any design below to start customizing inside the visual editor.
                   </p>
                 </div>
@@ -445,9 +453,9 @@ export function SiteCreationModal({
             </div>
 
             {/* ── Gallery Grid Scroll Area ── */}
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 scrollbar-thin scrollbar-thumb-slate-200">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-slate-50/50 scrollbar-thin scrollbar-thumb-slate-200">
               {filteredTemplates.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                   {filteredTemplates.map((tpl) => {
                     const isSelected = selectedTemplateId === tpl.id;
                     const accent = CATEGORY_COLORS[tpl.category] ?? "#6366F1";
@@ -459,10 +467,9 @@ export function SiteCreationModal({
                         onClick={() => setSelectedTemplateId(tpl.id)}
                         onDoubleClick={() => {
                           setSelectedTemplateId(tpl.id);
-                          setPendingLaunchTemplateId(tpl.id);
-                          setShowSetupModal(true);
+                          openSetup(tpl.id);
                         }}
-                        className={`group relative text-left rounded-3xl border-2 bg-white overflow-hidden transition-all duration-200 cursor-pointer flex flex-col justify-between touch-manipulation ${
+                        className={`group relative text-left rounded-2xl sm:rounded-3xl border-2 bg-white overflow-hidden transition-all duration-200 cursor-pointer flex flex-col justify-between touch-manipulation ${
                           isSelected
                             ? "border-indigo-600 ring-4 ring-indigo-600/15 shadow-xl shadow-indigo-600/10 -translate-y-1"
                             : "border-slate-200 hover:border-slate-300 hover:shadow-lg hover:-translate-y-0.5"
@@ -538,7 +545,7 @@ export function SiteCreationModal({
                         </div>
 
                         {/* Card Info Strip */}
-                        <div className="p-4 border-t border-slate-100 bg-white flex-1 flex flex-col justify-between">
+                        <div className="p-3 sm:p-4 border-t border-slate-100 bg-white flex-1 flex flex-col justify-between">
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-1">
                               <h3 className="font-bold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
@@ -550,13 +557,13 @@ export function SiteCreationModal({
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                            <p className="hidden sm:block text-xs text-slate-500 line-clamp-2 leading-relaxed">
                               {tpl.description}
                             </p>
                           </div>
 
                           {/* Tags / Actions */}
-                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                          <div className="mt-2 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                             <div className="flex flex-wrap gap-1">
                               {tpl.tags.slice(0, 2).map((tag: string) => (
                                 <span
@@ -597,8 +604,7 @@ export function SiteCreationModal({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedTemplateId(tpl.id);
-                                  setPendingLaunchTemplateId(tpl.id);
-                                  setShowSetupModal(true);
+                                  openSetup(tpl.id);
                                 }}
                                 disabled={isRedirecting}
                                 className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1 shrink-0 ${
@@ -667,8 +673,7 @@ export function SiteCreationModal({
                 <button
                   type="button"
                   onClick={() => {
-                    setPendingLaunchTemplateId(null);
-                    setShowSetupModal(true);
+                    openSetup(null);
                   }}
                   disabled={isRedirecting}
                   className="px-4 py-2.5 min-h-[44px] rounded-2xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors touch-manipulation"
@@ -680,8 +685,7 @@ export function SiteCreationModal({
                   type="button"
                   onClick={() => {
                     if (!selectedTemplateId) return;
-                    setPendingLaunchTemplateId(selectedTemplateId);
-                    setShowSetupModal(true);
+                    openSetup(selectedTemplateId);
                   }}
                   disabled={!selectedTemplateId || isRedirecting}
                   className="flex-1 sm:flex-none px-6 py-2.5 min-h-[44px] rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/25 touch-manipulation"
